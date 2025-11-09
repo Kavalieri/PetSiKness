@@ -5,12 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, Edit, Trash2, Heart, Activity, Apple } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { PetDeleteDialog } from "@/components/pets/PetDeleteDialog";
 import type { Pet } from "@/types/pets";
@@ -89,19 +84,28 @@ export function PetDetailView({ pet, onDeleteSuccess }: PetDetailViewProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   // Formatear datos
-  const speciesLabel = SPECIES_LABELS[pet.species as keyof typeof SPECIES_LABELS] || pet.species;
-  const genderLabel = pet.gender ? GENDER_LABELS[pet.gender as keyof typeof GENDER_LABELS] : "N/A";
+  const speciesLabel =
+    SPECIES_LABELS[pet.species as keyof typeof SPECIES_LABELS] || pet.species;
+  const genderLabel = pet.gender
+    ? GENDER_LABELS[pet.gender as keyof typeof GENDER_LABELS]
+    : "N/A";
   const bodyConditionLabel = pet.body_condition
-    ? BODY_CONDITION_LABELS[pet.body_condition as keyof typeof BODY_CONDITION_LABELS]
+    ? BODY_CONDITION_LABELS[
+        pet.body_condition as keyof typeof BODY_CONDITION_LABELS
+      ]
     : "N/A";
   const bodyConditionEmoji = pet.body_condition
-    ? BODY_CONDITION_EMOJIS[pet.body_condition as keyof typeof BODY_CONDITION_EMOJIS]
+    ? BODY_CONDITION_EMOJIS[
+        pet.body_condition as keyof typeof BODY_CONDITION_EMOJIS
+      ]
     : "";
   const appetiteLabel = pet.appetite
     ? APPETITE_LABELS[pet.appetite as keyof typeof APPETITE_LABELS]
     : "N/A";
   const activityLabel = pet.activity_level
-    ? ACTIVITY_LEVEL_LABELS[pet.activity_level as keyof typeof ACTIVITY_LEVEL_LABELS]
+    ? ACTIVITY_LEVEL_LABELS[
+        pet.activity_level as keyof typeof ACTIVITY_LEVEL_LABELS
+      ]
     : "N/A";
 
   const age = calculateAge(pet.birth_date as Date | string | null);
@@ -168,7 +172,9 @@ export function PetDetailView({ pet, onDeleteSuccess }: PetDetailViewProps) {
             </div>
 
             <div>
-              <p className="text-sm text-muted-foreground">Fecha de nacimiento</p>
+              <p className="text-sm text-muted-foreground">
+                Fecha de nacimiento
+              </p>
               <p className="text-base">{birthDateFormatted}</p>
               <p className="text-sm text-muted-foreground">({age})</p>
             </div>
@@ -192,7 +198,9 @@ export function PetDetailView({ pet, onDeleteSuccess }: PetDetailViewProps) {
             )}
 
             <div>
-              <p className="text-sm text-muted-foreground">Condición corporal</p>
+              <p className="text-sm text-muted-foreground">
+                Condición corporal
+              </p>
               <Badge variant="outline">
                 {bodyConditionEmoji} {bodyConditionLabel}
               </Badge>
@@ -210,16 +218,21 @@ export function PetDetailView({ pet, onDeleteSuccess }: PetDetailViewProps) {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <p className="text-sm text-muted-foreground">Meta diaria de comida</p>
+              <p className="text-sm text-muted-foreground">
+                Meta diaria de comida
+              </p>
               <p className="text-2xl font-bold">
                 {Number(pet.daily_food_goal_grams)} g
               </p>
             </div>
 
             <div>
-              <p className="text-sm text-muted-foreground">Comidas por día (objetivo)</p>
+              <p className="text-sm text-muted-foreground">
+                Comidas por día (objetivo)
+              </p>
               <p className="text-base font-medium">
-                {pet.daily_meals_target ? Number(pet.daily_meals_target) : 2} comidas
+                {pet.daily_meals_target ? Number(pet.daily_meals_target) : 2}{" "}
+                comidas
               </p>
             </div>
           </CardContent>
@@ -233,7 +246,9 @@ export function PetDetailView({ pet, onDeleteSuccess }: PetDetailViewProps) {
           <CardContent className="space-y-4">
             {pet.health_notes && (
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Notas de salud</p>
+                <p className="text-sm text-muted-foreground mb-1">
+                  Notas de salud
+                </p>
                 <p className="text-sm">{pet.health_notes}</p>
               </div>
             )}
@@ -249,7 +264,9 @@ export function PetDetailView({ pet, onDeleteSuccess }: PetDetailViewProps) {
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">Sin alergias registradas</p>
+                <p className="text-sm text-muted-foreground">
+                  Sin alergias registradas
+                </p>
               )}
             </div>
 
@@ -264,7 +281,9 @@ export function PetDetailView({ pet, onDeleteSuccess }: PetDetailViewProps) {
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">Sin medicamentos registrados</p>
+                <p className="text-sm text-muted-foreground">
+                  Sin medicamentos registrados
+                </p>
               )}
             </div>
           </CardContent>
@@ -284,7 +303,9 @@ export function PetDetailView({ pet, onDeleteSuccess }: PetDetailViewProps) {
             </div>
 
             <div>
-              <p className="text-sm text-muted-foreground mb-2">Nivel de actividad</p>
+              <p className="text-sm text-muted-foreground mb-2">
+                Nivel de actividad
+              </p>
               <Badge variant="outline">{activityLabel}</Badge>
             </div>
           </div>
