@@ -5,7 +5,7 @@ Este archivo define las instrucciones para agentes de IA trabajando en el proyec
 **Proyecto**: Aplicación web de gestión alimentaria para mascotas
 **Stack**: Next.js 14+ (App Router), TypeScript, PostgreSQL nativo, Tailwind CSS, shadcn/ui
 **Deploy**: PM2 en servidor propio (NO Vercel, NO Supabase)
-**Repositorio**: `Kavalieri/PetSiKness` (futuro)
+**Repositorio**: https://github.com/Kavalieri/PetSiKness
 **Ubicación**: `/home/kava/workspace/proyectos/PetSiKness/repo`
 
 ---
@@ -63,7 +63,9 @@ Cuando trabajes en una carpeta específica, **las instrucciones de su AGENTS.md 
 ## 🐾 Dominio del Proyecto: Pet Food Tracking
 
 ### Propósito
+
 Sistema de gestión alimentaria para mascotas que permite:
+
 - Registrar perfiles de mascotas con objetivos nutricionales
 - Mantener catálogo de alimentos con información nutricional
 - Llevar diario de alimentación con cantidades exactas
@@ -73,11 +75,13 @@ Sistema de gestión alimentaria para mascotas que permite:
 ### Conceptos Clave
 
 **Household (Hogar)**: Familia de mascotas
+
 - Grupo de usuarios que comparten mascotas
 - Un usuario puede pertenecer a UN solo household
 - Roles: `owner` (creador) y `member` (invitado)
 
 **Pet (Mascota)**: Perfil individual de mascota
+
 - Información física: especie, raza, peso, condición corporal
 - Objetivo diario: `daily_food_goal_grams` (cantidad meta)
 - Objetivo de comidas: `daily_meals_target` (frecuencia)
@@ -85,12 +89,14 @@ Sistema de gestión alimentaria para mascotas que permite:
 - Comportamiento: apetito, nivel de actividad
 
 **Food (Alimento)**: Producto del catálogo
+
 - Información nutricional completa (calorías, macros por 100g)
 - Información de producto (marca, ingredientes, precio)
 - Calidad: palatabilidad, digestibilidad
 - Restricciones: especies aptas, rango de edad
 
 **Feeding (Alimentación)**: Registro de comida
+
 - Qué: food_id, pet_id
 - Cuándo: feeding_date, feeding_time, meal_number
 - Cantidades: served (servido), eaten (comido), leftover (sobra)
@@ -98,6 +104,7 @@ Sistema de gestión alimentaria para mascotas que permite:
 - Resultados digestivos: vómito, diarrea, calidad de heces
 
 **Daily Summary (Resumen Diario)**: Vista agregada
+
 - Total comido vs objetivo diario
 - Porcentaje de cumplimiento
 - Status: `under_target`, `met_target`, `over_target`
@@ -111,10 +118,12 @@ Sistema de gestión alimentaria para mascotas que permite:
 ### Usuarios de Base de Datos
 
 1. **`postgres`** (Superusuario PostgreSQL)
+
    - Administración del servidor PostgreSQL
    - Usado con `sudo -u postgres` (sin contraseña)
 
 2. **`pet_user`** ⭐ (Usuario de la aplicación - PRINCIPAL)
+
    - Rol `LOGIN` de mínimos privilegios (NO superuser, NO createdb, NO createrole)
    - Privilegios: `SELECT, INSERT, UPDATE, DELETE` en tablas y `USAGE, SELECT` en secuencias
    - Password: `SiKPets2025Segur0`
@@ -139,12 +148,12 @@ Sistema de gestión alimentaria para mascotas que permite:
 **Para consultas SQL usar la abstracción `query()`:**
 
 ```typescript
-import { query } from '@/lib/db';
+import { query } from "@/lib/db";
 
 // Consulta simple
 const result = await query(
   `SELECT * FROM pets WHERE household_id = $1 ORDER BY name`,
-  [householdId],
+  [householdId]
 );
 
 // result.rows contiene los datos
@@ -166,6 +175,7 @@ const pets = result.rows;
 Los types de base de datos se generan **automáticamente** desde el schema PostgreSQL usando `kysely-codegen`.
 
 **Archivo generado**: `types/database.generated.ts`
+
 - **Líneas**: ~140 (8 tablas + enums)
 - **Formato**: Kysely (interfaces TypeScript)
 - **Source of truth**: Schema PostgreSQL
@@ -182,6 +192,7 @@ npm run types:generate:prod
 ```
 
 **VS Code Tasks disponibles**:
+
 - `🔄 Regenerar Types (DEV)`
 - `🔄 Regenerar Types (PROD)`
 
@@ -189,7 +200,7 @@ npm run types:generate:prod
 
 ```typescript
 // Importar types auto-generados
-import type { Pets, Foods, Feedings } from '@/types/database.generated';
+import type { Pets, Foods, Feedings } from "@/types/database.generated";
 
 // Usar en funciones
 async function getPets(householdId: string): Promise<Pets[]> {
@@ -249,10 +260,12 @@ npm run types:generate:dev
 ### Procesos del Sistema
 
 **Pet SiKness**:
+
 - **DEV**: `petsikness-dev` (puerto 3002)
 - **PROD**: `petsikness-prod` (puerto 3003)
 
 **CuentasSiK** (hermano independiente):
+
 - **DEV**: `cuentassik-dev` (puerto 3001)
 - **PROD**: `cuentassik-prod` (puerto 3000)
 
@@ -310,11 +323,18 @@ Usar helper `lib/result.ts`:
 
 ```typescript
 export type Ok<T = unknown> = { ok: true; data?: T };
-export type Fail = { ok: false; message: string; fieldErrors?: Record<string, string[]> };
+export type Fail = {
+  ok: false;
+  message: string;
+  fieldErrors?: Record<string, string[]>;
+};
 export type Result<T = unknown> = Ok<T> | Fail;
 
 export const ok = <T>(data?: T): Ok<T> => ({ ok: true, data });
-export const fail = (message: string, fieldErrors?: Record<string, string[]>): Fail => ({
+export const fail = (
+  message: string,
+  fieldErrors?: Record<string, string[]>
+): Fail => ({
   ok: false,
   message,
   fieldErrors,
@@ -324,11 +344,11 @@ export const fail = (message: string, fieldErrors?: Record<string, string[]>): F
 **Ejemplo:**
 
 ```typescript
-'use server';
-import { z } from 'zod';
-import { revalidatePath } from 'next/cache';
-import { ok, fail } from '@/lib/result';
-import type { Result } from '@/lib/result';
+"use server";
+import { z } from "zod";
+import { revalidatePath } from "next/cache";
+import { ok, fail } from "@/lib/result";
+import type { Result } from "@/lib/result";
 
 const PetSchema = z.object({
   name: z.string().min(1),
@@ -339,17 +359,18 @@ const PetSchema = z.object({
 export async function createPet(formData: FormData): Promise<Result> {
   const parsed = PetSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
-    return fail('Datos inválidos', parsed.error.flatten().fieldErrors);
+    return fail("Datos inválidos", parsed.error.flatten().fieldErrors);
   }
 
   // Lógica de negocio...
 
-  revalidatePath('/app/pets');
+  revalidatePath("/app/pets");
   return ok();
 }
 ```
 
 **Reglas:**
+
 - Validación con `zod.safeParse` SIEMPRE
 - Retornar `Promise<Result<T>>` con tipo explícito
 - `revalidatePath()` tras mutaciones exitosas
@@ -360,23 +381,29 @@ export async function createPet(formData: FormData): Promise<Result> {
 ## ✅ Checklist al Implementar Nueva Funcionalidad
 
 1. **Contexto de usuario**
+
    - Obtén el hogar activo con `getUserHouseholdId()`
 
 2. **Alcance de datos**
+
    - Filtra todas las consultas por `household_id`
 
 3. **Validación y resultado**
+
    - Valida inputs con Zod en Server Actions
    - Devuelve un `Result` consistente (`ok` / `fail`)
 
 4. **Cambios de base de datos**
+
    - Si hay cambios de estructura, crea una migración en `database/migrations/`
    - Regenera types con `npm run types:generate:dev`
 
 5. **Efectos secundarios de caché/rutas**
+
    - Tras mutaciones, ejecuta `revalidatePath()` en las rutas afectadas
 
 6. **Calidad del código**
+
    - Mantén `typecheck` en verde: `npm run typecheck`
    - NO hagas build de producción salvo petición explícita
 
@@ -399,7 +426,8 @@ export async function createPet(formData: FormData): Promise<Result> {
 
 ## 📚 Referencias Clave
 
-- **Setup completo**: [/SETUP_COMPLETADO.md](SETUP_COMPLETADO.md)
+- **Setup completo**: [docs/ESTADO_PROYECTO.md](docs/ESTADO_PROYECTO.md)
+- **Plan Fase 2**: [docs/FASE_2_PLAN.md](docs/FASE_2_PLAN.md)
 - **Schema de BD**: [database/README.md](database/README.md)
 - **Tasks VSCode**: [.vscode/tasks.json](.vscode/tasks.json)
 - **Proyecto hermano**: CuentasSiK en `/home/kava/workspace/proyectos/CuentasSiK/repo`
@@ -409,6 +437,7 @@ export async function createPet(formData: FormData): Promise<Result> {
 ## 🎯 Roadmap de Desarrollo
 
 ### Fase 1: Setup Base ✅ COMPLETADO
+
 - [x] PostgreSQL setup (roles, bases de datos, permisos)
 - [x] Schema baseline (7 tablas + 1 vista)
 - [x] Configuración Next.js
@@ -418,6 +447,7 @@ export async function createPet(formData: FormData): Promise<Result> {
 - [x] Servidor DEV funcional
 
 ### Fase 2: CRUD Mascotas 📋 PENDIENTE
+
 - [ ] Listado de mascotas (`/app/pets/page.tsx`)
 - [ ] Formulario crear/editar mascota
 - [ ] Vista detalle mascota
@@ -425,6 +455,7 @@ export async function createPet(formData: FormData): Promise<Result> {
 - [ ] Validación con Zod
 
 ### Fase 3: CRUD Alimentos 📋 PENDIENTE
+
 - [ ] Catálogo de alimentos (`/app/foods/page.tsx`)
 - [ ] Formulario crear/editar alimento
 - [ ] Vista detalle alimento con info nutricional
@@ -432,6 +463,7 @@ export async function createPet(formData: FormData): Promise<Result> {
 - [ ] Server actions
 
 ### Fase 4: Calendario de Alimentación 📋 PENDIENTE
+
 - [ ] Vista diaria de alimentaciones (`/app/feeding/page.tsx`)
 - [ ] Formulario registro de comida
 - [ ] Cálculo de balance (comido vs objetivo)
@@ -439,6 +471,7 @@ export async function createPet(formData: FormData): Promise<Result> {
 - [ ] Filtros por mascota, fecha, alimento
 
 ### Fase 5: Dashboard y Analytics 📋 PENDIENTE
+
 - [ ] Dashboard principal (`/app/dashboard/page.tsx`)
 - [ ] Cards de resumen por mascota
 - [ ] Gráficos de tendencias (semana/mes)
@@ -446,6 +479,7 @@ export async function createPet(formData: FormData): Promise<Result> {
 - [ ] Actividad reciente
 
 ### Fase 6: Deployment 📋 PENDIENTE
+
 - [ ] Configurar nginx para petsikness.com
 - [ ] SSL certificate
 - [ ] Build producción

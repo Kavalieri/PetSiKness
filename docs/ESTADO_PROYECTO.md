@@ -12,6 +12,7 @@
 ### 🗄️ Base de Datos
 
 **PostgreSQL 15.14** configurado con:
+
 - ✅ Roles: `postgres` (admin), `pet_owner` (DDL), `pet_user` (app)
 - ✅ Bases de datos: `pet_sikness_dev`, `pet_sikness_prod`
 - ✅ Schema v1.0.0: 7 tablas + 1 vista + 5 triggers
@@ -19,6 +20,7 @@
 - ✅ Types auto-generados con kysely-codegen
 
 **Tablas**:
+
 - `profiles` - Usuarios (OAuth)
 - `households` - Hogares/Familias
 - `household_members` - Membresía
@@ -28,11 +30,13 @@
 - `_migrations` - Control de migraciones
 
 **Vista**:
+
 - `daily_feeding_summary` - Resumen diario agregado
 
 ### 🚀 Aplicación Next.js
 
 **Stack**:
+
 - Next.js 14.2 (App Router)
 - TypeScript 5.4 (strict mode)
 - React 18.3
@@ -41,6 +45,7 @@
 - NextAuth 4.24 (Google OAuth)
 
 **Configuración**:
+
 - ✅ PM2 ecosystem (puertos 3002 DEV, 3003 PROD)
 - ✅ Scripts de gestión en `scripts/PM2_build_and_deploy_and_dev/`
 - ✅ VSCode tasks configuradas (`.vscode/tasks.json`)
@@ -48,6 +53,7 @@
 - ✅ .gitignore protegiendo datos sensibles
 
 **Helpers**:
+
 - ✅ `lib/db.ts` - PostgreSQL connection pool
 - ✅ `lib/auth.ts` - Auth helpers (requireHousehold, getUserHouseholdId)
 - ✅ `lib/result.ts` - Result<T> pattern (ok/fail)
@@ -55,6 +61,7 @@
 ### 📚 Documentación
 
 **13 archivos** (~4,100 líneas):
+
 - ✅ `AGENTS.md` (nested) - Instrucciones por directorio
 - ✅ `README.md` - User-facing docs
 - ✅ `.github/copilot-instructions.md` - GitHub Copilot
@@ -87,6 +94,7 @@
 **Objetivo**: Gestión completa de perfiles de mascotas
 
 **Entregables**:
+
 1. Server Actions para CRUD (`app/pets/actions.ts`)
 2. Componentes UI:
    - PetCard, PetList, PetForm
@@ -108,6 +116,7 @@
 ### Fase 3: CRUD Alimentos
 
 **Entregables**:
+
 - Catálogo de alimentos con info nutricional
 - Búsqueda y filtros
 - Similar a Fase 2 pero para `foods`
@@ -119,6 +128,7 @@
 ### Fase 4: Calendario de Alimentación
 
 **Entregables**:
+
 - Registro de comidas diarias
 - Cálculo de balance (eaten vs goal)
 - Indicadores visuales por mascota
@@ -131,6 +141,7 @@
 ### Fase 5: Dashboard y Analytics
 
 **Entregables**:
+
 - Dashboard con resumen general
 - Gráficos de tendencias
 - Alertas de balance negativo
@@ -143,6 +154,7 @@
 ### Fase 6: Production Deployment
 
 **Entregables**:
+
 - nginx configurado
 - SSL certificate
 - Dominio petsikness.com
@@ -217,17 +229,20 @@ git push origin main
 ## 📊 Estadísticas del Proyecto
 
 **Código**:
+
 - 32 archivos TypeScript/React
 - ~3,500 líneas de código
 - 7 tablas + 1 vista SQL
 - ~140 líneas de types auto-generados
 
 **Documentación**:
+
 - 13 archivos de documentación
 - ~4,100 líneas de docs
 - 100% del setup documentado
 
 **Dependencias**:
+
 - 10 dependencias runtime
 - 8 dependencias desarrollo
 - 0 vulnerabilidades conocidas
@@ -259,17 +274,20 @@ git push origin main
 ## 🎓 Recursos Clave
 
 **Documentación Local**:
+
 - `AGENTS.md` - Instrucciones principales
 - `database/README.md` - Base de datos completa
 - `docs/FASE_2_PLAN.md` - Roadmap actual
 - `.github/copilot-instructions.md` - GitHub Copilot
 
 **Código de Referencia**:
+
 - `lib/auth.ts` - Patrones de autenticación
 - `lib/result.ts` - Result<T> pattern
 - `types/database.generated.ts` - Schema types
 
 **Scripts**:
+
 - `scripts/PM2_build_and_deploy_and_dev/` - Gestión PM2
 - `scripts/migrations/generate-types.js` - Type generation
 
@@ -278,27 +296,32 @@ git push origin main
 ## 💻 Accesos y Credenciales
 
 **PostgreSQL DEV**:
+
 - Host: `localhost:5432`
 - Database: `pet_sikness_dev`
 - User: `pet_user`
 - Password: Ver `.env.development.local`
 
 **PostgreSQL PROD**:
+
 - Host: `localhost:5432`
 - Database: `pet_sikness_prod`
 - User: `pet_user`
 - Password: Ver `.env.production.local`
 
 **Aplicación DEV**:
+
 - URL: http://localhost:3002
 - Proceso PM2: `petsikness-dev`
 
 **Aplicación PROD** (futuro):
+
 - URL: https://petsikness.com
 - Proceso PM2: `petsikness-prod`
 - Puerto: 3003
 
 **GitHub**:
+
 - Repo: https://github.com/Kavalieri/PetSiKness
 - Owner: Kavalieri
 - Branch: `main`
@@ -308,15 +331,18 @@ git push origin main
 ## 🚦 Estado de Servicios
 
 **Verificar con**:
+
 ```bash
 ./scripts/PM2_build_and_deploy_and_dev/pm2-status.sh
 ```
 
 **Esperado**:
+
 - ✅ `petsikness-dev` → online (puerto 3002)
 - 🔴 `petsikness-prod` → stopped (no hay build aún)
 
 **Hermanos activos** (CuentasSiK):
+
 - ✅ `cuentassik-dev` → online (puerto 3001)
 - ✅ `cuentassik-prod` → online (puerto 3000)
 

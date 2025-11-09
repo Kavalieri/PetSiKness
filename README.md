@@ -28,7 +28,7 @@ Pet SiKness es una aplicación web moderna para el seguimiento y gestión de la 
 
 ### Requisitos Previos
 
-- Node.js 20+ 
+- Node.js 20+
 - PostgreSQL 15+
 - PM2 (para producción)
 - Cuenta Google OAuth (credenciales configuradas)
@@ -36,9 +36,9 @@ Pet SiKness es una aplicación web moderna para el seguimiento y gestión de la 
 ### Instalación
 
 ```bash
-# Clonar repositorio (cuando esté en GitHub)
+# Clonar repositorio
 git clone https://github.com/Kavalieri/PetSiKness.git
-cd PetSiKness/repo
+cd PetSiKness
 
 # Instalar dependencias
 npm install
@@ -157,27 +157,33 @@ repo/
 ### Entidades Principales
 
 **Profiles** → Usuarios del sistema (OAuth)
+
 - auth_id, email, display_name, avatar_url
 
 **Households** → Familias de mascotas
+
 - name, created_by
 
 **Household Members** → Membresía en hogares
+
 - role (owner/member)
 
 **Pets** → Perfiles de mascotas
+
 - Información física: species, breed, weight, body_condition
 - Objetivos: daily_food_goal_grams, daily_meals_target
 - Salud: allergies[], medications[], health_notes
 - Comportamiento: appetite, activity_level
 
 **Foods** → Catálogo de alimentos
+
 - Nutrición: calories_per_100g, protein%, fat%, carbs%, fiber%, moisture%
 - Producto: brand, ingredients, serving_size, price
 - Calidad: palatability, digestibility
 - Restricciones: suitable_for_species[], age_range
 
 **Feedings** → Registros de alimentación
+
 - Qué: pet_id, food_id
 - Cuándo: feeding_date, feeding_time, meal_number
 - Cantidades: served_grams, eaten_grams, leftover_grams
@@ -185,6 +191,7 @@ repo/
 - Resultados: vomited, had_diarrhea, stool_quality
 
 **Daily Feeding Summary** (Vista) → Resumen agregado
+
 - total_eaten vs daily_goal
 - goal_achievement_pct
 - under/met/over_target status
@@ -206,17 +213,20 @@ household_members ←→ households
 ## 🔐 Seguridad
 
 ### Autenticación
+
 - Google OAuth 2.0 vía NextAuth
 - Sessions JWT con 30 días de expiración
 - Auto-creación de perfiles en primer login
 
 ### Base de Datos
+
 - Roles PostgreSQL con mínimos privilegios
 - Usuario de aplicación sin permisos DDL
 - Queries parametrizadas (protección SQL injection)
 - Conexión sin contraseña vía ~/.pgpass
 
 ### Autorización
+
 - Filtrado obligatorio por `household_id`
 - Verificación de membresía en Server Actions
 - RLS (Row Level Security) preparado para futuro
@@ -226,6 +236,7 @@ household_members ←→ households
 ## 📝 Scripts Disponibles
 
 ### Desarrollo
+
 ```bash
 npm run dev           # Servidor DEV (puerto 3002)
 npm run typecheck     # Verificar tipos TypeScript
@@ -233,18 +244,21 @@ npm run lint          # ESLint
 ```
 
 ### Types
+
 ```bash
 npm run types:generate:dev   # Generar types desde DEV DB
 npm run types:generate:prod  # Generar types desde PROD DB
 ```
 
 ### Producción
+
 ```bash
 npm run build         # Build para producción
 npm start             # Servidor PROD (puerto 3003)
 ```
 
 ### PM2 (Scripts Bash)
+
 ```bash
 ./scripts/PM2_build_and_deploy_and_dev/pm2-dev-start.sh   # Iniciar DEV
 ./scripts/PM2_build_and_deploy_and_dev/pm2-dev-stop.sh    # Detener DEV
@@ -273,6 +287,7 @@ npm run test:coverage # Cobertura de tests
 ### Variables de Entorno Requeridas
 
 **Desarrollo** (`.env.development.local`):
+
 ```bash
 DATABASE_URL="postgresql://pet_user:PASSWORD@localhost:5432/pet_sikness_dev"
 GOOGLE_CLIENT_ID="..."
@@ -284,6 +299,7 @@ NODE_ENV=development
 ```
 
 **Producción** (`.env.production.local`):
+
 ```bash
 DATABASE_URL="postgresql://pet_user:PASSWORD@localhost:5432/pet_sikness_prod"
 GOOGLE_CLIENT_ID="..."
@@ -307,10 +323,12 @@ NODE_ENV=production
 ## 📚 Documentación
 
 - **[AGENTS.md](AGENTS.md)**: Instrucciones para agentes IA
-- **[SETUP_COMPLETADO.md](../SETUP_COMPLETADO.md)**: Documentación de setup completo
+- **[docs/ESTADO_PROYECTO.md](docs/ESTADO_PROYECTO.md)**: Estado actual y roadmap
+- **[docs/FASE_2_PLAN.md](docs/FASE_2_PLAN.md)**: Plan detallado CRUD Mascotas
 - **[database/README.md](database/README.md)**: Documentación de base de datos
 - **[app/AGENTS.md](app/AGENTS.md)**: Patrones de componentes Next.js
 - **[.vscode/tasks.json](.vscode/tasks.json)**: Tareas de VSCode disponibles
+- **[.github/copilot-instructions.md](.github/copilot-instructions.md)**: GitHub Copilot setup
 
 ---
 
@@ -319,6 +337,7 @@ NODE_ENV=production
 **Estado**: Proyecto en desarrollo inicial (v1.0.0)
 
 Cuando esté listo para contribuciones:
+
 1. Fork del repositorio
 2. Crear rama feature (`git checkout -b feature/AmazingFeature`)
 3. Commit cambios (`git commit -m 'feat: add amazing feature'`)
@@ -367,10 +386,10 @@ MIT License - ver archivo [LICENSE](LICENSE) para detalles
 ## 📞 Contacto
 
 **Proyecto**: Pet SiKness
+**Repositorio**: [https://github.com/Kavalieri/PetSiKness](https://github.com/Kavalieri/PetSiKness)
 **Website**: https://petsikness.com (futuro)
-**Repositorio**: https://github.com/Kavalieri/PetSiKness (futuro)
 
 ---
 
 **Última actualización**: 9 de Noviembre de 2025 - v1.0.0
-**Estado**: ✅ Setup completado, listo para desarrollo de features
+**Estado**: ✅ Setup completado, repositorio sincronizado, listo para desarrollo Fase 2
