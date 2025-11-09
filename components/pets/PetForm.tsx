@@ -59,6 +59,7 @@ interface PetFormProps {
 /**
  * Convertir Pet (Kysely types) a datos de formulario
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function convertPetToFormData(pet: Pet): any {
   return {
     name: pet.name,
