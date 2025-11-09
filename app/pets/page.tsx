@@ -1,14 +1,14 @@
-import Link from 'next/link';
-import { requireHousehold } from '@/lib/auth';
-import { Button } from '@/components/ui/button';
-import { PetList } from '@/components/pets/PetList';
+import Link from "next/link";
+import { requireHousehold } from "@/lib/auth";
+import { Button } from "@/components/ui/button";
+import { PetList } from "@/components/pets/PetList";
 
 /**
  * Página principal de listado de mascotas
- * 
+ *
  * Muestra todas las mascotas del hogar actual con opción de añadir nueva.
  * Requiere autenticación y membresía en un hogar.
- * 
+ *
  * @route /pets
  */
 export default async function PetsPage() {
