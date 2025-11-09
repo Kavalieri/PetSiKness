@@ -1,12 +1,18 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import type { Pet, PetFormData } from '@/types/pets';
-import { PetFormSchema, SPECIES, GENDER, APPETITE, ACTIVITY_LEVEL } from '@/types/pets';
-import { createPet, updatePet } from '@/app/pets/actions';
-import { useToast } from '@/hooks/use-toast';
+import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import type { Pet, PetFormData } from "@/types/pets";
+import {
+  PetFormSchema,
+  SPECIES,
+  GENDER,
+  APPETITE,
+  ACTIVITY_LEVEL,
+} from "@/types/pets";
+import { createPet, updatePet } from "@/app/pets/actions";
+import { useToast } from "@/hooks/use-toast";
 import {
   SPECIES_OPTIONS,
   GENDER_OPTIONS,
@@ -14,7 +20,7 @@ import {
   APPETITE_OPTIONS,
   ACTIVITY_LEVEL_OPTIONS,
   getBreedsBySpecies,
-} from '@/lib/constants/pets';
+} from "@/lib/constants/pets";
 import {
   Form,
   FormControl,
@@ -22,19 +28,19 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
-import { Loader2 } from 'lucide-react';
+} from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { Loader2 } from "lucide-react";
 
 // ============================================
 // TYPES
@@ -58,12 +64,16 @@ function convertPetToFormData(pet: Pet): any {
     name: pet.name,
     species: pet.species as string,
     breed: pet.breed || undefined,
-    birth_date: pet.birth_date ? new Date(pet.birth_date as unknown as Date).toISOString().split('T')[0] : undefined,
+    birth_date: pet.birth_date
+      ? new Date(pet.birth_date as unknown as Date).toISOString().split("T")[0]
+      : undefined,
     gender: (pet.gender as string) || GENDER.UNKNOWN,
     weight_kg: pet.weight_kg ? Number(pet.weight_kg) : undefined,
     body_condition: (pet.body_condition as string) || undefined,
     daily_food_goal_grams: Number(pet.daily_food_goal_grams),
-    daily_meals_target: pet.daily_meals_target ? Number(pet.daily_meals_target) : 2,
+    daily_meals_target: pet.daily_meals_target
+      ? Number(pet.daily_meals_target)
+      : 2,
     health_notes: pet.health_notes || undefined,
     allergies: pet.allergies || [],
     medications: pet.medications || [],
@@ -79,32 +89,38 @@ function convertToFormData(data: PetFormData): FormData {
   const formData = new FormData();
 
   // Básicos
-  formData.append('name', data.name);
-  formData.append('species', data.species);
-  if (data.breed) formData.append('breed', data.breed);
-  if (data.birth_date) formData.append('birth_date', data.birth_date);
-  formData.append('gender', data.gender);
+  formData.append("name", data.name);
+  formData.append("species", data.species);
+  if (data.breed) formData.append("breed", data.breed);
+  if (data.birth_date) formData.append("birth_date", data.birth_date);
+  formData.append("gender", data.gender);
 
   // Físico
-  if (data.weight_kg != null) formData.append('weight_kg', data.weight_kg.toString());
-  if (data.body_condition) formData.append('body_condition', data.body_condition);
+  if (data.weight_kg != null)
+    formData.append("weight_kg", data.weight_kg.toString());
+  if (data.body_condition)
+    formData.append("body_condition", data.body_condition);
 
   // Nutrición
-  formData.append('daily_food_goal_grams', data.daily_food_goal_grams.toString());
-  formData.append('daily_meals_target', data.daily_meals_target.toString());
+  formData.append(
+    "daily_food_goal_grams",
+    data.daily_food_goal_grams.toString()
+  );
+  formData.append("daily_meals_target", data.daily_meals_target.toString());
 
   // Salud
-  if (data.health_notes) formData.append('health_notes', data.health_notes);
+  if (data.health_notes) formData.append("health_notes", data.health_notes);
   if (data.allergies && data.allergies.length > 0) {
-    formData.append('allergies', JSON.stringify(data.allergies));
+    formData.append("allergies", JSON.stringify(data.allergies));
   }
   if (data.medications && data.medications.length > 0) {
-    formData.append('medications', JSON.stringify(data.medications));
+    formData.append("medications", JSON.stringify(data.medications));
   }
 
   // Comportamiento
-  if (data.appetite) formData.append('appetite', data.appetite);
-  if (data.activity_level) formData.append('activity_level', data.activity_level);
+  if (data.appetite) formData.append("appetite", data.appetite);
+  if (data.activity_level)
+    formData.append("activity_level", data.activity_level);
 
   return formData;
 }
@@ -122,7 +138,7 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
 
   // Valores por defecto
   const defaultValues: Partial<PetFormData> = {
-    name: '',
+    name: "",
     species: SPECIES.DOG,
     breed: undefined,
     birth_date: undefined,
@@ -144,7 +160,7 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
   });
 
   // Actualizar breeds cuando species cambia
-  const selectedSpecies = form.watch('species');
+  const selectedSpecies = form.watch("species");
 
   useEffect(() => {
     if (selectedSpecies) {
@@ -152,9 +168,9 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
       setBreeds([...availableBreeds]); // Convertir readonly a mutable
 
       // Si la raza actual no está en la lista, limpiarla
-      const currentBreed = form.getValues('breed');
+      const currentBreed = form.getValues("breed");
       if (currentBreed && !availableBreeds.includes(currentBreed)) {
-        form.setValue('breed', undefined);
+        form.setValue("breed", undefined);
       }
     }
   }, [selectedSpecies, form]);
@@ -171,24 +187,24 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
 
       if (result.ok) {
         toast({
-          title: isEditing ? 'Mascota actualizada' : 'Mascota creada',
+          title: isEditing ? "Mascota actualizada" : "Mascota creada",
           description: isEditing
-            ? 'Los cambios se han guardado correctamente.'
-            : 'La mascota ha sido registrada exitosamente.',
+            ? "Los cambios se han guardado correctamente."
+            : "La mascota ha sido registrada exitosamente.",
         });
         onSuccess?.();
       } else {
         toast({
-          title: 'Error',
+          title: "Error",
           description: result.message,
-          variant: 'destructive',
+          variant: "destructive",
         });
 
         // Setear errores de campos si existen
         if (result.fieldErrors) {
           Object.entries(result.fieldErrors).forEach(([field, errors]) => {
             form.setError(field as keyof PetFormData, {
-              type: 'server',
+              type: "server",
               message: errors[0],
             });
           });
@@ -196,9 +212,9 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
       }
     } catch {
       toast({
-        title: 'Error inesperado',
-        description: 'Ocurrió un error al guardar la mascota.',
-        variant: 'destructive',
+        title: "Error inesperado",
+        description: "Ocurrió un error al guardar la mascota.",
+        variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
@@ -212,7 +228,9 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
         <div className="space-y-4">
           <div>
             <h3 className="text-lg font-semibold">Información Básica</h3>
-            <p className="text-sm text-muted-foreground">Datos principales de la mascota</p>
+            <p className="text-sm text-muted-foreground">
+              Datos principales de la mascota
+            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -264,7 +282,10 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Raza</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value || ''}>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value || ""}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Selecciona una raza" />
@@ -291,7 +312,7 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
                 <FormItem>
                   <FormLabel>Fecha de Nacimiento</FormLabel>
                   <FormControl>
-                    <Input type="date" {...field} value={field.value || ''} />
+                    <Input type="date" {...field} value={field.value || ""} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -332,7 +353,9 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
         <div className="space-y-4">
           <div>
             <h3 className="text-lg font-semibold">Información Física</h3>
-            <p className="text-sm text-muted-foreground">Peso y condición corporal</p>
+            <p className="text-sm text-muted-foreground">
+              Peso y condición corporal
+            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -349,10 +372,12 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
                       step="0.01"
                       placeholder="5.50"
                       {...field}
-                      value={field.value ?? ''}
+                      value={field.value ?? ""}
                       onChange={(e) => {
                         const value = e.target.value;
-                        field.onChange(value === '' ? undefined : parseFloat(value));
+                        field.onChange(
+                          value === "" ? undefined : parseFloat(value)
+                        );
                       }}
                     />
                   </FormControl>
@@ -368,7 +393,10 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Condición Corporal</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value || ''}>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value || ""}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Selecciona una condición" />
@@ -395,7 +423,9 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
         <div className="space-y-4">
           <div>
             <h3 className="text-lg font-semibold">Objetivos Nutricionales</h3>
-            <p className="text-sm text-muted-foreground">Meta diaria de alimentación</p>
+            <p className="text-sm text-muted-foreground">
+              Meta diaria de alimentación
+            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -411,7 +441,9 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
                       type="number"
                       placeholder="200"
                       {...field}
-                      onChange={(e) => field.onChange(parseInt(e.target.value, 10))}
+                      onChange={(e) =>
+                        field.onChange(parseInt(e.target.value, 10))
+                      }
                     />
                   </FormControl>
                   <FormMessage />
@@ -431,7 +463,9 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
                       type="number"
                       placeholder="2"
                       {...field}
-                      onChange={(e) => field.onChange(parseInt(e.target.value, 10))}
+                      onChange={(e) =>
+                        field.onChange(parseInt(e.target.value, 10))
+                      }
                     />
                   </FormControl>
                   <FormMessage />
@@ -447,7 +481,9 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
         <div className="space-y-4">
           <div>
             <h3 className="text-lg font-semibold">Salud</h3>
-            <p className="text-sm text-muted-foreground">Notas médicas y condiciones especiales</p>
+            <p className="text-sm text-muted-foreground">
+              Notas médicas y condiciones especiales
+            </p>
           </div>
 
           <div className="space-y-4">
@@ -462,7 +498,7 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
                     <Textarea
                       placeholder="Observaciones médicas, condiciones especiales..."
                       {...field}
-                      value={field.value || ''}
+                      value={field.value || ""}
                     />
                   </FormControl>
                   <FormMessage />
@@ -480,12 +516,15 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
                   <FormControl>
                     <Input
                       placeholder="Separa con comas: pollo, trigo, soja"
-                      value={field.value?.join(', ') || ''}
+                      value={field.value?.join(", ") || ""}
                       onChange={(e) => {
                         const value = e.target.value;
                         field.onChange(
                           value
-                            ? value.split(',').map((s) => s.trim()).filter(Boolean)
+                            ? value
+                                .split(",")
+                                .map((s) => s.trim())
+                                .filter(Boolean)
                             : []
                         );
                       }}
@@ -506,12 +545,15 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
                   <FormControl>
                     <Input
                       placeholder="Separa con comas: antihistamínico, suplemento..."
-                      value={field.value?.join(', ') || ''}
+                      value={field.value?.join(", ") || ""}
                       onChange={(e) => {
                         const value = e.target.value;
                         field.onChange(
                           value
-                            ? value.split(',').map((s) => s.trim()).filter(Boolean)
+                            ? value
+                                .split(",")
+                                .map((s) => s.trim())
+                                .filter(Boolean)
                             : []
                         );
                       }}
@@ -530,7 +572,9 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
         <div className="space-y-4">
           <div>
             <h3 className="text-lg font-semibold">Comportamiento</h3>
-            <p className="text-sm text-muted-foreground">Apetito y nivel de actividad</p>
+            <p className="text-sm text-muted-foreground">
+              Apetito y nivel de actividad
+            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -541,7 +585,10 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Apetito</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value || ''}>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value || ""}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Selecciona nivel de apetito" />
@@ -567,7 +614,10 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Nivel de Actividad</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value || ''}>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value || ""}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Selecciona nivel de actividad" />
@@ -591,14 +641,19 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
         {/* Botones de acción */}
         <div className="flex gap-4 justify-end">
           {onCancel && (
-            <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+              disabled={isSubmitting}
+            >
               Cancelar
             </Button>
           )}
 
           <Button type="submit" disabled={isSubmitting}>
             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {isEditing ? 'Guardar Cambios' : 'Crear Mascota'}
+            {isEditing ? "Guardar Cambios" : "Crear Mascota"}
           </Button>
         </div>
       </form>
