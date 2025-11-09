@@ -5,13 +5,13 @@ import { PetDetailView } from "@/components/pets/PetDetailView";
 
 /**
  * Página de detalle de mascota
- * 
+ *
  * Server Component que:
  * - Valida autenticación y household
  * - Fetch mascota por ID con validación de pertenencia
  * - Retorna 404 si no existe o no pertenece al household
  * - Muestra vista completa con PetDetailView
- * 
+ *
  * @route /pets/[id]
  */
 export default async function PetDetailPage({
