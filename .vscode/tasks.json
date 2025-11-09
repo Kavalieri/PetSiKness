@@ -1,0 +1,44 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "🟢 DEV: Iniciar",
+      "type": "shell",
+      "command": "./scripts/PM2_build_and_deploy_and_dev/pm2-dev-start.sh",
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "🔴 DEV: Detener",
+      "type": "shell",
+      "command": "./scripts/PM2_build_and_deploy_and_dev/pm2-dev-stop.sh",
+      "group": "build"
+    },
+    {
+      "label": "📊 Estado PM2",
+      "type": "shell",
+      "command": "./scripts/PM2_build_and_deploy_and_dev/pm2-status.sh",
+      "group": "build"
+    },
+    {
+      "label": "📋 DEV: Ver Logs (últimas 50 líneas)",
+      "type": "shell",
+      "command": "pm2",
+      "args": ["logs", "petsikness-dev", "--lines", "50", "--nostream"],
+      "group": "build"
+    },
+    {
+      "label": "🚀 DEV: Consola en Tiempo Real",
+      "type": "shell",
+      "command": "pm2",
+      "args": ["logs", "petsikness-dev", "--timestamp"],
+      "isBackground": true,
+      "group": "build"
+    }
+  ]
+}
