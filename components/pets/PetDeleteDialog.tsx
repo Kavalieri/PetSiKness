@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { AlertTriangle, Loader2 } from 'lucide-react';
+import React, { useState } from "react";
+import { AlertTriangle, Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -9,11 +9,11 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { deletePet } from '@/app/pets/actions';
-import { useToast } from '@/hooks/use-toast';
-import type { Pets } from '@/types/database.generated';
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { deletePet } from "@/app/pets/actions";
+import { useToast } from "@/hooks/use-toast";
+import type { Pets } from "@/types/database.generated";
 
 /**
  * Props para el componente PetDeleteDialog
@@ -31,10 +31,10 @@ interface PetDeleteDialogProps {
 
 /**
  * Dialog de confirmación para eliminar una mascota
- * 
+ *
  * Muestra advertencias claras y requiere confirmación explícita.
  * Integrado con Server Action deletePet() y toast notifications.
- * 
+ *
  * @example
  * ```tsx
  * <PetDeleteDialog
@@ -66,7 +66,7 @@ export function PetDeleteDialog({
       if (result.ok) {
         // Éxito: mostrar toast, cerrar dialog y ejecutar callback
         toast({
-          title: 'Mascota eliminada',
+          title: "Mascota eliminada",
           description: `${pet.name} ha sido eliminado correctamente.`,
         });
 
@@ -80,19 +80,19 @@ export function PetDeleteDialog({
       } else {
         // Error: mostrar mensaje de error
         toast({
-          title: 'Error al eliminar',
-          description: result.message || 'No se pudo eliminar la mascota.',
-          variant: 'destructive',
+          title: "Error al eliminar",
+          description: result.message || "No se pudo eliminar la mascota.",
+          variant: "destructive",
         });
       }
     } catch (error) {
       // Error inesperado
       toast({
-        title: 'Error inesperado',
-        description: 'Ocurrió un error al intentar eliminar la mascota.',
-        variant: 'destructive',
+        title: "Error inesperado",
+        description: "Ocurrió un error al intentar eliminar la mascota.",
+        variant: "destructive",
       });
-      console.error('Error deleting pet:', error);
+      console.error("Error deleting pet:", error);
     } finally {
       setIsDeleting(false);
     }
@@ -133,7 +133,7 @@ export function PetDeleteDialog({
             disabled={isDeleting}
           >
             {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {isDeleting ? 'Eliminando...' : 'Eliminar'}
+            {isDeleting ? "Eliminando..." : "Eliminar"}
           </Button>
         </DialogFooter>
       </DialogContent>
