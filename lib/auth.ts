@@ -1,6 +1,6 @@
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import { query } from './db';
+import { getServerSession } from "next-auth";
+import { authOptions } from "./auth-options";
+import { query } from "./db";
 
 export async function getCurrentUser() {
   const session = await getServerSession(authOptions);
@@ -13,7 +13,7 @@ export async function getUserHouseholdId(): Promise<string | null> {
 
   const result = await query(
     `SELECT household_id FROM household_members WHERE profile_id = $1 LIMIT 1`,
-    [user.profile_id],
+    [user.profile_id]
   );
 
   return result.rows[0]?.household_id ?? null;
@@ -22,7 +22,7 @@ export async function getUserHouseholdId(): Promise<string | null> {
 export async function requireAuth() {
   const user = await getCurrentUser();
   if (!user) {
-    throw new Error('No autenticado');
+    throw new Error("No autenticado");
   }
   return user;
 }
@@ -30,7 +30,7 @@ export async function requireAuth() {
 export async function requireHousehold() {
   const householdId = await getUserHouseholdId();
   if (!householdId) {
-    throw new Error('No perteneces a ningún hogar');
+    throw new Error("No perteneces a ningún hogar");
   }
   return householdId;
 }

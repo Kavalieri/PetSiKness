@@ -1,4 +1,4 @@
-import { Pool, QueryResult } from 'pg';
+import { Pool, PoolClient, QueryResult } from "pg";
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -9,31 +9,31 @@ const pool = new Pool({
 
 export async function query(
   text: string,
-  params?: unknown[],
+  params?: unknown[]
 ): Promise<QueryResult> {
   const start = Date.now();
   const result = await pool.query(text, params);
   const duration = Date.now() - start;
 
-  if (process.env.NODE_ENV === 'development') {
-    console.log('Query executed:', { text, duration, rows: result.rowCount });
+  if (process.env.NODE_ENV === "development") {
+    console.log("Query executed:", { text, duration, rows: result.rowCount });
   }
 
   return result;
 }
 
 export async function transaction<T>(
-  callback: (client: any) => Promise<T>,
+  callback: (client: PoolClient) => Promise<T>
 ): Promise<T> {
   const client = await pool.connect();
 
   try {
-    await client.query('BEGIN');
+    await client.query("BEGIN");
     const result = await callback(client);
-    await client.query('COMMIT');
+    await client.query("COMMIT");
     return result;
   } catch (error) {
-    await client.query('ROLLBACK');
+    await client.query("ROLLBACK");
     throw error;
   } finally {
     client.release();
