@@ -5,13 +5,13 @@ import { EditPetClient } from "@/components/pets/EditPetClient";
 
 /**
  * Página de edición de mascota
- * 
+ *
  * Server Component que:
  * - Valida autenticación y household
  * - Fetch mascota por ID con validación de pertenencia
  * - Retorna 404 si no existe o no pertenece al household
  * - Pasa mascota pre-cargada a Client Component
- * 
+ *
  * @route /pets/[id]/edit
  */
 export default async function EditPetPage({
