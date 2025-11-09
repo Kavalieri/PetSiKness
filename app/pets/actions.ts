@@ -1,10 +1,10 @@
-'use server';
+"use server";
 
-import { revalidatePath } from 'next/cache';
-import { query } from '@/lib/db';
-import { ok, fail, type Result } from '@/lib/result';
-import { requireHousehold } from '@/lib/auth';
-import { PetFormSchema, PetIdSchema, type Pet } from '@/types/pets';
+import { revalidatePath } from "next/cache";
+import { query } from "@/lib/db";
+import { ok, fail, type Result } from "@/lib/result";
+import { requireHousehold } from "@/lib/auth";
+import { PetFormSchema, PetIdSchema, type Pet } from "@/types/pets";
 
 // ============================================
 // GET PETS - Listar mascotas del hogar
@@ -31,9 +31,9 @@ export async function getPets(): Promise<Result<Pet[]>> {
     // 3. Retornar resultado
     return ok(result.rows as Pet[]);
   } catch (error) {
-    console.error('Error en getPets:', error);
+    console.error("Error en getPets:", error);
     return fail(
-      error instanceof Error ? error.message : 'Error al obtener las mascotas'
+      error instanceof Error ? error.message : "Error al obtener las mascotas"
     );
   }
 }
@@ -53,7 +53,7 @@ export async function getPetById(id: string): Promise<Result<Pet>> {
     // 1. Validar ID
     const idValidation = PetIdSchema.safeParse(id);
     if (!idValidation.success) {
-      return fail('ID de mascota inválido');
+      return fail("ID de mascota inválido");
     }
 
     // 2. Autenticación y obtener household_id
@@ -71,14 +71,14 @@ export async function getPetById(id: string): Promise<Result<Pet>> {
 
     // 4. Verificar que existe
     if (result.rows.length === 0) {
-      return fail('Mascota no encontrada');
+      return fail("Mascota no encontrada");
     }
 
     return ok(result.rows[0] as Pet);
   } catch (error) {
-    console.error('Error en getPetById:', error);
+    console.error("Error en getPetById:", error);
     return fail(
-      error instanceof Error ? error.message : 'Error al obtener la mascota'
+      error instanceof Error ? error.message : "Error al obtener la mascota"
     );
   }
 }
@@ -99,32 +99,37 @@ export async function createPet(formData: FormData): Promise<Result<Pet>> {
 
     // 2. Parsear y validar datos del formulario
     const rawData = {
-      name: formData.get('name'),
-      species: formData.get('species'),
-      breed: formData.get('breed') || null,
-      birth_date: formData.get('birth_date') || null,
-      gender: formData.get('gender') || 'unknown',
-      weight_kg: formData.get('weight_kg') ? Number(formData.get('weight_kg')) : null,
-      body_condition: formData.get('body_condition') || null,
-      daily_food_goal_grams: Number(formData.get('daily_food_goal_grams')),
-      daily_meals_target: formData.get('daily_meals_target') 
-        ? Number(formData.get('daily_meals_target')) 
+      name: formData.get("name"),
+      species: formData.get("species"),
+      breed: formData.get("breed") || null,
+      birth_date: formData.get("birth_date") || null,
+      gender: formData.get("gender") || "unknown",
+      weight_kg: formData.get("weight_kg")
+        ? Number(formData.get("weight_kg"))
+        : null,
+      body_condition: formData.get("body_condition") || null,
+      daily_food_goal_grams: Number(formData.get("daily_food_goal_grams")),
+      daily_meals_target: formData.get("daily_meals_target")
+        ? Number(formData.get("daily_meals_target"))
         : 2,
-      health_notes: formData.get('health_notes') || null,
-      allergies: formData.get('allergies') 
-        ? JSON.parse(formData.get('allergies') as string) 
+      health_notes: formData.get("health_notes") || null,
+      allergies: formData.get("allergies")
+        ? JSON.parse(formData.get("allergies") as string)
         : [],
-      medications: formData.get('medications') 
-        ? JSON.parse(formData.get('medications') as string) 
+      medications: formData.get("medications")
+        ? JSON.parse(formData.get("medications") as string)
         : [],
-      appetite: formData.get('appetite') || 'normal',
-      activity_level: formData.get('activity_level') || 'moderate',
+      appetite: formData.get("appetite") || "normal",
+      activity_level: formData.get("activity_level") || "moderate",
     };
 
     // 3. Validar con Zod
     const validation = PetFormSchema.safeParse(rawData);
     if (!validation.success) {
-      return fail('Datos de mascota inválidos', validation.error.flatten().fieldErrors);
+      return fail(
+        "Datos de mascota inválidos",
+        validation.error.flatten().fieldErrors
+      );
     }
 
     const data = validation.data;
@@ -169,13 +174,13 @@ export async function createPet(formData: FormData): Promise<Result<Pet>> {
     );
 
     // 5. Revalidar rutas
-    revalidatePath('/app/pets');
+    revalidatePath("/app/pets");
 
     return ok(result.rows[0] as Pet);
   } catch (error) {
-    console.error('Error en createPet:', error);
+    console.error("Error en createPet:", error);
     return fail(
-      error instanceof Error ? error.message : 'Error al crear la mascota'
+      error instanceof Error ? error.message : "Error al crear la mascota"
     );
   }
 }
@@ -191,12 +196,15 @@ export async function createPet(formData: FormData): Promise<Result<Pet>> {
  * @param formData - Datos actualizados
  * @returns Result con la mascota actualizada
  */
-export async function updatePet(id: string, formData: FormData): Promise<Result<Pet>> {
+export async function updatePet(
+  id: string,
+  formData: FormData
+): Promise<Result<Pet>> {
   try {
     // 1. Validar ID
     const idValidation = PetIdSchema.safeParse(id);
     if (!idValidation.success) {
-      return fail('ID de mascota inválido');
+      return fail("ID de mascota inválido");
     }
 
     // 2. Autenticación y obtener household_id
@@ -209,37 +217,42 @@ export async function updatePet(id: string, formData: FormData): Promise<Result<
     );
 
     if (existingPet.rows.length === 0) {
-      return fail('Mascota no encontrada');
+      return fail("Mascota no encontrada");
     }
 
     // 4. Parsear y validar datos del formulario
     const rawData = {
-      name: formData.get('name'),
-      species: formData.get('species'),
-      breed: formData.get('breed') || null,
-      birth_date: formData.get('birth_date') || null,
-      gender: formData.get('gender') || 'unknown',
-      weight_kg: formData.get('weight_kg') ? Number(formData.get('weight_kg')) : null,
-      body_condition: formData.get('body_condition') || null,
-      daily_food_goal_grams: Number(formData.get('daily_food_goal_grams')),
-      daily_meals_target: formData.get('daily_meals_target') 
-        ? Number(formData.get('daily_meals_target')) 
+      name: formData.get("name"),
+      species: formData.get("species"),
+      breed: formData.get("breed") || null,
+      birth_date: formData.get("birth_date") || null,
+      gender: formData.get("gender") || "unknown",
+      weight_kg: formData.get("weight_kg")
+        ? Number(formData.get("weight_kg"))
+        : null,
+      body_condition: formData.get("body_condition") || null,
+      daily_food_goal_grams: Number(formData.get("daily_food_goal_grams")),
+      daily_meals_target: formData.get("daily_meals_target")
+        ? Number(formData.get("daily_meals_target"))
         : 2,
-      health_notes: formData.get('health_notes') || null,
-      allergies: formData.get('allergies') 
-        ? JSON.parse(formData.get('allergies') as string) 
+      health_notes: formData.get("health_notes") || null,
+      allergies: formData.get("allergies")
+        ? JSON.parse(formData.get("allergies") as string)
         : [],
-      medications: formData.get('medications') 
-        ? JSON.parse(formData.get('medications') as string) 
+      medications: formData.get("medications")
+        ? JSON.parse(formData.get("medications") as string)
         : [],
-      appetite: formData.get('appetite') || 'normal',
-      activity_level: formData.get('activity_level') || 'moderate',
+      appetite: formData.get("appetite") || "normal",
+      activity_level: formData.get("activity_level") || "moderate",
     };
 
     // 5. Validar con Zod
     const validation = PetFormSchema.safeParse(rawData);
     if (!validation.success) {
-      return fail('Datos de mascota inválidos', validation.error.flatten().fieldErrors);
+      return fail(
+        "Datos de mascota inválidos",
+        validation.error.flatten().fieldErrors
+      );
     }
 
     const data = validation.data;
@@ -285,14 +298,14 @@ export async function updatePet(id: string, formData: FormData): Promise<Result<
     );
 
     // 7. Revalidar rutas
-    revalidatePath('/app/pets');
+    revalidatePath("/app/pets");
     revalidatePath(`/app/pets/${id}`);
 
     return ok(result.rows[0] as Pet);
   } catch (error) {
-    console.error('Error en updatePet:', error);
+    console.error("Error en updatePet:", error);
     return fail(
-      error instanceof Error ? error.message : 'Error al actualizar la mascota'
+      error instanceof Error ? error.message : "Error al actualizar la mascota"
     );
   }
 }
@@ -312,7 +325,7 @@ export async function deletePet(id: string): Promise<Result> {
     // 1. Validar ID
     const idValidation = PetIdSchema.safeParse(id);
     if (!idValidation.success) {
-      return fail('ID de mascota inválido');
+      return fail("ID de mascota inválido");
     }
 
     // 2. Autenticación y obtener household_id
@@ -325,7 +338,7 @@ export async function deletePet(id: string): Promise<Result> {
     );
 
     if (existingPet.rows.length === 0) {
-      return fail('Mascota no encontrada');
+      return fail("Mascota no encontrada");
     }
 
     // 4. Soft delete: marcar como inactiva
@@ -338,13 +351,13 @@ export async function deletePet(id: string): Promise<Result> {
     );
 
     // 5. Revalidar rutas
-    revalidatePath('/app/pets');
+    revalidatePath("/app/pets");
 
     return ok();
   } catch (error) {
-    console.error('Error en deletePet:', error);
+    console.error("Error en deletePet:", error);
     return fail(
-      error instanceof Error ? error.message : 'Error al eliminar la mascota'
+      error instanceof Error ? error.message : "Error al eliminar la mascota"
     );
   }
 }
