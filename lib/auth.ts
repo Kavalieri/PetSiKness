@@ -28,9 +28,20 @@ export async function requireAuth() {
 }
 
 export async function requireHousehold() {
-  const householdId = await getUserHouseholdId();
+  const user = await getCurrentUser();
+  if (!user?.profile_id) {
+    throw new Error("No autenticado");
+  }
+
+  const result = await query(
+    `SELECT household_id FROM household_members WHERE profile_id = $1 LIMIT 1`,
+    [user.profile_id]
+  );
+
+  const householdId = result.rows[0]?.household_id;
   if (!householdId) {
     throw new Error("No perteneces a ningún hogar");
   }
-  return householdId;
+
+  return { householdId, profileId: user.profile_id };
 }

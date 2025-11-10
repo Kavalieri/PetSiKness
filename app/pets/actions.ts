@@ -17,7 +17,7 @@ import { PetFormSchema, PetIdSchema, type Pet } from "@/types/pets";
 export async function getPets(): Promise<Result<Pet[]>> {
   try {
     // 1. Autenticación y obtener household_id
-    const householdId = await requireHousehold();
+    const { householdId } = await requireHousehold();
 
     // 2. Query filtrada por household_id
     const result = await query(
@@ -57,7 +57,7 @@ export async function getPetById(id: string): Promise<Result<Pet>> {
     }
 
     // 2. Autenticación y obtener household_id
-    const householdId = await requireHousehold();
+    const { householdId } = await requireHousehold();
 
     // 3. Query con doble filtro: id + household_id
     const result = await query(
@@ -94,8 +94,8 @@ export async function getPetById(id: string): Promise<Result<Pet>> {
  */
 export async function createPet(formData: FormData): Promise<Result<Pet>> {
   try {
-    // 1. Autenticación y obtener household_id
-    const householdId = await requireHousehold();
+    // 1. Autenticación y obtener household_id y profile_id
+    const { householdId, profileId } = await requireHousehold();
 
     // 2. Parsear y validar datos del formulario
     const rawData = {
@@ -151,8 +151,9 @@ export async function createPet(formData: FormData): Promise<Result<Pet>> {
         allergies,
         medications,
         appetite,
-        activity_level
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+        activity_level,
+        created_by
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
       RETURNING *`,
       [
         householdId,
@@ -170,6 +171,7 @@ export async function createPet(formData: FormData): Promise<Result<Pet>> {
         data.medications,
         data.appetite,
         data.activity_level,
+        profileId,
       ]
     );
 
@@ -208,7 +210,7 @@ export async function updatePet(
     }
 
     // 2. Autenticación y obtener household_id
-    const householdId = await requireHousehold();
+    const { householdId } = await requireHousehold();
 
     // 3. Verificar que la mascota existe y pertenece al hogar
     const existingPet = await query(
@@ -329,7 +331,7 @@ export async function deletePet(id: string): Promise<Result> {
     }
 
     // 2. Autenticación y obtener household_id
-    const householdId = await requireHousehold();
+    const { householdId } = await requireHousehold();
 
     // 3. Verificar que la mascota existe y pertenece al hogar
     const existingPet = await query(

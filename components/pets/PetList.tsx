@@ -46,7 +46,7 @@ export async function PetList() {
         </p>
 
         <Button asChild size="lg">
-          <Link href="/app/pets/new">Añadir primera mascota</Link>
+          <Link href="/pets/new">Añadir primera mascota</Link>
         </Button>
       </div>
     );
