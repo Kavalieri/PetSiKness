@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { Pet, PetFormData } from "@/types/pets";
+import type { Pet, PetFormData, Species } from "@/types/pets";
 import {
   PetFormSchema,
   SPECIES,
@@ -21,6 +21,8 @@ import {
   ACTIVITY_LEVEL_OPTIONS,
   getBreedsBySpecies,
 } from "@/lib/constants/pets";
+import { getDefaultAvatar } from "@/lib/constants/avatars";
+import { AvatarSelector } from "./AvatarSelector";
 import {
   Form,
   FormControl,
@@ -80,6 +82,7 @@ function convertPetToFormData(pet: Pet): any {
     medications: pet.medications || [],
     appetite: (pet.appetite as string) || APPETITE.NORMAL,
     activity_level: (pet.activity_level as string) || ACTIVITY_LEVEL.MODERATE,
+    photo_url: pet.photo_url || undefined,
   };
 }
 
@@ -123,6 +126,9 @@ function convertToFormData(data: PetFormData): FormData {
   if (data.activity_level)
     formData.append("activity_level", data.activity_level);
 
+  // Avatar
+  if (data.photo_url) formData.append("photo_url", data.photo_url);
+
   return formData;
 }
 
@@ -134,6 +140,9 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [breeds, setBreeds] = useState<string[]>([]);
+  const [photoUrl, setPhotoUrl] = useState<string | undefined>(
+    pet?.photo_url || undefined
+  );
 
   const isEditing = !!pet;
 
@@ -173,8 +182,15 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
       if (currentBreed && !availableBreeds.includes(currentBreed)) {
         form.setValue("breed", undefined);
       }
+
+      // Establecer avatar por defecto si no hay mascota (modo crear)
+      if (!pet) {
+        const defaultAvatar = getDefaultAvatar(selectedSpecies as Species);
+        form.setValue("photo_url", defaultAvatar);
+        setPhotoUrl(defaultAvatar);
+      }
     }
-  }, [selectedSpecies, form]);
+  }, [selectedSpecies, form, pet]);
 
   // Submit handler
   async function onSubmit(data: PetFormData) {
@@ -565,6 +581,39 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
               )}
             />
           </div>
+        </div>
+
+        <Separator />
+
+        {/* Avatar */}
+        <div className="space-y-4">
+          <div>
+            <h3 className="text-lg font-semibold">Avatar</h3>
+            <p className="text-sm text-muted-foreground">
+              Selecciona un emoji o sube una foto de tu mascota
+            </p>
+          </div>
+
+          <FormField
+            control={form.control}
+            name="photo_url"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Avatar de la mascota</FormLabel>
+                <FormControl>
+                  <AvatarSelector
+                    species={form.watch("species") as Species}
+                    currentAvatar={field.value}
+                    onAvatarChange={(avatar) => {
+                      field.onChange(avatar);
+                      setPhotoUrl(avatar);
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
 
         <Separator />

@@ -217,6 +217,9 @@ export const PetFormSchema = z.object({
     .optional()
     .nullable()
     .default(ACTIVITY_LEVEL.MODERATE),
+
+  // Avatar
+  photo_url: optionalString,
 });
 
 /**

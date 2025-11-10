@@ -137,6 +137,7 @@ export const CAT_BREEDS = [
   "Siamés",
   "Maine Coon",
   "Bengalí",
+  "Bombay",
   "Británico de pelo corto",
   "Ragdoll",
   "Sphynx",

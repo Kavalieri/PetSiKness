@@ -121,6 +121,7 @@ export async function createPet(formData: FormData): Promise<Result<Pet>> {
         : [],
       appetite: formData.get("appetite") || "normal",
       activity_level: formData.get("activity_level") || "moderate",
+      photo_url: formData.get("photo_url") || null,
     };
 
     // 3. Validar con Zod
@@ -152,8 +153,9 @@ export async function createPet(formData: FormData): Promise<Result<Pet>> {
         medications,
         appetite,
         activity_level,
+        photo_url,
         created_by
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
       RETURNING *`,
       [
         householdId,
@@ -171,6 +173,7 @@ export async function createPet(formData: FormData): Promise<Result<Pet>> {
         data.medications,
         data.appetite,
         data.activity_level,
+        data.photo_url,
         profileId,
       ]
     );
@@ -246,6 +249,7 @@ export async function updatePet(
         : [],
       appetite: formData.get("appetite") || "normal",
       activity_level: formData.get("activity_level") || "moderate",
+      photo_url: formData.get("photo_url") || null,
     };
 
     // 5. Validar con Zod
@@ -276,8 +280,9 @@ export async function updatePet(
         medications = $12,
         appetite = $13,
         activity_level = $14,
+        photo_url = $15,
         updated_at = CURRENT_TIMESTAMP
-      WHERE id = $15 AND household_id = $16
+      WHERE id = $16 AND household_id = $17
       RETURNING *`,
       [
         data.name,
@@ -294,6 +299,7 @@ export async function updatePet(
         data.medications,
         data.appetite,
         data.activity_level,
+        data.photo_url,
         id,
         householdId,
       ]
