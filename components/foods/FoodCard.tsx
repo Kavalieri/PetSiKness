@@ -137,10 +137,11 @@ export function FoodCard({ food, onDelete }: FoodCardProps) {
   // Convertir tipos Kysely a tipos simples
   const foodId = String(food.id);
   const speciesArray = food.suitable_for_species as unknown as string[] | null;
-  
+
   // Solo necesitamos verificar si hay datos nutricionales para el condicional
-  const hasNutritionData = food.calories_per_100g || food.protein_percentage || food.fat_percentage;
-  
+  const hasNutritionData =
+    food.calories_per_100g || food.protein_percentage || food.fat_percentage;
+
   const priceNum = food.price_per_package
     ? Number(food.price_per_package)
     : null;
