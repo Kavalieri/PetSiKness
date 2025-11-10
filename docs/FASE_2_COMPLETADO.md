@@ -26,11 +26,13 @@ La Fase 2 implementó un **sistema CRUD completo** para gestión de mascotas en 
 ## 🎯 Objetivos Cumplidos
 
 ### Objetivo Principal
+
 > Implementar gestión completa de perfiles de mascotas con CRUD funcional, validación robusta y UX fluida.
 
 **Estado**: ✅ **LOGRADO**
 
 ### Objetivos Secundarios
+
 - ✅ Establecer patrones de código reutilizables
 - ✅ Validación de datos con Zod
 - ✅ Seguridad con household filtering
@@ -46,30 +48,31 @@ La Fase 2 implementó un **sistema CRUD completo** para gestión de mascotas en 
 
 **5 acciones con Result pattern:**
 
-| Acción | Propósito | Validación | Household Filtering |
-|--------|-----------|------------|---------------------|
-| `getPets()` | Lista mascotas del hogar | Auth required | ✅ WHERE household_id |
-| `getPetById(id)` | Detalle de mascota | Auth + existence | ✅ WHERE household_id AND id |
-| `createPet(data)` | Crear mascota | Zod schema | ✅ INSERT con household_id |
-| `updatePet(id, data)` | Actualizar mascota | Zod schema | ✅ UPDATE con household_id |
-| `deletePet(id)` | Eliminar mascota | Auth + existence | ✅ DELETE con household_id |
+| Acción                | Propósito                | Validación       | Household Filtering          |
+| --------------------- | ------------------------ | ---------------- | ---------------------------- |
+| `getPets()`           | Lista mascotas del hogar | Auth required    | ✅ WHERE household_id        |
+| `getPetById(id)`      | Detalle de mascota       | Auth + existence | ✅ WHERE household_id AND id |
+| `createPet(data)`     | Crear mascota            | Zod schema       | ✅ INSERT con household_id   |
+| `updatePet(id, data)` | Actualizar mascota       | Zod schema       | ✅ UPDATE con household_id   |
+| `deletePet(id)`       | Eliminar mascota         | Auth + existence | ✅ DELETE con household_id   |
 
 **Patrón consistente**:
+
 ```typescript
 export async function actionName(...): Promise<Result<T>> {
   // 1. Auth gate
   const householdId = await requireHousehold();
-  
+
   // 2. Validación Zod
   const parsed = Schema.safeParse(data);
   if (!parsed.success) return fail(...);
-  
+
   // 3. Query con household_id
   const result = await query(..., [householdId, ...]);
-  
+
   // 4. Revalidación
   revalidatePath('/pets');
-  
+
   // 5. Return Result
   return ok(result.rows[0]);
 }
@@ -80,6 +83,7 @@ export async function actionName(...): Promise<Result<T>> {
 ### 2. Componentes UI (`components/pets/`)
 
 #### **PetCard.tsx** (92 líneas)
+
 - **Propósito**: Card visual de mascota en grids
 - **Props**: `pet: Pet`
 - **Características**:
@@ -90,6 +94,7 @@ export async function actionName(...): Promise<Result<T>> {
   - Icons: lucide-react (Heart, Dog, Cat, Bird, etc.)
 
 **Decisiones de diseño**:
+
 - Emojis para species en avatar fallback
 - Color coding por body_condition (⚠️✅🔴)
 - Botones con variantes (outline, secondary, destructive)
@@ -97,6 +102,7 @@ export async function actionName(...): Promise<Result<T>> {
 ---
 
 #### **PetList.tsx** (67 líneas)
+
 - **Propósito**: Grid de PetCards con empty state
 - **Props**: Ninguna (Server Component auto-fetch)
 - **Características**:
@@ -106,6 +112,7 @@ export async function actionName(...): Promise<Result<T>> {
   - Loader state (futuro)
 
 **Empty State**:
+
 ```tsx
 <PawPrint className="w-16 h-16 text-gray-300" />
 <p>No hay mascotas registradas aún</p>
@@ -117,6 +124,7 @@ export async function actionName(...): Promise<Result<T>> {
 ---
 
 #### **PetForm.tsx** (663 líneas)
+
 - **Propósito**: Formulario create/edit unificado
 - **Props**: `pet?: Pet`, `onSuccess?`, `onCancel?`
 - **Características**:
@@ -129,6 +137,7 @@ export async function actionName(...): Promise<Result<T>> {
   - Type conversions para Kysely ColumnType
 
 **Secciones**:
+
 1. **Básica**: name, species, breed, birth_date, gender
 2. **Física**: weight_kg, body_condition
 3. **Nutricional**: daily_food_goal_grams, daily_meals_target
@@ -136,11 +145,13 @@ export async function actionName(...): Promise<Result<T>> {
 5. **Comportamiento**: appetite, activity_level
 
 **Validación Zod**:
+
 ```typescript
 const PetFormSchema = z.object({
   name: z.string().min(1, "Nombre requerido").max(100),
   species: z.enum([...SPECIES_VALUES]),
-  daily_food_goal_grams: z.number()
+  daily_food_goal_grams: z
+    .number()
     .positive("Debe ser mayor a 0")
     .int("Debe ser entero"),
   // ... 10 campos más
@@ -150,6 +161,7 @@ const PetFormSchema = z.object({
 ---
 
 #### **PetDeleteDialog.tsx** (77 líneas)
+
 - **Propósito**: Dialog de confirmación para eliminar
 - **Props**: `petId: string`, `petName: string`, `onSuccess?`
 - **Características**:
@@ -161,6 +173,7 @@ const PetFormSchema = z.object({
   - Revalidación automática
 
 **Flujo**:
+
 1. Usuario hace clic "Eliminar" → Dialog abierto
 2. Confirma → `deletePet()` ejecutado
 3. Loading spinner en botón
@@ -170,6 +183,7 @@ const PetFormSchema = z.object({
 ---
 
 #### **PetDetailView.tsx** (329 líneas)
+
 - **Propósito**: Vista completa read-only de mascota
 - **Props**: `pet: Pet`
 - **Características**:
@@ -183,6 +197,7 @@ const PetFormSchema = z.object({
   - Layout: Grid 2 cols desktop → 1 col mobile
 
 **Secciones**:
+
 1. **Información Básica** (Heart): name, species, breed, birth_date, age, gender
 2. **Información Física** (Activity): weight_kg, body_condition
 3. **Información Nutricional** (Apple): daily_food_goal_grams, daily_meals_target
@@ -191,18 +206,20 @@ const PetFormSchema = z.object({
 6. **Metadata** (Clock): created_at, updated_at
 
 **Helper calculateAge()**:
+
 ```typescript
 function calculateAge(birthDate: Date): string {
   const months = differenceInMonths(now, birthDate);
   if (months < 12) return `${months} meses`;
   const years = Math.floor(months / 12);
-  return `${years} año${years > 1 ? 's' : ''}`;
+  return `${years} año${years > 1 ? "s" : ""}`;
 }
 ```
 
 ---
 
 #### **NavBar.tsx** (71 líneas)
+
 - **Propósito**: Navegación global con active state
 - **Props**: Ninguna
 - **Características**:
@@ -213,12 +230,15 @@ function calculateAge(birthDate: Date): string {
   - Array `navigation` extensible
 
 **Active State Detection**:
+
 ```typescript
-const isActive = pathname === item.href || 
-                 (item.href !== '/' && pathname.startsWith(item.href));
+const isActive =
+  pathname === item.href ||
+  (item.href !== "/" && pathname.startsWith(item.href));
 ```
 
 **Navegación actual**:
+
 - Inicio (/)
 - Mascotas (/pets) ⭐
 
@@ -227,6 +247,7 @@ const isActive = pathname === item.href ||
 ### 3. Páginas (`app/pets/`)
 
 #### **`/pets/page.tsx`** (28 líneas) - Server Component
+
 - **Propósito**: Página principal de mascotas
 - **Características**:
   - Auth gate con `requireHousehold()`
@@ -237,6 +258,7 @@ const isActive = pathname === item.href ||
 ---
 
 #### **`/pets/new/page.tsx`** (27 líneas) - Client Component
+
 - **Propósito**: Crear nueva mascota
 - **Características**:
   - `useRouter` para navegación post-submit
@@ -247,17 +269,20 @@ const isActive = pathname === item.href ||
 ---
 
 #### **`/pets/[id]/edit/page.tsx`** (38 líneas) - Server Component
+
 #### **`components/pets/EditPetClient.tsx`** (29 líneas) - Client Wrapper
 
 **Arquitectura Server/Client Split**:
 
 **Server Component** (page.tsx):
+
 - Auth gate + data fetching
 - `getPetById()` con household validation
 - `notFound()` para 404 handling
 - Renders `<EditPetClient>` con datos validados
 
 **Client Component** (EditPetClient.tsx):
+
 - `useRouter` para navegación
 - Wraps `<PetForm pet={pet}>` con callbacks
 - onSuccess → redirect a detalle
@@ -268,6 +293,7 @@ const isActive = pathname === item.href ||
 ---
 
 #### **`/pets/[id]/page.tsx`** (35 líneas) - Server Component
+
 - **Propósito**: Vista detalle de mascota
 - **Características**:
   - Pure Server Component (sin wrapper)
@@ -291,6 +317,7 @@ const isActive = pathname === item.href ||
 ### 4. Tipos y Schemas (`types/pets.ts`)
 
 **Exports**:
+
 ```typescript
 // Kysely types
 export type { Pet, Pets } from './database.generated';
@@ -314,6 +341,7 @@ export const PetFormSchema = z.object({ ... });
 ### 5. Constantes (`lib/constants/pets.ts`)
 
 **Exports**:
+
 ```typescript
 // Labels en español
 export const SPECIES_LABELS = { cat: 'Gato', dog: 'Perro', ... };
@@ -349,12 +377,13 @@ export const getBreedsBySpecies = (species: string) => {
 ### 6. Navegación Global (`app/layout.tsx` + `NavBar.tsx`)
 
 **Layout Integration**:
+
 ```tsx
 export default function RootLayout({ children }) {
   return (
     <html lang="es">
       <body className={inter.className}>
-        <NavBar />  {/* ⭐ NUEVO */}
+        <NavBar /> {/* ⭐ NUEVO */}
         <main>{children}</main>
       </body>
     </html>
@@ -363,6 +392,7 @@ export default function RootLayout({ children }) {
 ```
 
 **NavBar Features**:
+
 - Client Component con `usePathname()`
 - Logo clickeable con hover effect
 - Desktop: horizontal nav con `space-x-4`
@@ -376,21 +406,25 @@ export default function RootLayout({ children }) {
 ## 🏗️ Arquitectura y Patrones
 
 ### Server Components por Defecto
+
 ✅ Páginas de listado y detalle (fetch en servidor)  
 ✅ Reducción de JavaScript client-side  
-✅ SEO-friendly  
+✅ SEO-friendly
 
 ### Client Components cuando sea necesario
+
 ✅ Formularios interactivos (react-hook-form)  
 ✅ Navegación programática (useRouter)  
 ✅ Estado local (useState, useEffect)  
-✅ Hooks del navegador (usePathname)  
+✅ Hooks del navegador (usePathname)
 
 ### Server/Client Split Pattern
+
 ✅ EditPetPage: Server (fetch) + Client (form navigation)  
-❌ PetDetailPage: Server only (PetDetailView usa Links)  
+❌ PetDetailPage: Server only (PetDetailView usa Links)
 
 **Decisión tree**:
+
 ```
 ¿Necesita useRouter para navegación programática?
   └─ SÍ → Client wrapper (EditPetPage)
@@ -403,21 +437,27 @@ export default function RootLayout({ children }) {
 ### Result Pattern
 
 **Tipo**:
+
 ```typescript
 export type Ok<T = unknown> = { ok: true; data?: T };
-export type Fail = { ok: false; message: string; fieldErrors?: Record<string, string[]> };
+export type Fail = {
+  ok: false;
+  message: string;
+  fieldErrors?: Record<string, string[]>;
+};
 export type Result<T = unknown> = Ok<T> | Fail;
 ```
 
 **Uso**:
+
 ```typescript
 // Server Action
 export async function createPet(...): Promise<Result<Pet>> {
   const parsed = schema.safeParse(...);
   if (!parsed.success) return fail("Error", errors);
-  
+
   // ... lógica
-  
+
   return ok(newPet);
 }
 
@@ -432,6 +472,7 @@ router.push("/pets");
 ```
 
 **Beneficios**:
+
 - ✅ No lanza excepciones
 - ✅ Errores explícitos
 - ✅ Field-level errors para forms
@@ -442,6 +483,7 @@ router.push("/pets");
 ### Validación en Capas
 
 1. **Client-side** (react-hook-form + Zod):
+
    - Validación en tiempo real
    - Mensajes de error específicos
    - UX fluida sin roundtrips
@@ -474,6 +516,7 @@ DELETE FROM pets WHERE id = $1 AND household_id = $2
 ```
 
 **Auth gate en todas las páginas**:
+
 ```typescript
 const householdId = await requireHousehold();
 // Si falla, lanza error automáticamente
@@ -484,6 +527,7 @@ const householdId = await requireHousehold();
 ### TypeScript Strict Mode
 
 **Configuración**:
+
 ```json
 {
   "strict": true,
@@ -494,16 +538,18 @@ const householdId = await requireHousehold();
 ```
 
 **Validación continua**:
+
 ```bash
 npm run typecheck  # ✅ SIEMPRE limpio
 npm run lint       # ✅ SIEMPRE limpio
 ```
 
 **Type conversions para Kysely**:
+
 ```typescript
 // ColumnType no es directamente renderable
-Number(pet.daily_meals_target)  // Para JSX
-String(pet.id)                   // Para URLs
+Number(pet.daily_meals_target); // Para JSX
+String(pet.id); // Para URLs
 ```
 
 ---
@@ -512,30 +558,30 @@ String(pet.id)                   // Para URLs
 
 ### Archivos Creados/Modificados
 
-| Categoría | Archivos | Líneas |
-|-----------|----------|--------|
-| Server Actions | 1 | 180 |
-| Componentes UI | 6 | 1,200 |
-| Páginas | 4 | 127 |
-| Types/Schemas | 1 | 150 |
-| Constantes | 1 | 120 |
-| Layout | 1 | 24 |
-| **TOTAL** | **14** | **~1,801** |
+| Categoría      | Archivos | Líneas     |
+| -------------- | -------- | ---------- |
+| Server Actions | 1        | 180        |
+| Componentes UI | 6        | 1,200      |
+| Páginas        | 4        | 127        |
+| Types/Schemas  | 1        | 150        |
+| Constantes     | 1        | 120        |
+| Layout         | 1        | 24         |
+| **TOTAL**      | **14**   | **~1,801** |
 
 ### Commits
 
-| Hash | Mensaje | Archivos |
-|------|---------|----------|
-| bdaed64 | feat(pets): implement PetCard component | 1 |
-| 9da9766 | feat(pets): implement PetList component | 1 |
-| 8be71a9 | feat(pets): implement PetForm component | 1 |
-| a69a68f | feat(pets): implement PetDeleteDialog | 1 |
-| 6eff34e | feat(pets): implement pets list page | 1 |
-| 3e95eb0 | feat(pets): implement create pet page | 1 |
-| fa99dbc | feat(pets): implement edit pet page | 2 |
-| 417c289 | feat(pets): implement PetDetailView component | 1 |
-| 54699c3 | feat(pets): implement pet detail page | 2 |
-| 74e341a | feat(navigation): implement global navbar | 3 |
+| Hash    | Mensaje                                       | Archivos |
+| ------- | --------------------------------------------- | -------- |
+| bdaed64 | feat(pets): implement PetCard component       | 1        |
+| 9da9766 | feat(pets): implement PetList component       | 1        |
+| 8be71a9 | feat(pets): implement PetForm component       | 1        |
+| a69a68f | feat(pets): implement PetDeleteDialog         | 1        |
+| 6eff34e | feat(pets): implement pets list page          | 1        |
+| 3e95eb0 | feat(pets): implement create pet page         | 1        |
+| fa99dbc | feat(pets): implement edit pet page           | 2        |
+| 417c289 | feat(pets): implement PetDetailView component | 1        |
+| 54699c3 | feat(pets): implement pet detail page         | 2        |
+| 74e341a | feat(navigation): implement global navbar     | 3        |
 
 **Total**: 10 commits en Fase 2
 
@@ -543,23 +589,23 @@ String(pet.id)                   // Para URLs
 
 ### Issues Cerrados
 
-| Issue | Título | Estado |
-|-------|--------|--------|
-| #1 | Setup: Server Actions | ✅ Cerrado |
-| #2 | Setup: Componentes UI | ✅ Cerrado |
-| #3 | Setup: Constantes | ✅ Cerrado |
-| #4 | Componente: PetCard | ✅ Cerrado |
-| #5 | Componente: PetList | ✅ Cerrado |
-| #6 | Componente: PetForm | ✅ Cerrado |
-| #7 | Componente: PetDeleteDialog | ✅ Cerrado |
-| #8 | Página: Listado Mascotas | ✅ Cerrado |
-| #9 | Página: Crear Mascota | ✅ Cerrado |
-| #10 | Página: Editar Mascota | ✅ Cerrado |
-| #11 | Componente: PetDetailView | ✅ Cerrado |
-| #12 | Página: Detalle Mascota | ✅ Cerrado |
-| #13 | Navegación: NavBar | ✅ Cerrado |
-| #14 | Testing Manual | ⏳ Pendiente por usuario |
-| #15 | Documentación | ✅ Cerrado (este doc) |
+| Issue | Título                      | Estado                   |
+| ----- | --------------------------- | ------------------------ |
+| #1    | Setup: Server Actions       | ✅ Cerrado               |
+| #2    | Setup: Componentes UI       | ✅ Cerrado               |
+| #3    | Setup: Constantes           | ✅ Cerrado               |
+| #4    | Componente: PetCard         | ✅ Cerrado               |
+| #5    | Componente: PetList         | ✅ Cerrado               |
+| #6    | Componente: PetForm         | ✅ Cerrado               |
+| #7    | Componente: PetDeleteDialog | ✅ Cerrado               |
+| #8    | Página: Listado Mascotas    | ✅ Cerrado               |
+| #9    | Página: Crear Mascota       | ✅ Cerrado               |
+| #10   | Página: Editar Mascota      | ✅ Cerrado               |
+| #11   | Componente: PetDetailView   | ✅ Cerrado               |
+| #12   | Página: Detalle Mascota     | ✅ Cerrado               |
+| #13   | Navegación: NavBar          | ✅ Cerrado               |
+| #14   | Testing Manual              | ⏳ Pendiente por usuario |
+| #15   | Documentación               | ✅ Cerrado (este doc)    |
 
 **Completados**: 13/15 (87%)  
 **Pendientes**: 2 (testing manual requiere intervención del usuario)
@@ -577,12 +623,14 @@ String(pet.id)                   // Para URLs
 **Checklist para usuario**:
 
 #### Listar Mascotas (`/pets`)
+
 - [ ] Ver lista vacía (empty state)
 - [ ] Ver lista con mascotas
 - [ ] Grid responsive (móvil/tablet/desktop)
 - [ ] Botón "Añadir Mascota" visible y funcional
 
 #### Crear Mascota (`/pets/new`)
+
 - [ ] Formulario se muestra correctamente
 - [ ] Validación de campos requeridos
 - [ ] Crear con datos mínimos (name, species, goal)
@@ -594,6 +642,7 @@ String(pet.id)                   // Para URLs
 - [ ] Nueva mascota aparece en lista
 
 #### Editar Mascota (`/pets/[id]/edit`)
+
 - [ ] Formulario carga datos existentes
 - [ ] Modificar campos y guardar
 - [ ] Validación al editar
@@ -602,6 +651,7 @@ String(pet.id)                   // Para URLs
 - [ ] Botón cancelar funciona
 
 #### Eliminar Mascota
+
 - [ ] Dialog de confirmación aparece
 - [ ] Mensaje con nombre de mascota
 - [ ] Botón cancelar cierra dialog
@@ -610,6 +660,7 @@ String(pet.id)                   // Para URLs
 - [ ] Toast de éxito
 
 #### Ver Detalle (`/pets/[id]`)
+
 - [ ] Muestra toda la información
 - [ ] Secciones organizadas correctamente
 - [ ] Links a editar/eliminar funcionan
@@ -617,17 +668,20 @@ String(pet.id)                   // Para URLs
 - [ ] Botón volver funciona
 
 #### Seguridad
+
 - [ ] Solo ver mascotas de mi hogar
 - [ ] No poder editar mascotas de otros
 - [ ] Auth required en todas las rutas
 - [ ] Queries filtran por household_id
 
 #### Responsive
+
 - [ ] Móvil (< 640px)
 - [ ] Tablet (640-1024px)
 - [ ] Desktop (> 1024px)
 
 #### Navegación
+
 - [ ] NavBar visible en todas las páginas
 - [ ] Active state correcto en cada ruta
 - [ ] Logo redirige a home
@@ -638,6 +692,7 @@ String(pet.id)                   // Para URLs
 **Estado**: ❌ **No implementado**
 
 **Futuro** (Fase de mejoras):
+
 - Unit tests con Vitest
 - E2E tests con Playwright/Cypress
 - Component tests con Testing Library
@@ -647,20 +702,25 @@ String(pet.id)                   // Para URLs
 ## 🔍 Validación Estática Realizada
 
 ### TypeScript Compilation
+
 ```bash
 npm run typecheck
 ```
+
 **Resultado**: ✅ **CLEAN** (0 errores)
 
 ### Linting
+
 ```bash
 npm run lint
 ```
+
 **Resultado**: ✅ **CLEAN** (0 warnings, 0 errors)
 
 ### Code Review Automatizado
 
 **Patrones verificados**:
+
 - ✅ Server Components por defecto
 - ✅ Client Components solo cuando necesario
 - ✅ Auth gates en todas las páginas
@@ -673,12 +733,14 @@ npm run lint
 - ✅ Type conversions para Kysely ColumnType
 
 **Seguridad**:
+
 - ✅ requireHousehold() en todas las páginas
 - ✅ Double validation (session + SQL WHERE)
 - ✅ No SQL injection (queries parametrizadas)
 - ✅ No XSS (React escapes automáticamente)
 
 **UI/UX**:
+
 - ✅ shadcn/ui components (accesibles)
 - ✅ Responsive classes (Tailwind)
 - ✅ Loading states (Loader2)
@@ -693,6 +755,7 @@ npm run lint
 **Estado**: ✅ **Ninguno conocido**
 
 **Testing manual pendiente** podría revelar bugs. Si se encuentran:
+
 1. Documentar en Issue #14
 2. Crear issues específicos si son críticos
 3. O agregar a backlog para futuras iteraciones
@@ -706,6 +769,7 @@ npm run lint
 **Aprendido**: No siempre se necesita wrapper Client.
 
 **Ejemplo**:
+
 - EditPetPage: Server + Client wrapper (useRouter post-form)
 - PetDetailPage: Server only (PetDetailView usa Links)
 
@@ -718,12 +782,15 @@ npm run lint
 **Problema**: `ColumnType<number, number | string, number>` no es directamente renderable en JSX.
 
 **Solución**:
+
 ```typescript
 // En JSX
-{Number(pet.daily_meals_target)}
+{
+  Number(pet.daily_meals_target);
+}
 
 // En URLs
-`/pets/${String(pet.id)}/edit`
+`/pets/${String(pet.id)}/edit`;
 ```
 
 **Regla**: Siempre convertir antes de usar en JSX o templates.
@@ -755,6 +822,7 @@ const householdId = await requireHousehold();
 **Razón**: Server Component puede hacer fetch directamente sin pasar por props.
 
 **Patrón**:
+
 ```typescript
 // Server Component - self-contained
 export default async function PetList() {
@@ -775,11 +843,13 @@ export function PetCard({ pet }: { pet: Pet }) {
 ### 5. Validación Doble es Esencial
 
 **Validación client + server** protege contra:
+
 - Bypass de validación client (devtools)
 - Ataques directos a API
 - Bugs en validación client
 
 **Siempre**:
+
 1. Client: react-hook-form + Zod (UX)
 2. Server: Zod.safeParse() (seguridad)
 
@@ -790,12 +860,14 @@ export function PetCard({ pet }: { pet: Pet }) {
 **Formato**: `feat(scope): descripción`
 
 **Beneficios**:
+
 - Historia clara
 - Changelog automático (futuro)
 - Release notes fáciles
 - Navegación en GitHub
 
 **Ejemplos de esta fase**:
+
 - `feat(pets): implement PetCard component`
 - `feat(pets): implement pets list page`
 - `feat(navigation): implement global navbar`
@@ -828,6 +900,7 @@ export function PetCard({ pet }: { pet: Pet }) {
 ### Inmediato (Post-Fase 2)
 
 1. **Usuario realiza testing manual** (Issue #14)
+
    - Validar flujos end-to-end
    - Reportar bugs si los hay
    - Cerrar Issue #14
@@ -844,6 +917,7 @@ export function PetCard({ pet }: { pet: Pet }) {
 ### Fase 3: CRUD Alimentos (Siguiente)
 
 **Entregables estimados**:
+
 - [ ] Server Actions: `foods/actions.ts`
 - [ ] Componentes: FoodCard, FoodList, FoodForm, FoodDeleteDialog, FoodDetailView
 - [ ] Páginas: /foods, /foods/new, /foods/[id], /foods/[id]/edit
@@ -858,6 +932,7 @@ export function PetCard({ pet }: { pet: Pet }) {
 ### Fase 4: Calendario de Alimentación
 
 **Entregables estimados**:
+
 - [ ] Server Actions para `feedings`
 - [ ] Componentes: FeedingCard, Calendar, DailyBalance
 - [ ] Vista diaria con cálculo de balance
@@ -870,6 +945,7 @@ export function PetCard({ pet }: { pet: Pet }) {
 ### Fase 5: Dashboard
 
 **Entregables estimados**:
+
 - [ ] Dashboard principal
 - [ ] Cards de resumen por mascota
 - [ ] Gráficos de tendencia (Chart.js/Recharts)
@@ -882,6 +958,7 @@ export function PetCard({ pet }: { pet: Pet }) {
 ### Fase 6: Production Deployment
 
 **Entregables estimados**:
+
 - [ ] nginx configurado
 - [ ] SSL certificate
 - [ ] Build producción
@@ -897,11 +974,13 @@ export function PetCard({ pet }: { pet: Pet }) {
 ### Archivos Actualizados
 
 1. **`docs/ESTADO_PROYECTO.md`**:
+
    - Progreso actualizado: 33.33% (2/6 fases)
    - Fase 2 marcada como completada
    - Hitos actualizados
 
 2. **`docs/FASE_2_COMPLETADO.md`** ⭐ (este archivo):
+
    - Resumen ejecutivo completo
    - Documentación de todos los entregables
    - Estadísticas de código
@@ -945,7 +1024,7 @@ export function PetCard({ pet }: { pet: Pet }) {
 **Desarrollo**: AI Agent (GitHub Copilot + Claude)  
 **Supervisión**: Kava (Usuario)  
 **Arquitectura**: Colaborativa  
-**Testing Manual**: Pendiente por Kava  
+**Testing Manual**: Pendiente por Kava
 
 ---
 

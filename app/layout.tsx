@@ -1,25 +1,31 @@
-import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
-import './globals.css';
-import { NavBar } from '@/components/shared/NavBar';
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import { getServerSession } from "next-auth";
+import "./globals.css";
+import { NavBar } from "@/components/shared/NavBar";
+import { Toaster } from "@/components/ui/toaster";
+import { authOptions } from "@/lib/auth-options";
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'Pet SiKness',
-  description: 'Sistema de gestión alimentaria para mascotas',
+  title: "Pet SiKness",
+  description: "Sistema de gestión alimentaria para mascotas",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await getServerSession(authOptions);
+
   return (
     <html lang="es">
       <body className={inter.className}>
-        <NavBar />
+        <NavBar user={session?.user ? { ...session.user, id: session.user.profile_id || '' } : null} />
         <main>{children}</main>
+        <Toaster />
       </body>
     </html>
   );
