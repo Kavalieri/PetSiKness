@@ -1,20 +1,28 @@
-import { Suspense } from "react";
-import { getTodayBalance, getAlertsCount, getHouseholdOverview } from "./actions";
+import {
+  getTodayBalance,
+  getAlertsCount,
+  getHouseholdOverview,
+} from "./actions";
 import { DailyBalanceList } from "@/components/feeding/DailyBalanceCard";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { 
-  Home, 
-  TrendingUp, 
-  UtensilsCrossed, 
+import {
+  TrendingUp,
+  UtensilsCrossed,
   AlertTriangle,
   PawPrint,
   Target,
-  Clock
+  Clock,
 } from "lucide-react";
 import Link from "next/link";
+import { DashboardClient } from "./DashboardClient";
 
 // ============================================
 // METADATA
@@ -26,20 +34,18 @@ export const metadata = {
 };
 
 // ============================================
-// COMPONENTES STATS
+// COMPONENTE STATS CARDS
 // ============================================
 
-async function StatsCards() {
-  const overviewResult = await getHouseholdOverview();
-  const alertsCountResult = await getAlertsCount();
+async function StatsCards({ date }: { date: string }) {
+  const [overviewResult, alertsCountResult] = await Promise.all([
+    getHouseholdOverview(date),
+    getAlertsCount(date),
+  ]);
 
   // Manejar errores
   if (!overviewResult.ok || !alertsCountResult.ok) {
-    return (
-      <div className="text-destructive">
-        Error cargando estadísticas
-      </div>
-    );
+    return <div className="text-destructive">Error cargando estadísticas</div>;
   }
 
   const overview = overviewResult.data!;
@@ -71,7 +77,10 @@ async function StatsCards() {
       value: `${overview.avg_achievement_pct.toFixed(0)}%`,
       icon: TrendingUp,
       description: "Últimos 7 días",
-      color: overview.avg_achievement_pct >= 90 ? "text-green-600" : "text-yellow-600",
+      color:
+        overview.avg_achievement_pct >= 90
+          ? "text-green-600"
+          : "text-yellow-600",
     },
   ];
 
@@ -85,7 +94,9 @@ async function StatsCards() {
               <CardTitle className="text-sm font-medium">
                 {stat.title}
               </CardTitle>
-              <Icon className={`h-4 w-4 ${stat.color || "text-muted-foreground"}`} />
+              <Icon
+                className={`h-4 w-4 ${stat.color || "text-muted-foreground"}`}
+              />
             </CardHeader>
             <CardContent>
               <div className={`text-2xl font-bold ${stat.color || ""}`}>
@@ -106,13 +117,13 @@ async function StatsCards() {
 // COMPONENTE ALERTAS CRÍTICAS
 // ============================================
 
-async function CriticalAlerts() {
-  const balancesResult = await getTodayBalance();
-  
+async function CriticalAlerts({ date }: { date: string }) {
+  const balancesResult = await getTodayBalance(date);
+
   if (!balancesResult.ok) {
     return null;
   }
-  
+
   const balances = balancesResult.data!;
   const underTargetPets = balances.filter((b) => b.status === "under");
 
@@ -127,11 +138,13 @@ async function CriticalAlerts() {
       <AlertDescription>
         {underTargetPets.length === 1 ? (
           <>
-            <strong>{underTargetPets[0].pet_name}</strong> no ha alcanzado su objetivo diario de alimentación.
+            <strong>{underTargetPets[0].pet_name}</strong> no ha alcanzado su
+            objetivo diario de alimentación.
           </>
         ) : (
           <>
-            <strong>{underTargetPets.length} mascotas</strong> no han alcanzado su objetivo diario:{" "}
+            <strong>{underTargetPets.length} mascotas</strong> no han alcanzado
+            su objetivo diario:{" "}
             {underTargetPets.map((p) => p.pet_name).join(", ")}.
           </>
         )}
@@ -144,27 +157,32 @@ async function CriticalAlerts() {
 // COMPONENTE BALANCE DIARIO
 // ============================================
 
-async function TodayBalances() {
-  const balancesResult = await getTodayBalance();
+async function TodayBalances({ date }: { date: string }) {
+  const balancesResult = await getTodayBalance(date);
 
   if (!balancesResult.ok) {
     return (
-      <div className="text-destructive">
-        Error cargando balance del día
-      </div>
+      <div className="text-destructive">Error cargando balance del día</div>
     );
   }
 
   const balances = balancesResult.data!;
 
+  // Determinar si es hoy para el título
+  const today = new Date().toISOString().split("T")[0];
+  const isToday = date === today;
+
+  const title = isToday ? "Balance del día" : `Balance del ${date}`;
+  const subtitle = isToday
+    ? "Progreso de alimentación de hoy"
+    : "Progreso de alimentación histórico";
+
   return (
     <section>
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h2 className="text-2xl font-bold">Balance del día</h2>
-          <p className="text-muted-foreground">
-            Progreso de alimentación de hoy
-          </p>
+          <h2 className="text-2xl font-bold">{title}</h2>
+          <p className="text-muted-foreground">{subtitle}</p>
         </div>
         <Button asChild>
           <Link href="/feeding/new">
@@ -212,7 +230,10 @@ function QuickActions() {
         {actions.map((action, index) => {
           const Icon = action.icon;
           return (
-            <Card key={index} className="hover:shadow-lg transition-shadow cursor-pointer">
+            <Card
+              key={index}
+              className="hover:shadow-lg transition-shadow cursor-pointer"
+            >
               <Link href={action.href}>
                 <CardHeader>
                   <Icon className="h-8 w-8 mb-2" />
@@ -229,66 +250,16 @@ function QuickActions() {
 }
 
 // ============================================
-// COMPONENTE LOADING
-// ============================================
-
-function DashboardSkeleton() {
-  return (
-    <div className="space-y-8">
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {[1, 2, 3, 4].map((i) => (
-          <Card key={i}>
-            <CardHeader className="space-y-2">
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-8 w-16" />
-              <Skeleton className="h-3 w-32" />
-            </CardHeader>
-          </Card>
-        ))}
-      </div>
-      <Skeleton className="h-32 w-full" />
-      <Skeleton className="h-96 w-full" />
-    </div>
-  );
-}
-
-// ============================================
 // PÁGINA PRINCIPAL
 // ============================================
 
 export default async function DashboardPage() {
   return (
-    <div className="container mx-auto p-6 space-y-8">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-            <Home className="h-8 w-8" />
-            Dashboard
-          </h1>
-          <p className="text-muted-foreground">
-            Resumen de alimentación de tus mascotas
-          </p>
-        </div>
-      </div>
-
-      {/* Stats Cards */}
-      <Suspense fallback={<DashboardSkeleton />}>
-        <StatsCards />
-      </Suspense>
-
-      {/* Alertas críticas */}
-      <Suspense fallback={null}>
-        <CriticalAlerts />
-      </Suspense>
-
-      {/* Balance del día */}
-      <Suspense fallback={<Skeleton className="h-96 w-full" />}>
-        <TodayBalances />
-      </Suspense>
-
-      {/* Acciones rápidas */}
-      <QuickActions />
-    </div>
+    <DashboardClient
+      statsCards={async (date: string) => <StatsCards date={date} />}
+      criticalAlerts={async (date: string) => <CriticalAlerts date={date} />}
+      todayBalances={async (date: string) => <TodayBalances date={date} />}
+      quickActions={<QuickActions />}
+    />
   );
 }
