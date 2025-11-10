@@ -176,7 +176,7 @@ export async function createPet(formData: FormData): Promise<Result<Pet>> {
     );
 
     // 5. Revalidar rutas
-    revalidatePath("/app/pets");
+    revalidatePath("/pets");
 
     return ok(result.rows[0] as Pet);
   } catch (error) {
@@ -300,8 +300,8 @@ export async function updatePet(
     );
 
     // 7. Revalidar rutas
-    revalidatePath("/app/pets");
-    revalidatePath(`/app/pets/${id}`);
+    revalidatePath("/pets");
+    revalidatePath(`/pets/${id}`);
 
     return ok(result.rows[0] as Pet);
   } catch (error) {
@@ -353,7 +353,7 @@ export async function deletePet(id: string): Promise<Result> {
     );
 
     // 5. Revalidar rutas
-    revalidatePath("/app/pets");
+    revalidatePath("/pets");
 
     return ok();
   } catch (error) {

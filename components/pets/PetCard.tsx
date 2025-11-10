@@ -140,7 +140,7 @@ export function PetCard({ pet, onDelete }: PetCardProps) {
       <CardFooter className="pt-3 border-t flex gap-2">
         {/* Ver detalle */}
         <Button variant="outline" size="sm" asChild className="flex-1">
-          <Link href={`/app/pets/${petId}`}>
+          <Link href={`/pets/${petId}`}>
             <Eye className="h-4 w-4 mr-1" />
             Ver
           </Link>
@@ -148,7 +148,7 @@ export function PetCard({ pet, onDelete }: PetCardProps) {
 
         {/* Editar */}
         <Button variant="outline" size="sm" asChild className="flex-1">
-          <Link href={`/app/pets/${petId}/edit`}>
+          <Link href={`/pets/${petId}/edit`}>
             <Pencil className="h-4 w-4 mr-1" />
             Editar
           </Link>
