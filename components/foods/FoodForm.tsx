@@ -804,6 +804,62 @@ export function FoodForm({ food, onSuccess, onCancel }: FoodFormProps) {
 
         <Separator />
 
+        {/* Sección 6: Notas y Foto */}
+        <div className="space-y-4">
+          <div>
+            <h3 className="text-lg font-semibold">Notas y Foto</h3>
+            <p className="text-sm text-muted-foreground">
+              Información adicional y foto del producto
+            </p>
+          </div>
+
+          {/* Notas */}
+          <FormField
+            control={form.control}
+            name="notes"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Notas</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Observaciones, preferencias de las mascotas, recomendaciones..."
+                    className="resize-none min-h-[100px]"
+                    {...field}
+                  />
+                </FormControl>
+                <FormDescription>
+                  Información adicional sobre el alimento (máx. 2000 caracteres)
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* URL de Foto */}
+          <FormField
+            control={form.control}
+            name="photo_url"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>URL de Foto</FormLabel>
+                <FormControl>
+                  <Input
+                    type="url"
+                    placeholder="https://ejemplo.com/imagen-producto.jpg"
+                    {...field}
+                  />
+                </FormControl>
+                <FormDescription>
+                  URL de la imagen del producto (opcional)
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <Separator />
+
         {/* Botones de Acción */}
         <div className="flex flex-col-reverse sm:flex-row justify-between gap-4">
           <div>

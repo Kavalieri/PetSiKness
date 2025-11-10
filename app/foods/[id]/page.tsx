@@ -314,7 +314,51 @@ export default async function FoodDetailPage({ params }: FoodDetailPageProps) {
           </section>
         )}
 
-        {/* Sección 5: Metadata */}
+        {/* Sección 5: Notas */}
+        {food.notes && (
+          <section>
+            <h2 className="text-2xl font-bold mb-4">Notas</h2>
+            <Card>
+              <CardContent className="pt-6">
+                <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                  {food.notes}
+                </p>
+              </CardContent>
+            </Card>
+          </section>
+        )}
+
+        {/* Sección 6: Foto del Producto */}
+        {food.photo_url && (
+          <section>
+            <h2 className="text-2xl font-bold mb-4">Foto del Producto</h2>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="relative w-full max-w-2xl mx-auto">
+                  <img
+                    src={food.photo_url}
+                    alt={`Foto de ${food.name}`}
+                    className="w-full h-auto rounded-lg shadow-md"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = "none";
+                      const parent = (e.target as HTMLImageElement)
+                        .parentElement;
+                      if (parent) {
+                        parent.innerHTML = `
+                          <div class="flex items-center justify-center h-48 bg-muted rounded-lg">
+                            <p class="text-muted-foreground">Error al cargar la imagen</p>
+                          </div>
+                        `;
+                      }
+                    }}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </section>
+        )}
+
+        {/* Sección 7: Metadata */}
         <section>
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
