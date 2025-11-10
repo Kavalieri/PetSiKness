@@ -264,14 +264,14 @@ database/
 ```bash
 # .env.development.local
 DATABASE_URL="postgresql://pet_user:SiKPets2025Segur0@localhost:5432/pet_sikness_dev"
-NEXTAUTH_URL="http://localhost:3002"
+NEXTAUTH_URL="https://petsiknessdev.sikwow.com"
 NEXTAUTH_SECRET="tu_secret_desarrollo"
 GOOGLE_CLIENT_ID="64299271376-ahd769em9ot3fut2uejf6l4v9blqj0do.apps.googleusercontent.com"
 GOOGLE_CLIENT_SECRET="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"
 
 # .env.production.local
 DATABASE_URL="postgresql://pet_user:SiKPets2025Segur0@localhost:5432/pet_sikness_prod"
-NEXTAUTH_URL="http://petsikness.com"
+NEXTAUTH_URL="https://petsikness.sikwow.com"
 NEXTAUTH_SECRET="tu_secret_produccion"
 GOOGLE_CLIENT_ID="64299271376-ahd769em9ot3fut2uejf6l4v9blqj0do.apps.googleusercontent.com"
 GOOGLE_CLIENT_SECRET="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"
@@ -403,7 +403,9 @@ export async function createPet(formData: FormData): Promise<Result> {
 
 - **Ubicación local**: `/home/kava/workspace/proyectos/PetSiKness/repo`
 - **Branch principal**: `main`
-- **Dominio**: petsikness.com (por configurar)
+- **Dominios**:
+  - **PROD**: https://petsikness.sikwow.com (puerto 3003)
+  - **DEV**: https://petsiknessdev.sikwow.com (puerto 3002)
 
 ---
 

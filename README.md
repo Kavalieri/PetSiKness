@@ -9,6 +9,13 @@
 
 ---
 
+## 🌐 Acceso a la Aplicación
+
+- **Producción**: [https://petsikness.sikwow.com](https://petsikness.sikwow.com)
+- **Desarrollo**: [https://petsiknessdev.sikwow.com](https://petsiknessdev.sikwow.com)
+
+---
+
 ## 📖 Descripción
 
 Pet SiKness es una aplicación web moderna para el seguimiento y gestión de la alimentación de mascotas. Permite registrar perfiles de mascotas, mantener un catálogo de alimentos con información nutricional completa, y llevar un diario detallado de alimentación con cálculo automático de balance diario.
@@ -80,7 +87,7 @@ chmod 600 ~/.pgpass
 npm run dev
 
 # Acceder
-http://localhost:3002
+https://petsiknessdev.sikwow.com
 ```
 
 ### Producción
@@ -91,6 +98,9 @@ npm run build
 
 # Iniciar con PM2 (puerto 3003)
 ./scripts/PM2_build_and_deploy_and_dev/pm2-prod-start.sh
+
+# Acceder
+https://petsikness.sikwow.com
 ```
 
 ---
