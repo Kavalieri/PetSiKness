@@ -34,6 +34,18 @@ interface TodayBalance {
   status: "under" | "met" | "over";
 }
 
+// Row raw de la DB (numeric viene como string)
+interface TodayBalanceRow {
+  pet_id: string;
+  pet_name: string;
+  total_served: string | number;
+  total_eaten: string | number;
+  total_leftover: string | number;
+  daily_goal: number;
+  achievement_pct: string | number;
+  status: "under" | "met" | "over";
+}
+
 interface WeeklyStats {
   date: string;
   total_eaten: number;
@@ -139,7 +151,17 @@ export async function getTodayBalance(): Promise<Result<TodayBalance[]>> {
       [householdId, today]
     );
 
-    return ok(result.rows as TodayBalance[]);
+    // Convertir achievement_pct de string a number (PostgreSQL ROUND devuelve numeric como string)
+    const balances: TodayBalance[] = result.rows.map((row: TodayBalanceRow) => ({
+      ...row,
+      achievement_pct: parseFloat(String(row.achievement_pct || "0")),
+      total_served: Number(row.total_served),
+      total_eaten: Number(row.total_eaten),
+      total_leftover: Number(row.total_leftover),
+      daily_goal: Number(row.daily_goal),
+    }));
+
+    return ok(balances);
   } catch (error) {
     console.error("Error fetching today balance:", error);
     if (error instanceof Error) {
