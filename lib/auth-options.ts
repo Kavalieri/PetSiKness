@@ -6,7 +6,7 @@ import { query } from "@/lib/db";
  * Genera authOptions dinámicamente según el dominio
  * Esto permite que OAuth funcione correctamente en múltiples dominios
  */
-export function getAuthOptions(callbackUrl?: string): AuthOptions {
+export function getAuthOptions(): AuthOptions {
   return {
     providers: [
       GoogleProvider({
@@ -68,21 +68,23 @@ export function getAuthOptions(callbackUrl?: string): AuthOptions {
 
       // Redirect callback para manejar URLs dinámicas
       async redirect({ url, baseUrl }) {
-        // Si callbackUrl fue proporcionado, usarlo
-        if (callbackUrl) {
-          return callbackUrl;
-        }
-
         // Si la URL es relativa, usarla con baseUrl
         if (url.startsWith("/")) {
           return `${baseUrl}${url}`;
         }
-        
-        // Si la URL pertenece al mismo dominio, usarla
-        if (new URL(url).origin === baseUrl) {
-          return url;
+
+        // Validar que url es una URL válida antes de parsearla
+        try {
+          const urlObj = new URL(url);
+          // Si la URL pertenece al mismo dominio, usarla
+          if (urlObj.origin === baseUrl) {
+            return url;
+          }
+        } catch (error) {
+          // Si no es una URL válida, usar baseUrl
+          console.error("[NextAuth] Invalid redirect URL:", url, error);
         }
-        
+
         return baseUrl;
       },
     },

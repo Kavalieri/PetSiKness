@@ -43,8 +43,8 @@ async function handler(req: NextRequest, context: any) {
   // Configurar NEXTAUTH_URL dinámicamente
   process.env.NEXTAUTH_URL = origin;
 
-  // Generar authOptions con la URL correcta
-  const authOptions = getAuthOptions(origin);
+  // Generar authOptions con la configuración correcta
+  const authOptions = getAuthOptions();
 
   // Ejecutar NextAuth con las opciones dinámicas
   return NextAuth(authOptions)(req, context);
