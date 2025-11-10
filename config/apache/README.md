@@ -52,16 +52,19 @@ sudo systemctl reload apache2
 ### 5. Obtener Certificados SSL con Certbot
 
 **Para DEV:**
+
 ```bash
 sudo certbot --apache -d petsiknessdev.sikwow.com
 ```
 
 **Para PROD:**
+
 ```bash
 sudo certbot --apache -d petsikness.sikwow.com
 ```
 
 Certbot creará automáticamente:
+
 - `/etc/apache2/sites-available/petsikness-dev-le-ssl.conf`
 - `/etc/apache2/sites-available/petsikness-prod-le-ssl.conf`
 
@@ -70,23 +73,30 @@ Certbot creará automáticamente:
 Después de que Certbot cree los archivos SSL, edítalos para añadir los headers necesarios para OAuth:
 
 **DEV:**
+
 ```bash
 sudo nano /etc/apache2/sites-available/petsikness-dev-le-ssl.conf
 ```
 
 **PROD:**
+
 ```bash
 sudo nano /etc/apache2/sites-available/petsikness-prod-le-ssl.conf
 ```
 
-Añade estas líneas **dentro de** `<VirtualHost *:443>`, justo después de `ProxyPreserveHost On`:
+Añade estas líneas **dentro de** `<VirtualHost *:443>`, justo después de los comentarios de logs:
 
 ```apache
-# CRÍTICO: Pasar el protocolo HTTPS correcto (para OAuth)
+# Headers críticos para OAuth dinámico (unset primero para evitar duplicados)
+RequestHeader unset X-Forwarded-Proto
+RequestHeader unset X-Forwarded-SSL
+RequestHeader unset X-Forwarded-Host
 RequestHeader set X-Forwarded-Proto "https"
 RequestHeader set X-Forwarded-SSL "on"
 RequestHeader set X-Forwarded-Host "petsiknessdev.sikwow.com"  # o petsikness.sikwow.com para PROD
 ```
+
+**⚠️ Importante**: El `unset` previo es crítico para evitar headers duplicados cuando Apache está configurado con `ProxyPreserveHost On`.
 
 ### 7. Verificar y Recargar Apache (Final)
 
@@ -106,7 +116,7 @@ sudo systemctl reload apache2
 # DEV
 curl -I https://petsiknessdev.sikwow.com
 
-# PROD  
+# PROD
 curl -I https://petsikness.sikwow.com
 ```
 
@@ -133,7 +143,7 @@ curl -I https://petsikness.sikwow.com | grep -i forwarded
 
 ### Error: "redirect_uri_mismatch" en Google OAuth
 
-**Causa**: Los headers X-Forwarded-* no están configurados correctamente.
+**Causa**: Los headers X-Forwarded-\* no están configurados correctamente.
 
 **Solución**: Verifica que los archivos `*-le-ssl.conf` tengan los headers configurados (paso 6).
 
@@ -142,6 +152,7 @@ curl -I https://petsikness.sikwow.com | grep -i forwarded
 **Causa**: Certbot no pudo obtener el certificado o el dominio no apunta al servidor.
 
 **Solución**:
+
 ```bash
 # Verificar que el dominio resuelve correctamente
 nslookup petsiknessdev.sikwow.com
@@ -155,6 +166,7 @@ sudo certbot renew --dry-run
 **Causa**: El servidor Next.js no está corriendo o está en el puerto incorrecto.
 
 **Solución**:
+
 ```bash
 # Verificar estado de PM2
 pm2 status
@@ -169,10 +181,12 @@ cd /home/kava/workspace/proyectos/PetSiKness/repo
 Asegúrate de que estos URIs estén autorizados en Google Cloud Console:
 
 **Authorized redirect URIs:**
+
 - `https://petsiknessdev.sikwow.com/api/auth/callback/google`
 - `https://petsikness.sikwow.com/api/auth/callback/google`
 
 **Authorized JavaScript origins:**
+
 - `https://petsiknessdev.sikwow.com`
 - `https://petsikness.sikwow.com`
 
