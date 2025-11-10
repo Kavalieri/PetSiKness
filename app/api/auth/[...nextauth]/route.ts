@@ -8,8 +8,20 @@ import { NextRequest } from "next/server";
  */
 function detectOrigin(request: NextRequest): string {
   // Prioridad 1: Headers del proxy (Apache) - CRÍTICO para producción
-  const forwardedHost = request.headers.get("x-forwarded-host");
-  const forwardedProto = request.headers.get("x-forwarded-proto");
+  let forwardedHost = request.headers.get("x-forwarded-host");
+  let forwardedProto = request.headers.get("x-forwarded-proto");
+
+  // Si hay múltiples valores separados por coma (error de configuración), tomar solo el primero
+  if (forwardedHost?.includes(",")) {
+    forwardedHost = forwardedHost.split(",")[0].trim();
+    console.log(
+      "[NextAuth] Multiple x-forwarded-host values detected, using first:",
+      forwardedHost
+    );
+  }
+  if (forwardedProto?.includes(",")) {
+    forwardedProto = forwardedProto.split(",")[0].trim();
+  }
 
   if (forwardedHost && forwardedProto) {
     const origin = `${forwardedProto}://${forwardedHost}`;
