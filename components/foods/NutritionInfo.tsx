@@ -95,7 +95,7 @@ function MacroBar({
 /**
  * Vista compacta de nutrición para cards
  */
-function CompactNutritionView({ food }: { food: Foods }) {
+export function CompactNutritionView({ food }: { food: Foods }) {
   const calories = Number(food.calories_per_100g) || 0;
   const protein = Number(food.protein_percentage) || 0;
   const fat = Number(food.fat_percentage) || 0;

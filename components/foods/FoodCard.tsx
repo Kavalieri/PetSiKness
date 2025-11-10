@@ -19,6 +19,7 @@ import {
 } from "@/lib/constants/foods";
 import { isEmojiIcon, getPhotoDisplay } from "@/lib/constants/food-icons";
 import { FoodImage } from "./FoodImage";
+import { CompactNutritionView } from "./NutritionInfo";
 
 // ============================================
 // TYPES
@@ -136,14 +137,10 @@ export function FoodCard({ food, onDelete }: FoodCardProps) {
   // Convertir tipos Kysely a tipos simples
   const foodId = String(food.id);
   const speciesArray = food.suitable_for_species as unknown as string[] | null;
-  const caloriesNum = food.calories_per_100g
-    ? Number(food.calories_per_100g)
-    : null;
-  const proteinNum = food.protein_percentage
-    ? Number(food.protein_percentage)
-    : null;
-  const fatNum = food.fat_percentage ? Number(food.fat_percentage) : null;
-  const carbsNum = food.carbs_percentage ? Number(food.carbs_percentage) : null;
+  
+  // Solo necesitamos verificar si hay datos nutricionales para el condicional
+  const hasNutritionData = food.calories_per_100g || food.protein_percentage || food.fat_percentage;
+  
   const priceNum = food.price_per_package
     ? Number(food.price_per_package)
     : null;
@@ -201,38 +198,13 @@ export function FoodCard({ food, onDelete }: FoodCardProps) {
 
       {/* Content con información nutricional y producto */}
       <CardContent className="space-y-3 text-sm">
-        {/* Información Nutricional */}
-        {(caloriesNum || proteinNum || fatNum) && (
-          <div className="space-y-1">
+        {/* Información Nutricional - Vista Compacta con Fibra y Humedad */}
+        {hasNutritionData && (
+          <div className="space-y-2">
             <h4 className="font-semibold text-xs text-muted-foreground uppercase">
               Nutrición (por 100g)
             </h4>
-            <div className="grid grid-cols-2 gap-2">
-              {caloriesNum && (
-                <div className="flex items-center justify-between bg-muted px-2 py-1 rounded">
-                  <span className="text-xs">Calorías:</span>
-                  <span className="font-medium">{caloriesNum} kcal</span>
-                </div>
-              )}
-              {proteinNum && (
-                <div className="flex items-center justify-between bg-muted px-2 py-1 rounded">
-                  <span className="text-xs">Proteína:</span>
-                  <span className="font-medium">{proteinNum}%</span>
-                </div>
-              )}
-              {fatNum && (
-                <div className="flex items-center justify-between bg-muted px-2 py-1 rounded">
-                  <span className="text-xs">Grasa:</span>
-                  <span className="font-medium">{fatNum}%</span>
-                </div>
-              )}
-              {carbsNum && (
-                <div className="flex items-center justify-between bg-muted px-2 py-1 rounded">
-                  <span className="text-xs">Carbohidratos:</span>
-                  <span className="font-medium">{carbsNum}%</span>
-                </div>
-              )}
-            </div>
+            <CompactNutritionView food={food} />
           </div>
         )}
 
