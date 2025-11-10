@@ -10,7 +10,8 @@ import { createFood, updateFood, deleteFood } from "@/app/foods/actions";
 import { useToast } from "@/hooks/use-toast";
 import {
   FOOD_TYPE_OPTIONS,
-  QUALITY_OPTIONS,
+  PALATABILITY_OPTIONS,
+  DIGESTIBILITY_OPTIONS,
   SPECIES_OPTIONS,
   AGE_RANGE_OPTIONS,
 } from "@/lib/constants/foods";
@@ -650,11 +651,11 @@ export function FoodForm({ food, onSuccess, onCancel }: FoodFormProps) {
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Selecciona calidad" />
+                        <SelectValue placeholder="Selecciona palatabilidad" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {QUALITY_OPTIONS.map((option) => (
+                      {PALATABILITY_OPTIONS.map((option) => (
                         <SelectItem key={option.value} value={option.value}>
                           {option.emoji} {option.label}
                         </SelectItem>
@@ -682,11 +683,11 @@ export function FoodForm({ food, onSuccess, onCancel }: FoodFormProps) {
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Selecciona calidad" />
+                        <SelectValue placeholder="Selecciona digestibilidad" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {QUALITY_OPTIONS.map((option) => (
+                      {DIGESTIBILITY_OPTIONS.map((option) => (
                         <SelectItem key={option.value} value={option.value}>
                           {option.emoji} {option.label}
                         </SelectItem>

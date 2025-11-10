@@ -7,7 +7,8 @@
 
 import type {
   FoodType,
-  QualityLevel,
+  PalatabilityLevel,
+  DigestibilityLevel,
   SpeciesType,
   AgeRange,
 } from "@/types/foods";
@@ -61,11 +62,11 @@ export const FOOD_TYPE_OPTIONS: Array<{
 ];
 
 // ============================================
-// Quality Levels
+// Palatability Levels (Taste/Preference)
 // ============================================
 
-export const QUALITY_OPTIONS: Array<{
-  value: QualityLevel;
+export const PALATABILITY_OPTIONS: Array<{
+  value: PalatabilityLevel;
   label: string;
   emoji: string;
   color: string;
@@ -73,18 +74,54 @@ export const QUALITY_OPTIONS: Array<{
   {
     value: "low",
     label: "Baja",
-    emoji: "🔴",
+    emoji: "�",
     color: "text-red-600",
   },
   {
     value: "medium",
     label: "Media",
-    emoji: "🟡",
+    emoji: "�",
     color: "text-yellow-500",
   },
   {
     value: "high",
     label: "Alta",
+    emoji: "😋",
+    color: "text-green-600",
+  },
+];
+
+// ============================================
+// Digestibility Levels (Digestion Quality)
+// ============================================
+
+export const DIGESTIBILITY_OPTIONS: Array<{
+  value: DigestibilityLevel;
+  label: string;
+  emoji: string;
+  color: string;
+}> = [
+  {
+    value: "poor",
+    label: "Pobre",
+    emoji: "🔴",
+    color: "text-red-600",
+  },
+  {
+    value: "fair",
+    label: "Regular",
+    emoji: "🟠",
+    color: "text-orange-500",
+  },
+  {
+    value: "good",
+    label: "Buena",
+    emoji: "🟡",
+    color: "text-yellow-500",
+  },
+  {
+    value: "excellent",
+    label: "Excelente",
     emoji: "🟢",
     color: "text-green-600",
   },
@@ -302,9 +339,15 @@ export const FOOD_TYPE_LABELS: Record<FoodType, string> = Object.fromEntries(
   FOOD_TYPE_OPTIONS.map((opt) => [opt.value, opt.label])
 ) as Record<FoodType, string>;
 
-export const QUALITY_LABELS: Record<QualityLevel, string> = Object.fromEntries(
-  QUALITY_OPTIONS.map((opt) => [opt.value, opt.label])
-) as Record<QualityLevel, string>;
+export const PALATABILITY_LABELS: Record<PalatabilityLevel, string> =
+  Object.fromEntries(
+    PALATABILITY_OPTIONS.map((opt) => [opt.value, opt.label])
+  ) as Record<PalatabilityLevel, string>;
+
+export const DIGESTIBILITY_LABELS: Record<DigestibilityLevel, string> =
+  Object.fromEntries(
+    DIGESTIBILITY_OPTIONS.map((opt) => [opt.value, opt.label])
+  ) as Record<DigestibilityLevel, string>;
 
 export const SPECIES_LABELS: Record<SpeciesType, string> = Object.fromEntries(
   SPECIES_OPTIONS.map((opt) => [opt.value, opt.label])
@@ -331,9 +374,19 @@ export function getFoodTypeEmoji(type: string): string {
 }
 
 /**
- * Get emoji for quality level
+ * Get emoji for palatability level
  */
-export function getQualityEmoji(quality: string): string {
-  const option = QUALITY_OPTIONS.find((opt) => opt.value === quality);
-  return option?.emoji || "⚪";
+export function getPalatabilityEmoji(palatability: string): string {
+  const option = PALATABILITY_OPTIONS.find((opt) => opt.value === palatability);
+  return option?.emoji || "😐";
+}
+
+/**
+ * Get emoji for digestibility level
+ */
+export function getDigestibilityEmoji(digestibility: string): string {
+  const option = DIGESTIBILITY_OPTIONS.find(
+    (opt) => opt.value === digestibility
+  );
+  return option?.emoji || "🟡";
 }

@@ -132,10 +132,12 @@ export async function createFood(data: FoodFormData): Promise<Result<Foods>> {
         palatability,
         digestibility,
         suitable_for_species,
-        age_range
+        age_range,
+        notes,
+        photo_url
       ) VALUES (
         $1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
-        $11, $12, $13, $14, $15, $16, $17, $18, $19
+        $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21
       )
       RETURNING *`,
       [
@@ -158,6 +160,8 @@ export async function createFood(data: FoodFormData): Promise<Result<Foods>> {
         validData.digestibility || null,
         validData.suitable_for_species || [],
         validData.age_range || null,
+        validData.notes || null,
+        validData.photo_url || null,
       ]
     );
 
@@ -281,6 +285,14 @@ export async function updateFood(
     if (validData.age_range !== undefined) {
       updates.push(`age_range = $${paramIndex++}`);
       values.push(validData.age_range);
+    }
+    if (validData.notes !== undefined) {
+      updates.push(`notes = $${paramIndex++}`);
+      values.push(validData.notes);
+    }
+    if (validData.photo_url !== undefined) {
+      updates.push(`photo_url = $${paramIndex++}`);
+      values.push(validData.photo_url);
     }
 
     // 5. Check if any updates

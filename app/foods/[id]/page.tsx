@@ -20,9 +20,12 @@ import type { Metadata } from "next";
 import {
   FOOD_TYPE_LABELS,
   AGE_RANGE_LABELS,
-  QUALITY_LABELS,
+  PALATABILITY_LABELS,
+  DIGESTIBILITY_LABELS,
   SPECIES_LABELS,
   getSpeciesEmoji,
+  getPalatabilityEmoji,
+  getDigestibilityEmoji,
 } from "@/lib/constants/foods";
 
 interface FoodDetailPageProps {
@@ -222,11 +225,11 @@ export default async function FoodDetailPage({ params }: FoodDetailPageProps) {
                         Palatabilidad
                       </span>
                       <Badge variant="outline">
-                        {getQualityEmoji(String(food.palatability))}{" "}
-                        {QUALITY_LABELS[
+                        {getPalatabilityEmoji(String(food.palatability))}{" "}
+                        {PALATABILITY_LABELS[
                           String(
                             food.palatability
-                          ) as keyof typeof QUALITY_LABELS
+                          ) as keyof typeof PALATABILITY_LABELS
                         ] || food.palatability}
                       </Badge>
                     </div>
@@ -237,11 +240,11 @@ export default async function FoodDetailPage({ params }: FoodDetailPageProps) {
                         Digestibilidad
                       </span>
                       <Badge variant="outline">
-                        {getQualityEmoji(String(food.digestibility))}{" "}
-                        {QUALITY_LABELS[
+                        {getDigestibilityEmoji(String(food.digestibility))}{" "}
+                        {DIGESTIBILITY_LABELS[
                           String(
                             food.digestibility
-                          ) as keyof typeof QUALITY_LABELS
+                          ) as keyof typeof DIGESTIBILITY_LABELS
                         ] || food.digestibility}
                       </Badge>
                     </div>
@@ -343,15 +346,4 @@ export default async function FoodDetailPage({ params }: FoodDetailPageProps) {
       </div>
     </div>
   );
-}
-
-// Helper para emojis de calidad
-function getQualityEmoji(quality: string): string {
-  const emojis: Record<string, string> = {
-    poor: "😞",
-    fair: "😐",
-    good: "🙂",
-    excellent: "😋",
-  };
-  return emojis[quality] || "❓";
 }

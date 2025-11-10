@@ -34,12 +34,16 @@ export interface FoodFormData {
   price_per_package?: number;
 
   // Calidad
-  palatability?: QualityLevel;
-  digestibility?: QualityLevel;
+  palatability?: PalatabilityLevel;
+  digestibility?: DigestibilityLevel;
 
   // Restricciones
   suitable_for_species?: SpeciesType[];
   age_range?: AgeRange;
+
+  // Adicionales
+  notes?: string;
+  photo_url?: string;
 }
 
 // ============================================
@@ -67,14 +71,26 @@ export const FOOD_TYPES: readonly FoodType[] = [
 ] as const;
 
 /**
- * Quality levels (palatability, digestibility)
+ * Palatability levels (preference/taste)
  */
-export type QualityLevel = "low" | "medium" | "high";
+export type PalatabilityLevel = "low" | "medium" | "high";
 
-export const QUALITY_LEVELS: readonly QualityLevel[] = [
+export const PALATABILITY_LEVELS: readonly PalatabilityLevel[] = [
   "low",
   "medium",
   "high",
+] as const;
+
+/**
+ * Digestibility levels (digestion quality)
+ */
+export type DigestibilityLevel = "poor" | "fair" | "good" | "excellent";
+
+export const DIGESTIBILITY_LEVELS: readonly DigestibilityLevel[] = [
+  "poor",
+  "fair",
+  "good",
+  "excellent",
 ] as const;
 
 /**
@@ -180,10 +196,21 @@ export function isValidFoodType(value: string): value is FoodType {
 }
 
 /**
- * Check if quality level is valid
+ * Check if palatability level is valid
  */
-export function isValidQualityLevel(value: string): value is QualityLevel {
-  return QUALITY_LEVELS.includes(value as QualityLevel);
+export function isValidPalatabilityLevel(
+  value: string
+): value is PalatabilityLevel {
+  return PALATABILITY_LEVELS.includes(value as PalatabilityLevel);
+}
+
+/**
+ * Check if digestibility level is valid
+ */
+export function isValidDigestibilityLevel(
+  value: string
+): value is DigestibilityLevel {
+  return DIGESTIBILITY_LEVELS.includes(value as DigestibilityLevel);
 }
 
 /**

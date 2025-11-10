@@ -12,7 +12,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   FOOD_TYPE_OPTIONS,
-  QUALITY_OPTIONS,
+  PALATABILITY_OPTIONS,
+  DIGESTIBILITY_OPTIONS,
   SPECIES_OPTIONS,
 } from "@/lib/constants/foods";
 
@@ -41,13 +42,28 @@ function getFoodTypeDisplay(foodType: string) {
 }
 
 /**
- * Get quality display info
+ * Get palatability display info
  */
-function getQualityDisplay(quality: string | null) {
-  if (!quality) return null;
-  const option = QUALITY_OPTIONS.find((opt) => opt.value === quality);
+function getPalatabilityDisplay(palatability: string | null) {
+  if (!palatability) return null;
+  const option = PALATABILITY_OPTIONS.find((opt) => opt.value === palatability);
   return {
-    label: option?.label || quality,
+    label: option?.label || palatability,
+    emoji: option?.emoji || "",
+    color: option?.color || "text-gray-600",
+  };
+}
+
+/**
+ * Get digestibility display info
+ */
+function getDigestibilityDisplay(digestibility: string | null) {
+  if (!digestibility) return null;
+  const option = DIGESTIBILITY_OPTIONS.find(
+    (opt) => opt.value === digestibility
+  );
+  return {
+    label: option?.label || digestibility,
     emoji: option?.emoji || "",
     color: option?.color || "text-gray-600",
   };
@@ -133,7 +149,8 @@ export function FoodCard({ food, onDelete }: FoodCardProps) {
     : null;
 
   const foodType = getFoodTypeDisplay(food.food_type);
-  const palatability = getQualityDisplay(food.palatability);
+  const palatability = getPalatabilityDisplay(food.palatability);
+  const digestibility = getDigestibilityDisplay(food.digestibility);
   const species = getSpeciesDisplay(speciesArray);
   const price = formatPrice(priceNum, packageNum);
 
@@ -201,15 +218,29 @@ export function FoodCard({ food, onDelete }: FoodCardProps) {
           </div>
         )}
 
-        {/* Palatabilidad */}
-        {palatability && (
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">
-              Palatabilidad:
-            </span>
-            <Badge variant={getQualityVariant(food.palatability)}>
-              {palatability.emoji} {palatability.label}
-            </Badge>
+        {/* Palatabilidad y Digestibilidad */}
+        {(palatability || digestibility) && (
+          <div className="space-y-2">
+            {palatability && (
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-muted-foreground">
+                  Palatabilidad:
+                </span>
+                <Badge variant={getQualityVariant(food.palatability)}>
+                  {palatability.emoji} {palatability.label}
+                </Badge>
+              </div>
+            )}
+            {digestibility && (
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-muted-foreground">
+                  Digestibilidad:
+                </span>
+                <Badge variant={getQualityVariant(food.digestibility)}>
+                  {digestibility.emoji} {digestibility.label}
+                </Badge>
+              </div>
+            )}
           </div>
         )}
 

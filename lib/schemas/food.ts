@@ -18,7 +18,8 @@ const FOOD_TYPES = [
   "treat",
   "supplement",
 ] as const;
-const QUALITY_LEVELS = ["low", "medium", "high"] as const;
+const PALATABILITY_LEVELS = ["low", "medium", "high"] as const;
+const DIGESTIBILITY_LEVELS = ["poor", "fair", "good", "excellent"] as const;
 const SPECIES_TYPES = ["cat", "dog", "bird", "rabbit", "other"] as const;
 const AGE_RANGES = ["kitten/puppy", "adult", "senior", "all_ages"] as const;
 
@@ -168,19 +169,31 @@ const FoodFormSchemaBase = z.object({
   // Calidad (Optional)
   // ========================================
   palatability: z
-    .enum(QUALITY_LEVELS, {
+    .enum(PALATABILITY_LEVELS, {
       errorMap: () => ({
         message: "Selecciona un nivel de palatabilidad válido",
       }),
     })
     .optional(),
   digestibility: z
-    .enum(QUALITY_LEVELS, {
+    .enum(DIGESTIBILITY_LEVELS, {
       errorMap: () => ({
         message: "Selecciona un nivel de digestibilidad válido",
       }),
     })
     .optional(),
+
+  // ========================================
+  // Notas y Foto (Optional)
+  // ========================================
+  notes: z.string().max(2000, "Máximo 2000 caracteres").trim().optional(),
+  photo_url: z
+    .string()
+    .url("Debe ser una URL válida")
+    .max(500, "Máximo 500 caracteres")
+    .trim()
+    .optional(),
+
   // ========================================
   // Restricciones (Optional)
   // ========================================
