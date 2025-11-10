@@ -319,9 +319,9 @@ export async function createFeeding(formData: FormData): Promise<Result> {
 
     const validated = parsed.data;
 
-    // Verificar que pet y food pertenecen al household
+    // Verificar que pet pertenece al household y está activa
     const petCheck = await query(
-      "SELECT id FROM pets WHERE id = $1 AND household_id = $2",
+      "SELECT id FROM pets WHERE id = $1 AND household_id = $2 AND is_active = true",
       [validated.pet_id, householdId]
     );
 

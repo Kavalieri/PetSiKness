@@ -98,7 +98,7 @@ export async function getDailySummary(
         dfs.over_target
       FROM daily_feeding_summary dfs
       JOIN pets p ON p.id = dfs.pet_id
-      WHERE p.household_id = $1 AND dfs.feeding_date = $2
+      WHERE p.household_id = $1 AND p.is_active = true AND dfs.feeding_date = $2
       ORDER BY dfs.pet_name
       `,
       [householdId, targetDate]
@@ -144,7 +144,7 @@ export async function getTodayBalance(): Promise<Result<TodayBalance[]>> {
         END as status
       FROM pets p
       LEFT JOIN feedings f ON f.pet_id = p.id AND f.feeding_date = $2
-      WHERE p.household_id = $1
+      WHERE p.household_id = $1 AND p.is_active = true
       GROUP BY p.id, p.name, p.daily_food_goal_grams
       ORDER BY p.name
       `,
@@ -152,14 +152,16 @@ export async function getTodayBalance(): Promise<Result<TodayBalance[]>> {
     );
 
     // Convertir achievement_pct de string a number (PostgreSQL ROUND devuelve numeric como string)
-    const balances: TodayBalance[] = result.rows.map((row: TodayBalanceRow) => ({
-      ...row,
-      achievement_pct: parseFloat(String(row.achievement_pct || "0")),
-      total_served: Number(row.total_served),
-      total_eaten: Number(row.total_eaten),
-      total_leftover: Number(row.total_leftover),
-      daily_goal: Number(row.daily_goal),
-    }));
+    const balances: TodayBalance[] = result.rows.map(
+      (row: TodayBalanceRow) => ({
+        ...row,
+        achievement_pct: parseFloat(String(row.achievement_pct || "0")),
+        total_served: Number(row.total_served),
+        total_eaten: Number(row.total_eaten),
+        total_leftover: Number(row.total_leftover),
+        daily_goal: Number(row.daily_goal),
+      })
+    );
 
     return ok(balances);
   } catch (error) {
@@ -189,6 +191,7 @@ export async function getWeeklyStats(): Promise<Result<WeeklyStats[]>> {
       FROM daily_feeding_summary dfs
       JOIN pets p ON p.id = dfs.pet_id
       WHERE p.household_id = $1
+        AND p.is_active = true
         AND dfs.feeding_date >= CURRENT_DATE - INTERVAL '7 days'
       GROUP BY dfs.feeding_date
       ORDER BY dfs.feeding_date DESC
@@ -220,6 +223,7 @@ export async function getAlertsCount(): Promise<Result<number>> {
       FROM daily_feeding_summary dfs
       JOIN pets p ON p.id = dfs.pet_id
       WHERE p.household_id = $1
+        AND p.is_active = true
         AND dfs.feeding_date = $2
         AND dfs.under_target = true
       `,
@@ -248,7 +252,7 @@ export async function getPetTrendData(
 
     // Verificar ownership
     const petCheck = await query(
-      "SELECT id FROM pets WHERE id = $1 AND household_id = $2",
+      "SELECT id FROM pets WHERE id = $1 AND household_id = $2 AND is_active = true",
       [petId, householdId]
     );
 
@@ -292,20 +296,21 @@ export async function getHouseholdOverview(): Promise<
     const { householdId } = await requireHousehold();
     const today = new Date().toISOString().split("T")[0];
 
-    // Total de mascotas
+    // Total de mascotas activas
     const petsResult = await query(
-      "SELECT COUNT(*)::integer as count FROM pets WHERE household_id = $1",
+      "SELECT COUNT(*)::integer as count FROM pets WHERE household_id = $1 AND is_active = true",
       [householdId]
     );
     const totalPets = petsResult.rows[0]?.count || 0;
 
-    // Mascotas on track hoy
+    // Mascotas on track hoy (solo activas)
     const onTrackResult = await query(
       `
       SELECT COUNT(*)::integer as count
       FROM daily_feeding_summary dfs
       JOIN pets p ON p.id = dfs.pet_id
       WHERE p.household_id = $1
+        AND p.is_active = true
         AND dfs.feeding_date = $2
         AND dfs.met_target = true
       `,
@@ -325,13 +330,14 @@ export async function getHouseholdOverview(): Promise<
     );
     const totalFeedingsLast7Days = feedingsResult.rows[0]?.count || 0;
 
-    // Promedio de cumplimiento (últimos 7 días)
+    // Promedio de cumplimiento (últimos 7 días, solo mascotas activas)
     const avgResult = await query(
       `
       SELECT ROUND(AVG(goal_achievement_pct), 2) as avg
       FROM daily_feeding_summary dfs
       JOIN pets p ON p.id = dfs.pet_id
       WHERE p.household_id = $1
+        AND p.is_active = true
         AND dfs.feeding_date >= CURRENT_DATE - INTERVAL '7 days'
       `,
       [householdId]
