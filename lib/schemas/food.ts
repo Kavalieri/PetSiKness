@@ -10,17 +10,17 @@ import { FOOD_CONSTRAINTS } from "@/lib/constants/foods";
 // Enum Values for Zod (tuples, not readonly)
 // ============================================
 
-const FOOD_TYPES = ["dry", "wet", "raw", "homemade", "treats"] as const;
-const QUALITY_LEVELS = ["poor", "fair", "good", "excellent"] as const;
-const SPECIES_TYPES = ["cat", "dog", "bird", "rabbit", "other"] as const;
-const AGE_RANGES = [
-  "kitten",
-  "puppy",
-  "adult",
-  "senior",
-  "all",
-  "other",
+const FOOD_TYPES = [
+  "dry",
+  "wet",
+  "raw",
+  "homemade",
+  "treat",
+  "supplement",
 ] as const;
+const QUALITY_LEVELS = ["low", "medium", "high"] as const;
+const SPECIES_TYPES = ["cat", "dog", "bird", "rabbit", "other"] as const;
+const AGE_RANGES = ["kitten/puppy", "adult", "senior", "all_ages"] as const;
 
 // ============================================
 // Food Form Schema (Base)

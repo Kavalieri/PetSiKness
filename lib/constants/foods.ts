@@ -47,10 +47,16 @@ export const FOOD_TYPE_OPTIONS: Array<{
     description: "Comida casera cocinada",
   },
   {
-    value: "treats",
+    value: "treat",
     label: "Snacks/Premios",
     emoji: "🦴",
     description: "Golosinas, premios, treats",
+  },
+  {
+    value: "supplement",
+    label: "Suplemento",
+    emoji: "💊",
+    description: "Suplementos nutricionales",
   },
 ];
 
@@ -65,26 +71,20 @@ export const QUALITY_OPTIONS: Array<{
   color: string;
 }> = [
   {
-    value: "poor",
+    value: "low",
     label: "Baja",
     emoji: "🔴",
     color: "text-red-600",
   },
   {
-    value: "fair",
-    label: "Regular",
-    emoji: "🟠",
-    color: "text-orange-500",
-  },
-  {
-    value: "good",
-    label: "Buena",
+    value: "medium",
+    label: "Media",
     emoji: "🟡",
     color: "text-yellow-500",
   },
   {
-    value: "excellent",
-    label: "Excelente",
+    value: "high",
+    label: "Alta",
     emoji: "🟢",
     color: "text-green-600",
   },
@@ -136,14 +136,9 @@ export const AGE_RANGE_OPTIONS: Array<{
   description: string;
 }> = [
   {
-    value: "kitten",
-    label: "Cachorro (Gato)",
-    description: "0-12 meses",
-  },
-  {
-    value: "puppy",
-    label: "Cachorro (Perro)",
-    description: "0-12 meses",
+    value: "kitten/puppy",
+    label: "Cachorro",
+    description: "0-12 meses (gato o perro)",
   },
   {
     value: "adult",
@@ -156,14 +151,9 @@ export const AGE_RANGE_OPTIONS: Array<{
     description: "7+ años",
   },
   {
-    value: "all",
+    value: "all_ages",
     label: "Todas las edades",
     description: "All life stages",
-  },
-  {
-    value: "other",
-    label: "Otra",
-    description: "Específico",
   },
 ];
 

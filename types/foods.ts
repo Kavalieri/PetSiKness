@@ -49,26 +49,32 @@ export interface FoodFormData {
 /**
  * Food types available
  */
-export type FoodType = "dry" | "wet" | "raw" | "homemade" | "treats";
+export type FoodType =
+  | "dry"
+  | "wet"
+  | "raw"
+  | "homemade"
+  | "treat"
+  | "supplement";
 
 export const FOOD_TYPES: readonly FoodType[] = [
   "dry",
   "wet",
   "raw",
   "homemade",
-  "treats",
+  "treat",
+  "supplement",
 ] as const;
 
 /**
  * Quality levels (palatability, digestibility)
  */
-export type QualityLevel = "poor" | "fair" | "good" | "excellent";
+export type QualityLevel = "low" | "medium" | "high";
 
 export const QUALITY_LEVELS: readonly QualityLevel[] = [
-  "poor",
-  "fair",
-  "good",
-  "excellent",
+  "low",
+  "medium",
+  "high",
 ] as const;
 
 /**
@@ -87,21 +93,13 @@ export const SPECIES_TYPES: readonly SpeciesType[] = [
 /**
  * Age ranges
  */
-export type AgeRange =
-  | "kitten"
-  | "puppy"
-  | "adult"
-  | "senior"
-  | "all"
-  | "other";
+export type AgeRange = "kitten/puppy" | "adult" | "senior" | "all_ages";
 
 export const AGE_RANGES: readonly AgeRange[] = [
-  "kitten",
-  "puppy",
+  "kitten/puppy",
   "adult",
   "senior",
-  "all",
-  "other",
+  "all_ages",
 ] as const;
 
 // ============================================

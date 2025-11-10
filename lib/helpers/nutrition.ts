@@ -149,7 +149,8 @@ export function getProteinQuality(
     wet: { low: 8, optimal: 10, high: 15 },
     raw: { low: 15, optimal: 18, high: 25 },
     homemade: { low: 20, optimal: 25, high: 35 },
-    treats: { low: 10, optimal: 15, high: 20 },
+    treat: { low: 10, optimal: 15, high: 20 },
+    supplement: { low: 0, optimal: 5, high: 10 },
   };
 
   const standard = standards[foodType];
