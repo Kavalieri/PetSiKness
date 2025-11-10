@@ -23,7 +23,13 @@ export default async function RootLayout({
   return (
     <html lang="es">
       <body className={inter.className}>
-        <NavBar user={session?.user ? { ...session.user, id: session.user.profile_id || '' } : null} />
+        <NavBar
+          user={
+            session?.user
+              ? { ...session.user, id: session.user.profile_id || "" }
+              : null
+          }
+        />
         <main>{children}</main>
         <Toaster />
       </body>

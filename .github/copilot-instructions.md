@@ -20,12 +20,14 @@
 📚 **DB Baseline**: [../database/migrations/20250101_000000_baseline.sql](../database/migrations/20250101_000000_baseline.sql)
 
 📚 **Tareas VS Code**: [../.vscode/tasks.json](../.vscode/tasks.json) - **16 tareas disponibles**
+
 - 🎮 **PM2** (8 tareas): Iniciar/Detener/Reiniciar DEV y PROD
 - 📊 **Monitoreo** (4 tareas): Ver logs (50 líneas o tiempo real), estado general
 - 🏗️ **Build** (2 tareas): Build completo y build + deploy
 - 🔄 **Types** (2 tareas): Regenerar automáticamente desde schema PostgreSQL
 
 📚 **Scripts Disponibles**:
+
 - `scripts/PM2_build_and_deploy_and_dev/` - Scripts PM2 (start, stop, status, clean logs)
 - `scripts/generate-types.js` - Auto-generación de types desde PostgreSQL
 
@@ -147,6 +149,7 @@
 Los types de base de datos se generan **automáticamente** desde el schema PostgreSQL usando `kysely-codegen`.
 
 **Archivo generado**: `types/database.generated.ts`
+
 - **Formato**: Kysely (interfaces TypeScript)
 - **Source of truth**: Schema PostgreSQL
 - **Mantenimiento**: ✅ CERO (100% automático)
@@ -162,6 +165,7 @@ npm run types:generate:prod
 ```
 
 **VS Code Tasks disponibles**:
+
 - `🔄 Regenerar Types (DEV)`
 - `🔄 Regenerar Types (PROD)`
 
@@ -190,7 +194,7 @@ database/
 ### Workflow
 
 1. **Crear migración**: Archivo SQL con timestamp
-2. **Aplicar a DEV**: 
+2. **Aplicar a DEV**:
    ```bash
    sudo -u postgres psql -d pet_sikness_dev -f database/migrations/YYYYMMDD_HHMMSS_descripcion.sql
    ```
@@ -230,27 +234,34 @@ database/
 ## ✅ Checklist al Implementar Nueva Funcionalidad
 
 1. **Contexto de usuario**
+
    - Obtén el hogar activo con `getUserHouseholdId()` (desde `lib/auth.ts`)
 
 2. **Alcance de datos**
+
    - **Filtra todas las consultas** por `household_id`
 
 3. **Validación y resultado**
+
    - **Valida inputs con Zod** en Server Actions
    - Devuelve un **`Result`** consistente (`ok` / `fail`) según la validación
 
 4. **Cambios de base de datos**
+
    - Si hay cambios de estructura, **crea una migración SQL**
    - Aplica a DEV primero, prueba, luego PROD
 
 5. **Efectos secundarios de caché/rutas**
+
    - Tras mutaciones, ejecuta **`revalidatePath()`** en las rutas afectadas
 
 6. **Calidad del código**
+
    - Mantén **typecheck** y **linters** en verde
    - **No hagas build de producción** salvo que se solicite explícitamente
 
 7. **Tipos TypeScript**
+
    - Tras migración, **regenera types**: `npm run types:generate:dev`
    - Usa tipos de `types/database.generated.ts` (NUNCA editar manualmente)
 
@@ -322,11 +333,18 @@ Usar helper `lib/result.ts`:
 
 ```typescript
 export type Ok<T = unknown> = { ok: true; data?: T };
-export type Fail = { ok: false; message: string; fieldErrors?: Record<string, string[]> };
+export type Fail = {
+  ok: false;
+  message: string;
+  fieldErrors?: Record<string, string[]>;
+};
 export type Result<T = unknown> = Ok<T> | Fail;
 
 export const ok = <T>(data?: T): Ok<T> => ({ ok: true, data });
-export const fail = (message: string, fieldErrors?: Record<string, string[]>): Fail => ({
+export const fail = (
+  message: string,
+  fieldErrors?: Record<string, string[]>
+): Fail => ({
   ok: false,
   message,
   fieldErrors,
@@ -336,17 +354,17 @@ export const fail = (message: string, fieldErrors?: Record<string, string[]>): F
 **Ejemplo de Server Action:**
 
 ```typescript
-'use server';
-import { z } from 'zod';
-import { revalidatePath } from 'next/cache';
-import { ok, fail } from '@/lib/result';
-import type { Result } from '@/lib/result';
-import { requireHousehold } from '@/lib/auth';
+"use server";
+import { z } from "zod";
+import { revalidatePath } from "next/cache";
+import { ok, fail } from "@/lib/result";
+import type { Result } from "@/lib/result";
+import { requireHousehold } from "@/lib/auth";
 
 const PetSchema = z.object({
-  name: z.string().min(1, 'Nombre requerido'),
-  species: z.string().min(1, 'Especie requerida'),
-  daily_food_goal_grams: z.number().positive('Meta debe ser mayor a 0'),
+  name: z.string().min(1, "Nombre requerido"),
+  species: z.string().min(1, "Especie requerida"),
+  daily_food_goal_grams: z.number().positive("Meta debe ser mayor a 0"),
 });
 
 export async function createPet(formData: FormData): Promise<Result> {
@@ -360,14 +378,14 @@ export async function createPet(formData: FormData): Promise<Result> {
   // 2. Validación
   const parsed = PetSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
-    return fail('Datos inválidos', parsed.error.flatten().fieldErrors);
+    return fail("Datos inválidos", parsed.error.flatten().fieldErrors);
   }
 
   // 3. Lógica de negocio
   // await query('INSERT INTO pets ...', [householdId, ...]);
 
   // 4. Revalidación
-  revalidatePath('/app/pets');
+  revalidatePath("/app/pets");
   return ok();
 }
 ```
@@ -412,31 +430,37 @@ export async function createPet(formData: FormData): Promise<Result> {
 ## 🎯 Fases de Desarrollo
 
 ### Fase 1: Setup Base ✅ COMPLETADA
+
 - Infraestructura, DB, types, documentación
 
 ### Fase 2: CRUD Mascotas 📋 SIGUIENTE
+
 - Listado, detalle, crear, editar, eliminar
 - Formularios con validación Zod
 - Components: PetCard, PetForm, PetList
 
 ### Fase 3: CRUD Alimentos 📋 PENDIENTE
+
 - Catálogo con búsqueda
 - Info nutricional completa
 - Components: FoodCard, FoodForm, NutritionInfo
 
 ### Fase 4: Calendario Alimentación 📋 PENDIENTE
+
 - Registro de comidas
 - Cálculo balance diario
 - Indicadores visuales
 - Filtros y búsqueda
 
 ### Fase 5: Dashboard 📋 PENDIENTE
+
 - Resumen general
 - Métricas por mascota
 - Gráficos de tendencia
 - Alertas de balance
 
 ### Fase 6: Production Deployment 📋 PENDIENTE
+
 - nginx, SSL, deploy definitivo
 
 ---

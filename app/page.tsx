@@ -11,12 +11,12 @@ export default async function HomePage() {
   // Si está autenticado, verificar si tiene hogar
   if (session) {
     const householdId = await getUserHouseholdId();
-    
+
     // Si no tiene hogar, redirigir a onboarding
     if (!householdId) {
       redirect("/onboarding");
     }
-    
+
     // Si tiene hogar, redirigir a mascotas
     redirect("/pets");
   }
@@ -32,7 +32,7 @@ export default async function HomePage() {
         <p className="text-xl md:text-2xl text-gray-600 mb-8">
           Sistema de gestión alimentaria para mascotas
         </p>
-        
+
         <div className="space-y-6 mb-12">
           <div className="flex items-center justify-center space-x-3 text-left">
             <div className="text-3xl">📊</div>
@@ -40,14 +40,14 @@ export default async function HomePage() {
               Monitorea el balance nutricional diario
             </p>
           </div>
-          
+
           <div className="flex items-center justify-center space-x-3 text-left">
             <div className="text-3xl">🎯</div>
             <p className="text-lg text-gray-700">
               Establece metas personalizadas para cada mascota
             </p>
           </div>
-          
+
           <div className="flex items-center justify-center space-x-3 text-left">
             <div className="text-3xl">👨‍👩‍👧‍👦</div>
             <p className="text-lg text-gray-700">
