@@ -96,7 +96,7 @@ export async function getFoodById(id: string): Promise<Result<Foods>> {
 export async function createFood(data: FoodFormData): Promise<Result<Foods>> {
   try {
     // 1. Auth + Household context
-    const { householdId } = await requireHousehold();
+    const { householdId, profileId } = await requireHousehold();
 
     // 2. Validate with Zod
     const parsed = FoodFormSchema.safeParse(data);
@@ -115,6 +115,7 @@ export async function createFood(data: FoodFormData): Promise<Result<Foods>> {
     const result = await query(
       `INSERT INTO foods (
         household_id,
+        created_by,
         name,
         brand,
         food_type,
@@ -134,11 +135,12 @@ export async function createFood(data: FoodFormData): Promise<Result<Foods>> {
         age_range
       ) VALUES (
         $1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
-        $11, $12, $13, $14, $15, $16, $17, $18
+        $11, $12, $13, $14, $15, $16, $17, $18, $19
       )
       RETURNING *`,
       [
         householdId,
+        profileId,
         validData.name,
         validData.brand || null,
         validData.food_type,
