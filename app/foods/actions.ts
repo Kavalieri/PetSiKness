@@ -93,9 +93,7 @@ export async function getFoodById(id: string): Promise<Result<Foods>> {
  * @param data - Food form data
  * @returns Created food or error
  */
-export async function createFood(
-  data: FoodFormData
-): Promise<Result<Foods>> {
+export async function createFood(data: FoodFormData): Promise<Result<Foods>> {
   try {
     // 1. Auth + Household context
     const { householdId } = await requireHousehold();
