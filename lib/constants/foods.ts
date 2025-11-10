@@ -1,7 +1,7 @@
 /**
  * Constants for Foods Domain
  * Pet SiKness - Food Management
- * 
+ *
  * Human-readable labels and options for UI
  */
 
@@ -247,11 +247,7 @@ export const FOOD_MESSAGES = {
 /**
  * Searchable fields for food search
  */
-export const FOOD_SEARCHABLE_FIELDS = [
-  "name",
-  "brand",
-  "ingredients",
-] as const;
+export const FOOD_SEARCHABLE_FIELDS = ["name", "brand", "ingredients"] as const;
 
 /**
  * Sort options for food list

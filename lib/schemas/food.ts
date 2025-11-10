@@ -164,14 +164,8 @@ const FoodFormSchemaBase = z.object({
       invalid_type_error: "El tamaño de porción debe ser un número",
     })
     .int("El tamaño de porción debe ser un número entero")
-    .min(
-      FOOD_CONSTRAINTS.weight.min,
-      `Mínimo ${FOOD_CONSTRAINTS.weight.min}g`
-    )
-    .max(
-      FOOD_CONSTRAINTS.weight.max,
-      `Máximo ${FOOD_CONSTRAINTS.weight.max}g`
-    )
+    .min(FOOD_CONSTRAINTS.weight.min, `Mínimo ${FOOD_CONSTRAINTS.weight.min}g`)
+    .max(FOOD_CONSTRAINTS.weight.max, `Máximo ${FOOD_CONSTRAINTS.weight.max}g`)
     .optional()
     .nullable(),
 
@@ -180,14 +174,8 @@ const FoodFormSchemaBase = z.object({
       invalid_type_error: "El tamaño del paquete debe ser un número",
     })
     .int("El tamaño del paquete debe ser un número entero")
-    .min(
-      FOOD_CONSTRAINTS.weight.min,
-      `Mínimo ${FOOD_CONSTRAINTS.weight.min}g`
-    )
-    .max(
-      FOOD_CONSTRAINTS.weight.max,
-      `Máximo ${FOOD_CONSTRAINTS.weight.max}g`
-    )
+    .min(FOOD_CONSTRAINTS.weight.min, `Mínimo ${FOOD_CONSTRAINTS.weight.min}g`)
+    .max(FOOD_CONSTRAINTS.weight.max, `Máximo ${FOOD_CONSTRAINTS.weight.max}g`)
     .optional()
     .nullable(),
 
@@ -195,14 +183,8 @@ const FoodFormSchemaBase = z.object({
     .number({
       invalid_type_error: "El precio debe ser un número",
     })
-    .min(
-      FOOD_CONSTRAINTS.price.min,
-      `Mínimo ${FOOD_CONSTRAINTS.price.min}€`
-    )
-    .max(
-      FOOD_CONSTRAINTS.price.max,
-      `Máximo ${FOOD_CONSTRAINTS.price.max}€`
-    )
+    .min(FOOD_CONSTRAINTS.price.min, `Mínimo ${FOOD_CONSTRAINTS.price.min}€`)
+    .max(FOOD_CONSTRAINTS.price.max, `Máximo ${FOOD_CONSTRAINTS.price.max}€`)
     .optional()
     .nullable(),
 
