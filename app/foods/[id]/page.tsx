@@ -1,12 +1,12 @@
-import { requireHousehold } from '@/lib/auth';
-import { getFoodById } from '@/app/foods/actions';
-import { NutritionInfo } from '@/components/foods/NutritionInfo';
-import { FoodDeleteButton } from './FoodDeleteButton';
-import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { notFound } from 'next/navigation';
-import Link from 'next/link';
+import { requireHousehold } from "@/lib/auth";
+import { getFoodById } from "@/app/foods/actions";
+import { NutritionInfo } from "@/components/foods/NutritionInfo";
+import { FoodDeleteButton } from "./FoodDeleteButton";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { notFound } from "next/navigation";
+import Link from "next/link";
 import {
   ArrowLeft,
   Edit,
@@ -15,15 +15,15 @@ import {
   CalendarDays,
   Star,
   Info,
-} from 'lucide-react';
-import type { Metadata } from 'next';
+} from "lucide-react";
+import type { Metadata } from "next";
 import {
   FOOD_TYPE_LABELS,
   AGE_RANGE_LABELS,
   QUALITY_LABELS,
   SPECIES_LABELS,
   getSpeciesEmoji,
-} from '@/lib/constants/foods';
+} from "@/lib/constants/foods";
 
 interface FoodDetailPageProps {
   params: { id: string };
@@ -36,7 +36,7 @@ export async function generateMetadata({
 
   if (!result.ok || !result.data) {
     return {
-      title: 'Alimento no encontrado | Pet SiKness',
+      title: "Alimento no encontrado | Pet SiKness",
     };
   }
 
@@ -44,7 +44,9 @@ export async function generateMetadata({
 
   return {
     title: `${food.name} | Pet SiKness`,
-    description: `Información completa de ${food.name}${food.brand ? ` - ${food.brand}` : ''}`,
+    description: `Información completa de ${food.name}${
+      food.brand ? ` - ${food.brand}` : ""
+    }`,
   };
 }
 
@@ -64,7 +66,8 @@ export default async function FoodDetailPage({ params }: FoodDetailPageProps) {
   // Calcular precio por kg si hay datos
   const pricePerKg =
     food.price_per_package && food.package_size_grams
-      ? (Number(food.price_per_package) / Number(food.package_size_grams)) * 1000
+      ? (Number(food.price_per_package) / Number(food.package_size_grams)) *
+        1000
       : null;
 
   return (
@@ -83,17 +86,25 @@ export default async function FoodDetailPage({ params }: FoodDetailPageProps) {
             </div>
 
             <div>
-              <h1 className="text-4xl font-bold tracking-tight mb-2">{food.name}</h1>
+              <h1 className="text-4xl font-bold tracking-tight mb-2">
+                {food.name}
+              </h1>
               {food.brand && (
-                <p className="text-xl text-muted-foreground mb-4">{food.brand}</p>
+                <p className="text-xl text-muted-foreground mb-4">
+                  {food.brand}
+                </p>
               )}
               <div className="flex flex-wrap gap-2">
                 <Badge variant="default" className="text-sm">
-                  {FOOD_TYPE_LABELS[String(food.food_type) as keyof typeof FOOD_TYPE_LABELS] || food.food_type}
+                  {FOOD_TYPE_LABELS[
+                    String(food.food_type) as keyof typeof FOOD_TYPE_LABELS
+                  ] || food.food_type}
                 </Badge>
                 {food.age_range && (
                   <Badge variant="secondary" className="text-sm">
-                    {AGE_RANGE_LABELS[String(food.age_range) as keyof typeof AGE_RANGE_LABELS] || food.age_range}
+                    {AGE_RANGE_LABELS[
+                      String(food.age_range) as keyof typeof AGE_RANGE_LABELS
+                    ] || food.age_range}
                   </Badge>
                 )}
               </div>
@@ -108,7 +119,10 @@ export default async function FoodDetailPage({ params }: FoodDetailPageProps) {
                 Editar
               </Button>
             </Link>
-            <FoodDeleteButton foodId={String(food.id)} foodName={String(food.name)} />
+            <FoodDeleteButton
+              foodId={String(food.id)}
+              foodName={String(food.name)}
+            />
           </div>
         </div>
       </div>
@@ -137,14 +151,22 @@ export default async function FoodDetailPage({ params }: FoodDetailPageProps) {
                 <CardContent className="space-y-3">
                   {food.serving_size_grams && (
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Tamaño porción</span>
-                      <span className="font-medium">{food.serving_size_grams}g</span>
+                      <span className="text-muted-foreground">
+                        Tamaño porción
+                      </span>
+                      <span className="font-medium">
+                        {food.serving_size_grams}g
+                      </span>
                     </div>
                   )}
                   {food.package_size_grams && (
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Tamaño paquete</span>
-                      <span className="font-medium">{food.package_size_grams}g</span>
+                      <span className="text-muted-foreground">
+                        Tamaño paquete
+                      </span>
+                      <span className="font-medium">
+                        {food.package_size_grams}g
+                      </span>
                     </div>
                   )}
                 </CardContent>
@@ -170,8 +192,12 @@ export default async function FoodDetailPage({ params }: FoodDetailPageProps) {
                     {pricePerKg && (
                       <div className="pt-2 border-t">
                         <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">Precio por kg:</span>
-                          <span className="font-semibold">${pricePerKg.toFixed(2)}</span>
+                          <span className="text-muted-foreground">
+                            Precio por kg:
+                          </span>
+                          <span className="font-semibold">
+                            ${pricePerKg.toFixed(2)}
+                          </span>
                         </div>
                       </div>
                     )}
@@ -192,17 +218,31 @@ export default async function FoodDetailPage({ params }: FoodDetailPageProps) {
                 <CardContent className="space-y-3">
                   {food.palatability && (
                     <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">Palatabilidad</span>
+                      <span className="text-muted-foreground">
+                        Palatabilidad
+                      </span>
                       <Badge variant="outline">
-                        {getQualityEmoji(String(food.palatability))} {QUALITY_LABELS[String(food.palatability) as keyof typeof QUALITY_LABELS] || food.palatability}
+                        {getQualityEmoji(String(food.palatability))}{" "}
+                        {QUALITY_LABELS[
+                          String(
+                            food.palatability
+                          ) as keyof typeof QUALITY_LABELS
+                        ] || food.palatability}
                       </Badge>
                     </div>
                   )}
                   {food.digestibility && (
                     <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">Digestibilidad</span>
+                      <span className="text-muted-foreground">
+                        Digestibilidad
+                      </span>
                       <Badge variant="outline">
-                        {getQualityEmoji(String(food.digestibility))} {QUALITY_LABELS[String(food.digestibility) as keyof typeof QUALITY_LABELS] || food.digestibility}
+                        {getQualityEmoji(String(food.digestibility))}{" "}
+                        {QUALITY_LABELS[
+                          String(
+                            food.digestibility
+                          ) as keyof typeof QUALITY_LABELS
+                        ] || food.digestibility}
                       </Badge>
                     </div>
                   )}
@@ -218,7 +258,9 @@ export default async function FoodDetailPage({ params }: FoodDetailPageProps) {
             <h2 className="text-2xl font-bold mb-4">Ingredientes</h2>
             <Card>
               <CardContent className="pt-6">
-                <p className="text-muted-foreground leading-relaxed">{food.ingredients}</p>
+                <p className="text-muted-foreground leading-relaxed">
+                  {food.ingredients}
+                </p>
               </CardContent>
             </Card>
           </section>
@@ -240,10 +282,15 @@ export default async function FoodDetailPage({ params }: FoodDetailPageProps) {
                       </h3>
                       <div className="flex flex-wrap gap-2">
                         {food.suitable_for_species.map((species: string) => (
-                          <Badge key={species} variant="outline" className="text-sm">
-                            {getSpeciesEmoji(species)}{' '}
-                            {SPECIES_LABELS[species as keyof typeof SPECIES_LABELS] ||
-                              species}
+                          <Badge
+                            key={species}
+                            variant="outline"
+                            className="text-sm"
+                          >
+                            {getSpeciesEmoji(species)}{" "}
+                            {SPECIES_LABELS[
+                              species as keyof typeof SPECIES_LABELS
+                            ] || species}
                           </Badge>
                         ))}
                       </div>
@@ -270,21 +317,24 @@ export default async function FoodDetailPage({ params }: FoodDetailPageProps) {
             <div className="flex items-center gap-2">
               <CalendarDays className="h-4 w-4" />
               <span>
-                Añadido el{' '}
-                {new Date(String(food.created_at)).toLocaleDateString('es-ES', {
-                  day: 'numeric',
-                  month: 'long',
-                  year: 'numeric',
+                Añadido el{" "}
+                {new Date(String(food.created_at)).toLocaleDateString("es-ES", {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
                 })}
               </span>
               {food.updated_at !== food.created_at && (
                 <span>
-                  • Actualizado el{' '}
-                  {new Date(String(food.updated_at)).toLocaleDateString('es-ES', {
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric',
-                  })}
+                  • Actualizado el{" "}
+                  {new Date(String(food.updated_at)).toLocaleDateString(
+                    "es-ES",
+                    {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    }
+                  )}
                 </span>
               )}
             </div>
@@ -298,10 +348,10 @@ export default async function FoodDetailPage({ params }: FoodDetailPageProps) {
 // Helper para emojis de calidad
 function getQualityEmoji(quality: string): string {
   const emojis: Record<string, string> = {
-    poor: '😞',
-    fair: '😐',
-    good: '🙂',
-    excellent: '😋',
+    poor: "😞",
+    fair: "😐",
+    good: "🙂",
+    excellent: "😋",
   };
-  return emojis[quality] || '❓';
+  return emojis[quality] || "❓";
 }

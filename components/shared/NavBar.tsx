@@ -10,6 +10,7 @@ import { ThemeToggle } from "./ThemeToggle";
 const navigation = [
   { name: "Inicio", href: "/" },
   { name: "Mascotas", href: "/pets" },
+  { name: "Alimentos", href: "/foods" },
 ];
 
 interface NavBarProps {

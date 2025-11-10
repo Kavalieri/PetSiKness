@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { FoodForm } from '@/components/foods/FoodForm';
-import { useRouter } from 'next/navigation';
-import type { Foods } from '@/types/database.generated';
+import { FoodForm } from "@/components/foods/FoodForm";
+import { useRouter } from "next/navigation";
+import type { Foods } from "@/types/database.generated";
 
 interface FoodFormWrapperProps {
   food: Foods;

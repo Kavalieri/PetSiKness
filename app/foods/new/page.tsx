@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { FoodForm } from '@/components/foods/FoodForm';
-import { useRouter } from 'next/navigation';
-import { ArrowLeft, PlusCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import Link from 'next/link';
+import { FoodForm } from "@/components/foods/FoodForm";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, PlusCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
 
 export default function NewFoodPage() {
   const router = useRouter();
@@ -44,10 +44,18 @@ export default function NewFoodPage() {
         </CardHeader>
         <CardContent>
           <ul className="space-y-2 text-sm text-muted-foreground">
-            <li>• Los campos con <span className="text-destructive">*</span> son obligatorios</li>
-            <li>• Revisa la etiqueta del producto para datos nutricionales exactos</li>
+            <li>
+              • Los campos con <span className="text-destructive">*</span> son
+              obligatorios
+            </li>
+            <li>
+              • Revisa la etiqueta del producto para datos nutricionales exactos
+            </li>
             <li>• Puedes editar esta información más tarde</li>
-            <li>• La suma de macronutrientes (proteína + grasa + carbohidratos) no debe exceder 100%</li>
+            <li>
+              • La suma de macronutrientes (proteína + grasa + carbohidratos) no
+              debe exceder 100%
+            </li>
           </ul>
         </CardContent>
       </Card>
@@ -55,7 +63,7 @@ export default function NewFoodPage() {
       {/* Formulario */}
       <div>
         <FoodForm
-          onSuccess={() => router.push('/foods')}
+          onSuccess={() => router.push("/foods")}
           onCancel={() => router.back()}
         />
       </div>

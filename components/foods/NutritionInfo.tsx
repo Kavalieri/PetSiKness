@@ -22,10 +22,7 @@ import {
   MACRO_COLORS,
   type QualityLevel,
 } from "@/lib/helpers/nutrition";
-import {
-  SPECIES_OPTIONS,
-  AGE_RANGE_OPTIONS,
-} from "@/lib/constants/foods";
+import { SPECIES_OPTIONS, AGE_RANGE_OPTIONS } from "@/lib/constants/foods";
 
 // ============================================
 // TYPES
@@ -72,9 +69,7 @@ function MacroBar({
         </div>
         <div className="flex items-center gap-2">
           <span className="text-sm font-semibold">{percentage}%</span>
-          <span className="text-xs text-muted-foreground">
-            ({grams}g/100g)
-          </span>
+          <span className="text-xs text-muted-foreground">({grams}g/100g)</span>
         </div>
       </div>
 
@@ -207,9 +202,7 @@ export function NutritionInfo({ food, compact = false }: NutritionInfoProps) {
               <div className="text-4xl font-bold text-orange-600">
                 {calories}
               </div>
-              <div className="text-sm text-muted-foreground">
-                kcal por 100g
-              </div>
+              <div className="text-sm text-muted-foreground">kcal por 100g</div>
             </div>
 
             {caloriesPerServing && (
@@ -392,9 +385,7 @@ export function NutritionInfo({ food, compact = false }: NutritionInfoProps) {
               Array.isArray(food.suitable_for_species) &&
               food.suitable_for_species.length > 0 && (
                 <div>
-                  <div className="text-sm font-medium mb-2">
-                    Adecuado para
-                  </div>
+                  <div className="text-sm font-medium mb-2">Adecuado para</div>
                   <div className="flex flex-wrap gap-2">
                     {(food.suitable_for_species as string[]).map(
                       (species, idx) => {
@@ -417,9 +408,8 @@ export function NutritionInfo({ food, compact = false }: NutritionInfoProps) {
               <div>
                 <div className="text-sm font-medium mb-2">Etapa de vida</div>
                 <Badge variant="secondary">
-                  {AGE_RANGE_OPTIONS.find(
-                    (opt) => opt.value === food.age_range
-                  )?.label || String(food.age_range)}
+                  {AGE_RANGE_OPTIONS.find((opt) => opt.value === food.age_range)
+                    ?.label || String(food.age_range)}
                 </Badge>
               </div>
             )}

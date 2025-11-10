@@ -1,15 +1,21 @@
-import { requireHousehold } from '@/lib/auth';
-import { getFoods } from './actions';
-import { FoodList } from '@/components/foods/FoodList';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { PlusCircle, UtensilsCrossed, Package, Droplet, Apple } from 'lucide-react';
-import Link from 'next/link';
-import type { Metadata } from 'next';
+import { requireHousehold } from "@/lib/auth";
+import { getFoods } from "./actions";
+import { FoodList } from "@/components/foods/FoodList";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  PlusCircle,
+  UtensilsCrossed,
+  Package,
+  Droplet,
+  Apple,
+} from "lucide-react";
+import Link from "next/link";
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: 'Alimentos | Pet SiKness',
-  description: 'Gestiona el catálogo de alimentos para tus mascotas',
+  title: "Alimentos | Pet SiKness",
+  description: "Gestiona el catálogo de alimentos para tus mascotas",
 };
 
 export default async function FoodsPage() {
@@ -18,13 +24,13 @@ export default async function FoodsPage() {
 
   // 2. Fetch alimentos
   const result = await getFoods();
-  const foods = result.ok ? (result.data ?? []) : [];
+  const foods = result.ok ? result.data ?? [] : [];
 
   // 3. Calcular estadísticas
-  const dryCount = foods.filter((f) => f.food_type === 'dry').length;
-  const wetCount = foods.filter((f) => f.food_type === 'wet').length;
+  const dryCount = foods.filter((f) => f.food_type === "dry").length;
+  const wetCount = foods.filter((f) => f.food_type === "wet").length;
   const otherCount = foods.filter((f) =>
-    ['raw', 'homemade', 'treats'].includes(String(f.food_type))
+    ["raw", "homemade", "treats"].includes(String(f.food_type))
   ).length;
 
   return (
@@ -36,7 +42,9 @@ export default async function FoodsPage() {
             <UtensilsCrossed className="h-8 w-8 text-orange-600 dark:text-orange-400" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Catálogo de Alimentos</h1>
+            <h1 className="text-3xl font-bold tracking-tight">
+              Catálogo de Alimentos
+            </h1>
             <p className="text-muted-foreground">
               Gestiona los alimentos para tus mascotas
             </p>
@@ -62,17 +70,23 @@ export default async function FoodsPage() {
           <StatCard
             label="Pienso Seco"
             value={dryCount}
-            icon={<Package className="h-5 w-5 text-amber-600 dark:text-amber-400" />}
+            icon={
+              <Package className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+            }
           />
           <StatCard
             label="Comida Húmeda"
             value={wetCount}
-            icon={<Droplet className="h-5 w-5 text-blue-600 dark:text-blue-400" />}
+            icon={
+              <Droplet className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            }
           />
           <StatCard
             label="Otros"
             value={otherCount}
-            icon={<Apple className="h-5 w-5 text-green-600 dark:text-green-400" />}
+            icon={
+              <Apple className="h-5 w-5 text-green-600 dark:text-green-400" />
+            }
           />
         </div>
       )}

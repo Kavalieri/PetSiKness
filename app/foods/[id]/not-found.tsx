@@ -1,6 +1,6 @@
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { AlertCircle, ArrowLeft } from 'lucide-react';
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { AlertCircle, ArrowLeft } from "lucide-react";
 
 export default function FoodNotFound() {
   return (
@@ -10,7 +10,9 @@ export default function FoodNotFound() {
           <AlertCircle className="h-16 w-16 text-destructive" />
         </div>
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight">Alimento no encontrado</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Alimento no encontrado
+          </h1>
           <p className="text-muted-foreground max-w-md">
             El alimento que buscas no existe o no tienes permiso para verlo.
           </p>

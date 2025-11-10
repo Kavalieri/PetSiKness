@@ -1,11 +1,11 @@
-import { requireHousehold } from '@/lib/auth';
-import { getFoodById } from '@/app/foods/actions';
-import { FoodFormWrapper } from './FoodFormWrapper';
-import { notFound } from 'next/navigation';
-import { ArrowLeft, Edit } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
-import type { Metadata } from 'next';
+import { requireHousehold } from "@/lib/auth";
+import { getFoodById } from "@/app/foods/actions";
+import { FoodFormWrapper } from "./FoodFormWrapper";
+import { notFound } from "next/navigation";
+import { ArrowLeft, Edit } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import type { Metadata } from "next";
 
 interface EditFoodPageProps {
   params: { id: string };
@@ -18,7 +18,7 @@ export async function generateMetadata({
 
   if (!result.ok) {
     return {
-      title: 'Alimento no encontrado | Pet SiKness',
+      title: "Alimento no encontrado | Pet SiKness",
     };
   }
 

@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,9 +14,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
-import { deleteFood } from '@/app/foods/actions';
-import { useToast } from '@/hooks/use-toast';
+} from "@/components/ui/alert-dialog";
+import { deleteFood } from "@/app/foods/actions";
+import { useToast } from "@/hooks/use-toast";
 
 interface FoodDeleteButtonProps {
   foodId: string;
@@ -36,23 +36,23 @@ export function FoodDeleteButton({ foodId, foodName }: FoodDeleteButtonProps) {
       const result = await deleteFood(foodId);
 
       if (result.ok) {
-        toast({ title: 'Alimento eliminado exitosamente' });
-        router.push('/foods');
+        toast({ title: "Alimento eliminado exitosamente" });
+        router.push("/foods");
         router.refresh();
       } else {
         toast({
-          title: 'Error al eliminar alimento',
+          title: "Error al eliminar alimento",
           description: result.message,
-          variant: 'destructive',
+          variant: "destructive",
         });
       }
     } catch (error) {
       toast({
-        title: 'Error inesperado',
-        description: 'No se pudo eliminar el alimento',
-        variant: 'destructive',
+        title: "Error inesperado",
+        description: "No se pudo eliminar el alimento",
+        variant: "destructive",
       });
-      console.error('Delete error:', error);
+      console.error("Delete error:", error);
     } finally {
       setIsDeleting(false);
       setOpen(false);
@@ -75,7 +75,8 @@ export function FoodDeleteButton({ foodId, foodName }: FoodDeleteButtonProps) {
               Estás a punto de eliminar <strong>{foodName}</strong>.
             </p>
             <p className="text-sm">
-              Esta acción desactivará el alimento. Podrás restaurarlo después si es necesario.
+              Esta acción desactivará el alimento. Podrás restaurarlo después si
+              es necesario.
             </p>
           </AlertDialogDescription>
         </AlertDialogHeader>
@@ -89,7 +90,7 @@ export function FoodDeleteButton({ foodId, foodName }: FoodDeleteButtonProps) {
             disabled={isDeleting}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
-            {isDeleting ? 'Eliminando...' : 'Eliminar'}
+            {isDeleting ? "Eliminando..." : "Eliminar"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
