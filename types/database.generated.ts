@@ -73,6 +73,9 @@ export interface Feedings {
 export interface Foods {
   age_range: string | null;
   brand: string | null;
+  /**
+   * Calorías por cada 100 gramos de alimento
+   */
   calories_per_100g: Numeric | null;
   carbs_percentage: Numeric | null;
   created_at: Generated<Timestamp>;
@@ -95,10 +98,13 @@ export interface Foods {
   palatability: string | null;
   photo_url: string | null;
   price_per_package: Numeric | null;
+  /**
+   * Porcentaje de proteína sobre materia seca
+   */
   protein_percentage: Numeric | null;
   serving_size_grams: number | null;
   /**
-   * Array de especies compatibles (cat, dog, other)
+   * Array de especies para las que es apto el alimento
    */
   suitable_for_species: Generated<string[] | null>;
   updated_at: Generated<Timestamp>;
