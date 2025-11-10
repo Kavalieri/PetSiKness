@@ -6,11 +6,13 @@ import { User } from "next-auth";
 import { cn } from "@/lib/utils";
 import { UserMenu } from "./UserMenu";
 import { ThemeToggle } from "./ThemeToggle";
+import { Home, PawPrint, UtensilsCrossed, Apple } from "lucide-react";
 
 const navigation = [
-  { name: "Inicio", href: "/" },
-  { name: "Mascotas", href: "/pets" },
-  { name: "Alimentos", href: "/foods" },
+  { name: "Dashboard", href: "/dashboard", icon: Home },
+  { name: "Mascotas", href: "/pets", icon: PawPrint },
+  { name: "Alimentos", href: "/foods", icon: Apple },
+  { name: "Alimentación", href: "/feeding", icon: UtensilsCrossed },
 ];
 
 interface NavBarProps {
@@ -36,6 +38,7 @@ export function NavBar({ user }: NavBarProps) {
           <div className="hidden md:flex items-center space-x-4">
             {user &&
               navigation.map((item) => {
+                const Icon = item.icon;
                 const isActive =
                   pathname === item.href ||
                   (item.href !== "/" && pathname.startsWith(item.href));
@@ -45,12 +48,13 @@ export function NavBar({ user }: NavBarProps) {
                     key={item.href}
                     href={item.href}
                     className={cn(
-                      "px-3 py-2 rounded-md text-sm font-medium transition-colors",
+                      "px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2",
                       isActive
                         ? "bg-primary text-primary-foreground"
                         : "text-foreground hover:bg-accent"
                     )}
                   >
+                    <Icon className="h-4 w-4" />
                     {item.name}
                   </Link>
                 );
@@ -64,6 +68,7 @@ export function NavBar({ user }: NavBarProps) {
           <div className="flex md:hidden items-center space-x-2">
             {user &&
               navigation.map((item) => {
+                const Icon = item.icon;
                 const isActive =
                   pathname === item.href ||
                   (item.href !== "/" && pathname.startsWith(item.href));
@@ -73,13 +78,15 @@ export function NavBar({ user }: NavBarProps) {
                     key={item.href}
                     href={item.href}
                     className={cn(
-                      "px-2 py-1.5 rounded-md text-xs font-medium transition-colors",
+                      "px-2 py-1.5 rounded-md text-xs font-medium transition-colors flex items-center gap-1",
                       isActive
                         ? "bg-primary text-primary-foreground"
                         : "text-foreground hover:bg-accent"
                     )}
+                    title={item.name}
                   >
-                    {item.name}
+                    <Icon className="h-3 w-3" />
+                    <span className="sr-only md:not-sr-only">{item.name}</span>
                   </Link>
                 );
               })}
