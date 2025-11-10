@@ -5,3 +5,4 @@
 
 export { FoodCard } from "./FoodCard";
 export { FoodList } from "./FoodList";
+export { FoodForm } from "./FoodForm";

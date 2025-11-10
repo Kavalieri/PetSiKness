@@ -46,8 +46,7 @@ const FoodFormSchemaBase = z.object({
       `Máximo ${FOOD_CONSTRAINTS.brand.maxLength} caracteres`
     )
     .trim()
-    .optional()
-    .nullable(),
+    .optional(),
 
   food_type: z.enum(FOOD_TYPES, {
     errorMap: () => ({
@@ -71,8 +70,7 @@ const FoodFormSchemaBase = z.object({
       FOOD_CONSTRAINTS.calories.max,
       `Máximo ${FOOD_CONSTRAINTS.calories.max} kcal`
     )
-    .optional()
-    .nullable(),
+    .optional(),
 
   protein_percentage: z
     .number({
@@ -87,7 +85,7 @@ const FoodFormSchemaBase = z.object({
       `Máximo ${FOOD_CONSTRAINTS.percentage.max}%`
     )
     .optional()
-    .nullable(),
+    ,
 
   fat_percentage: z
     .number({
@@ -102,7 +100,7 @@ const FoodFormSchemaBase = z.object({
       `Máximo ${FOOD_CONSTRAINTS.percentage.max}%`
     )
     .optional()
-    .nullable(),
+    ,
 
   carbs_percentage: z
     .number({
@@ -117,7 +115,7 @@ const FoodFormSchemaBase = z.object({
       `Máximo ${FOOD_CONSTRAINTS.percentage.max}%`
     )
     .optional()
-    .nullable(),
+    ,
 
   fiber_percentage: z
     .number({
@@ -132,7 +130,7 @@ const FoodFormSchemaBase = z.object({
       `Máximo ${FOOD_CONSTRAINTS.percentage.max}%`
     )
     .optional()
-    .nullable(),
+    ,
 
   moisture_percentage: z
     .number({
@@ -147,7 +145,7 @@ const FoodFormSchemaBase = z.object({
       `Máximo ${FOOD_CONSTRAINTS.percentage.max}%`
     )
     .optional()
-    .nullable(),
+    ,
 
   // ========================================
   // Producto (Optional)
@@ -157,7 +155,7 @@ const FoodFormSchemaBase = z.object({
     .max(2000, "Máximo 2000 caracteres")
     .trim()
     .optional()
-    .nullable(),
+    ,
 
   serving_size_grams: z
     .number({
@@ -167,7 +165,7 @@ const FoodFormSchemaBase = z.object({
     .min(FOOD_CONSTRAINTS.weight.min, `Mínimo ${FOOD_CONSTRAINTS.weight.min}g`)
     .max(FOOD_CONSTRAINTS.weight.max, `Máximo ${FOOD_CONSTRAINTS.weight.max}g`)
     .optional()
-    .nullable(),
+    ,
 
   package_size_grams: z
     .number({
@@ -177,7 +175,7 @@ const FoodFormSchemaBase = z.object({
     .min(FOOD_CONSTRAINTS.weight.min, `Mínimo ${FOOD_CONSTRAINTS.weight.min}g`)
     .max(FOOD_CONSTRAINTS.weight.max, `Máximo ${FOOD_CONSTRAINTS.weight.max}g`)
     .optional()
-    .nullable(),
+    ,
 
   price_per_package: z
     .number({
@@ -186,7 +184,7 @@ const FoodFormSchemaBase = z.object({
     .min(FOOD_CONSTRAINTS.price.min, `Mínimo ${FOOD_CONSTRAINTS.price.min}€`)
     .max(FOOD_CONSTRAINTS.price.max, `Máximo ${FOOD_CONSTRAINTS.price.max}€`)
     .optional()
-    .nullable(),
+    ,
 
   // ========================================
   // Calidad (Optional)
@@ -198,7 +196,7 @@ const FoodFormSchemaBase = z.object({
       }),
     })
     .optional()
-    .nullable(),
+    ,
 
   digestibility: z
     .enum(QUALITY_LEVELS, {
@@ -207,7 +205,7 @@ const FoodFormSchemaBase = z.object({
       }),
     })
     .optional()
-    .nullable(),
+    ,
 
   // ========================================
   // Restricciones (Optional)
@@ -215,7 +213,6 @@ const FoodFormSchemaBase = z.object({
   suitable_for_species: z
     .array(z.enum(SPECIES_TYPES))
     .optional()
-    .nullable()
     .default([]),
 
   age_range: z
@@ -224,8 +221,7 @@ const FoodFormSchemaBase = z.object({
         message: "Selecciona un rango de edad válido",
       }),
     })
-    .optional()
-    .nullable(),
+    .optional(),
 });
 
 // ============================================
