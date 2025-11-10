@@ -300,3 +300,50 @@ export const FOOD_CONSTRAINTS = {
     max: 100000, // 100kg max package
   },
 } as const;
+
+// ============================================
+// Helper Functions
+// ============================================
+
+/**
+ * Get label maps for quick lookups
+ */
+export const FOOD_TYPE_LABELS: Record<FoodType, string> = Object.fromEntries(
+  FOOD_TYPE_OPTIONS.map((opt) => [opt.value, opt.label])
+) as Record<FoodType, string>;
+
+export const QUALITY_LABELS: Record<QualityLevel, string> = Object.fromEntries(
+  QUALITY_OPTIONS.map((opt) => [opt.value, opt.label])
+) as Record<QualityLevel, string>;
+
+export const SPECIES_LABELS: Record<SpeciesType, string> = Object.fromEntries(
+  SPECIES_OPTIONS.map((opt) => [opt.value, opt.label])
+) as Record<SpeciesType, string>;
+
+export const AGE_RANGE_LABELS: Record<AgeRange, string> = Object.fromEntries(
+  AGE_RANGE_OPTIONS.map((opt) => [opt.value, opt.label])
+) as Record<AgeRange, string>;
+
+/**
+ * Get emoji for species
+ */
+export function getSpeciesEmoji(species: string): string {
+  const option = SPECIES_OPTIONS.find((opt) => opt.value === species);
+  return option?.emoji || "🐾";
+}
+
+/**
+ * Get emoji for food type
+ */
+export function getFoodTypeEmoji(type: string): string {
+  const option = FOOD_TYPE_OPTIONS.find((opt) => opt.value === type);
+  return option?.emoji || "🍽️";
+}
+
+/**
+ * Get emoji for quality level
+ */
+export function getQualityEmoji(quality: string): string {
+  const option = QUALITY_OPTIONS.find((opt) => opt.value === quality);
+  return option?.emoji || "⚪";
+}
