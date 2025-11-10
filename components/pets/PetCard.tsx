@@ -76,17 +76,17 @@ export function PetCard({ pet, onDelete }: PetCardProps) {
 
   return (
     <Card className="hover:shadow-lg transition-shadow duration-200">
-      {/* Header */}
+      {/* Header con avatar centrado estilo DNI */}
       <CardHeader className="pb-3">
-        <div className="flex items-start gap-3">
-          {/* Avatar */}
+        <div className="flex flex-col items-center gap-3">
+          {/* Avatar grande centrado */}
           <div className="flex-shrink-0">
             {avatar.type === "emoji" ? (
-              <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center text-4xl border-2 border-border">
+              <div className="w-32 h-32 rounded-lg bg-muted flex items-center justify-center text-6xl border-2 border-border shadow-sm">
                 {avatar.value}
               </div>
             ) : (
-              <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-border">
+              <div className="w-32 h-32 rounded-lg overflow-hidden border-2 border-primary shadow-md">
                 <img
                   src={avatar.value}
                   alt={pet.name}
@@ -96,8 +96,8 @@ export function PetCard({ pet, onDelete }: PetCardProps) {
             )}
           </div>
 
-          {/* Nombre y especie */}
-          <div className="flex-1 min-w-0">
+          {/* Nombre y especie centrados */}
+          <div className="text-center w-full">
             <CardTitle className="text-xl font-bold truncate">
               {pet.name}
             </CardTitle>
