@@ -5,6 +5,7 @@ import "./globals.css";
 import { NavBar } from "@/components/shared/NavBar";
 import { Toaster } from "@/components/ui/toaster";
 import { authOptions } from "@/lib/auth-options";
+import { ThemeProvider } from "@/components/providers/theme-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -23,15 +24,22 @@ export default async function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <body className={inter.className} suppressHydrationWarning>
-        <NavBar
-          user={
-            session?.user
-              ? { ...session.user, id: session.user.profile_id || "" }
-              : null
-          }
-        />
-        <main>{children}</main>
-        <Toaster />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <NavBar
+            user={
+              session?.user
+                ? { ...session.user, id: session.user.profile_id || "" }
+                : null
+            }
+          />
+          <main>{children}</main>
+          <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   );

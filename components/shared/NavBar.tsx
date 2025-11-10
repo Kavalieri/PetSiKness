@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { User } from "next-auth";
 import { cn } from "@/lib/utils";
 import { UserMenu } from "./UserMenu";
+import { ThemeToggle } from "./ThemeToggle";
 
 const navigation = [
   { name: "Inicio", href: "/" },
@@ -19,13 +20,13 @@ export function NavBar({ user }: NavBarProps) {
   const pathname = usePathname();
 
   return (
-    <nav className="border-b bg-white">
+    <nav className="border-b bg-background">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link
             href="/"
-            className="text-xl font-bold text-gray-900 hover:text-gray-700 transition-colors"
+            className="text-xl font-bold text-foreground hover:text-foreground/80 transition-colors"
           >
             🐾 Pet SiKness
           </Link>
@@ -46,7 +47,7 @@ export function NavBar({ user }: NavBarProps) {
                       "px-3 py-2 rounded-md text-sm font-medium transition-colors",
                       isActive
                         ? "bg-primary text-primary-foreground"
-                        : "text-gray-700 hover:bg-gray-100"
+                        : "text-foreground hover:bg-accent"
                     )}
                   >
                     {item.name}
@@ -54,6 +55,7 @@ export function NavBar({ user }: NavBarProps) {
                 );
               })}
 
+            <ThemeToggle />
             {user && <UserMenu user={user} />}
           </div>
 
@@ -73,7 +75,7 @@ export function NavBar({ user }: NavBarProps) {
                       "px-2 py-1.5 rounded-md text-xs font-medium transition-colors",
                       isActive
                         ? "bg-primary text-primary-foreground"
-                        : "text-gray-700 hover:bg-gray-100"
+                        : "text-foreground hover:bg-accent"
                     )}
                   >
                     {item.name}
@@ -81,6 +83,7 @@ export function NavBar({ user }: NavBarProps) {
                 );
               })}
 
+            <ThemeToggle />
             {user && <UserMenu user={user} />}
           </div>
         </div>

@@ -11,7 +11,7 @@ import {
   APPETITE,
   ACTIVITY_LEVEL,
 } from "@/types/pets";
-import { createPet, updatePet } from "@/app/pets/actions";
+import { createPet, updatePet, deletePet } from "@/app/pets/actions";
 import { useToast } from "@/hooks/use-toast";
 import {
   SPECIES_OPTIONS,
@@ -42,7 +42,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { Loader2 } from "lucide-react";
+import { Loader2, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 // ============================================
 // TYPES
@@ -139,6 +150,7 @@ function convertToFormData(data: PetFormData): FormData {
 export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [breeds, setBreeds] = useState<string[]>([]);
   const [photoUrl, setPhotoUrl] = useState<string | undefined>(
     pet?.photo_url || undefined
@@ -237,6 +249,41 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
       setIsSubmitting(false);
     }
   }
+
+  /**
+   * Manejar eliminación de mascota
+   */
+  const handleDelete = async () => {
+    if (!pet) return;
+
+    setIsDeleting(true);
+
+    try {
+      const result = await deletePet(String(pet.id));
+
+      if (result.ok) {
+        toast({
+          title: "Mascota eliminada",
+          description: "La mascota ha sido eliminada correctamente.",
+        });
+        onSuccess?.();
+      } else {
+        toast({
+          title: "Error",
+          description: result.message,
+          variant: "destructive",
+        });
+      }
+    } catch {
+      toast({
+        title: "Error inesperado",
+        description: "Ocurrió un error al eliminar la mascota.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
     <Form {...form}>
@@ -689,22 +736,62 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
         </div>
 
         {/* Botones de acción */}
-        <div className="flex gap-4 justify-end">
-          {onCancel && (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onCancel}
-              disabled={isSubmitting}
-            >
-              Cancelar
-            </Button>
+        <div className="flex gap-4 justify-between">
+          {/* Botón eliminar (solo en edición) */}
+          {isEditing && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  disabled={isSubmitting || isDeleting}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Eliminar Mascota
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Esta acción no se puede deshacer. Se eliminará permanentemente
+                    la mascota <strong>{pet?.name}</strong> y todos sus datos asociados.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel disabled={isDeleting}>
+                    Cancelar
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDelete}
+                    disabled={isDeleting}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    {isDeleting ? "Eliminando..." : "Sí, eliminar"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           )}
 
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {isEditing ? "Guardar Cambios" : "Crear Mascota"}
-          </Button>
+          {/* Botones de guardar/cancelar */}
+          <div className="flex gap-4 ml-auto">
+            {onCancel && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onCancel}
+                disabled={isSubmitting || isDeleting}
+              >
+                Cancelar
+              </Button>
+            )}
+
+            <Button type="submit" disabled={isSubmitting || isDeleting}>
+              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isEditing ? "Guardar Cambios" : "Crear Mascota"}
+            </Button>
+          </div>
         </div>
       </form>
     </Form>

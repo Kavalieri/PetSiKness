@@ -11,7 +11,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  SPECIES_EMOJIS,
   SPECIES_LABELS,
   BODY_CONDITION_LABELS,
   BODY_CONDITION_EMOJIS,
@@ -19,7 +18,8 @@ import {
   formatWeight,
   formatDailyGoal,
 } from "@/lib/constants/pets";
-import { BODY_CONDITION } from "@/types/pets";
+import { getAvatarDisplay } from "@/lib/constants/avatars";
+import { BODY_CONDITION, type Species } from "@/types/pets";
 
 // ============================================
 // TYPES
@@ -56,10 +56,11 @@ function getBodyConditionVariant(
 // ============================================
 
 export function PetCard({ pet, onDelete }: PetCardProps) {
-  const speciesEmoji =
-    SPECIES_EMOJIS[pet.species as keyof typeof SPECIES_EMOJIS] || "🐾";
   const speciesLabel =
     SPECIES_LABELS[pet.species as keyof typeof SPECIES_LABELS] || pet.species;
+
+  // Obtener avatar del pet
+  const avatar = getAvatarDisplay(pet.photo_url, pet.species as Species);
 
   // Convertir tipos Kysely a tipos simples
   const birthDateStr = pet.birth_date
@@ -78,8 +79,22 @@ export function PetCard({ pet, onDelete }: PetCardProps) {
       {/* Header */}
       <CardHeader className="pb-3">
         <div className="flex items-start gap-3">
-          {/* Avatar placeholder */}
-          <div className="flex-shrink-0 text-4xl">{speciesEmoji}</div>
+          {/* Avatar */}
+          <div className="flex-shrink-0">
+            {avatar.type === "emoji" ? (
+              <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center text-4xl border-2 border-border">
+                {avatar.value}
+              </div>
+            ) : (
+              <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-border">
+                <img
+                  src={avatar.value}
+                  alt={pet.name}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
+          </div>
 
           {/* Nombre y especie */}
           <div className="flex-1 min-w-0">

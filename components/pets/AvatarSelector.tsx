@@ -12,8 +12,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Camera, Upload } from "lucide-react";
+import { Camera } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ImageCropper } from "@/components/shared/ImageCropper";
 
 interface AvatarSelectorProps {
   species: Species;
@@ -73,16 +74,16 @@ export function AvatarSelector({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Seleccionar Avatar</DialogTitle>
-          <DialogDescription>
-            Elige un avatar para tu mascota
-          </DialogDescription>
+          <DialogDescription>Elige un avatar para tu mascota</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           {/* Grid de avatares predeterminados */}
           <div>
-            <h4 className="text-sm font-medium mb-3">Avatares predeterminados</h4>
-            <div className="grid grid-cols-4 gap-3">
+            <h4 className="text-sm font-medium mb-3">
+              Avatares predeterminados
+            </h4>
+            <div className="grid grid-cols-3 gap-3">
               {avatars.map((avatar) => (
                 <button
                   key={avatar.id}
@@ -102,20 +103,18 @@ export function AvatarSelector({
             </div>
           </div>
 
-          {/* Opción de subir imagen (futuro) */}
+          {/* Opción de subir imagen */}
           <div className="border-t pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full"
-              disabled
-              title="Próximamente: Subir foto personalizada"
-            >
-              <Upload className="h-4 w-4 mr-2" />
-              Subir foto (próximamente)
-            </Button>
+            <ImageCropper
+              onImageCropped={(base64) => {
+                onAvatarChange(base64);
+                setOpen(false);
+              }}
+              currentImage={currentAvatar}
+              aspectRatio={1}
+            />
             <p className="text-xs text-muted-foreground text-center mt-2">
-              La función de subir fotos estará disponible pronto
+              Recorta y comprime automáticamente tu imagen
             </p>
           </div>
         </div>
