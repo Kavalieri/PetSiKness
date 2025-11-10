@@ -84,9 +84,7 @@ const FoodFormSchemaBase = z.object({
       FOOD_CONSTRAINTS.percentage.max,
       `Máximo ${FOOD_CONSTRAINTS.percentage.max}%`
     )
-    .optional()
-    ,
-
+    .optional(),
   fat_percentage: z
     .number({
       invalid_type_error: "La grasa debe ser un número",
@@ -99,9 +97,7 @@ const FoodFormSchemaBase = z.object({
       FOOD_CONSTRAINTS.percentage.max,
       `Máximo ${FOOD_CONSTRAINTS.percentage.max}%`
     )
-    .optional()
-    ,
-
+    .optional(),
   carbs_percentage: z
     .number({
       invalid_type_error: "Los carbohidratos deben ser un número",
@@ -114,9 +110,7 @@ const FoodFormSchemaBase = z.object({
       FOOD_CONSTRAINTS.percentage.max,
       `Máximo ${FOOD_CONSTRAINTS.percentage.max}%`
     )
-    .optional()
-    ,
-
+    .optional(),
   fiber_percentage: z
     .number({
       invalid_type_error: "La fibra debe ser un número",
@@ -129,9 +123,7 @@ const FoodFormSchemaBase = z.object({
       FOOD_CONSTRAINTS.percentage.max,
       `Máximo ${FOOD_CONSTRAINTS.percentage.max}%`
     )
-    .optional()
-    ,
-
+    .optional(),
   moisture_percentage: z
     .number({
       invalid_type_error: "La humedad debe ser un número",
@@ -144,19 +136,11 @@ const FoodFormSchemaBase = z.object({
       FOOD_CONSTRAINTS.percentage.max,
       `Máximo ${FOOD_CONSTRAINTS.percentage.max}%`
     )
-    .optional()
-    ,
-
+    .optional(),
   // ========================================
   // Producto (Optional)
   // ========================================
-  ingredients: z
-    .string()
-    .max(2000, "Máximo 2000 caracteres")
-    .trim()
-    .optional()
-    ,
-
+  ingredients: z.string().max(2000, "Máximo 2000 caracteres").trim().optional(),
   serving_size_grams: z
     .number({
       invalid_type_error: "El tamaño de porción debe ser un número",
@@ -164,9 +148,7 @@ const FoodFormSchemaBase = z.object({
     .int("El tamaño de porción debe ser un número entero")
     .min(FOOD_CONSTRAINTS.weight.min, `Mínimo ${FOOD_CONSTRAINTS.weight.min}g`)
     .max(FOOD_CONSTRAINTS.weight.max, `Máximo ${FOOD_CONSTRAINTS.weight.max}g`)
-    .optional()
-    ,
-
+    .optional(),
   package_size_grams: z
     .number({
       invalid_type_error: "El tamaño del paquete debe ser un número",
@@ -174,18 +156,14 @@ const FoodFormSchemaBase = z.object({
     .int("El tamaño del paquete debe ser un número entero")
     .min(FOOD_CONSTRAINTS.weight.min, `Mínimo ${FOOD_CONSTRAINTS.weight.min}g`)
     .max(FOOD_CONSTRAINTS.weight.max, `Máximo ${FOOD_CONSTRAINTS.weight.max}g`)
-    .optional()
-    ,
-
+    .optional(),
   price_per_package: z
     .number({
       invalid_type_error: "El precio debe ser un número",
     })
     .min(FOOD_CONSTRAINTS.price.min, `Mínimo ${FOOD_CONSTRAINTS.price.min}€`)
     .max(FOOD_CONSTRAINTS.price.max, `Máximo ${FOOD_CONSTRAINTS.price.max}€`)
-    .optional()
-    ,
-
+    .optional(),
   // ========================================
   // Calidad (Optional)
   // ========================================
@@ -195,25 +173,18 @@ const FoodFormSchemaBase = z.object({
         message: "Selecciona un nivel de palatabilidad válido",
       }),
     })
-    .optional()
-    ,
-
+    .optional(),
   digestibility: z
     .enum(QUALITY_LEVELS, {
       errorMap: () => ({
         message: "Selecciona un nivel de digestibilidad válido",
       }),
     })
-    .optional()
-    ,
-
+    .optional(),
   // ========================================
   // Restricciones (Optional)
   // ========================================
-  suitable_for_species: z
-    .array(z.enum(SPECIES_TYPES))
-    .optional()
-    .default([]),
+  suitable_for_species: z.array(z.enum(SPECIES_TYPES)).optional().default([]),
 
   age_range: z
     .enum(AGE_RANGES, {

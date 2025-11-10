@@ -102,7 +102,8 @@ function convertFoodToFormData(food: Foods): any {
       : undefined,
     palatability: food.palatability ? String(food.palatability) : undefined,
     digestibility: food.digestibility ? String(food.digestibility) : undefined,
-    suitable_for_species: ((food.suitable_for_species || []) as unknown) as string[],
+    suitable_for_species: (food.suitable_for_species ||
+      []) as unknown as string[],
     age_range: food.age_range ? String(food.age_range) : undefined,
   };
 }
