@@ -44,6 +44,7 @@ export interface FoodFormData {
   // Adicionales
   notes?: string;
   photo_url?: string;
+  purchase_url?: string;
 }
 
 // ============================================

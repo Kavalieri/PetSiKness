@@ -15,8 +15,11 @@ import {
   CalendarDays,
   Star,
   Info,
+  ExternalLink,
+  ShoppingCart,
 } from "lucide-react";
 import type { Metadata } from "next";
+import type { FoodType } from "@/types/foods";
 import {
   FOOD_TYPE_LABELS,
   AGE_RANGE_LABELS,
@@ -27,6 +30,8 @@ import {
   getPalatabilityEmoji,
   getDigestibilityEmoji,
 } from "@/lib/constants/foods";
+import { isEmojiIcon, getPhotoDisplay } from "@/lib/constants/food-icons";
+import { FoodImage } from "@/components/foods/FoodImage";
 
 interface FoodDetailPageProps {
   params: { id: string };
@@ -65,6 +70,13 @@ export default async function FoodDetailPage({ params }: FoodDetailPageProps) {
   }
 
   const food = result.data;
+
+  // Display para foto (emoji, imagen subida o URL)
+  const photoDisplay = getPhotoDisplay(
+    food.photo_url,
+    food.food_type as FoodType
+  );
+  const isEmoji = isEmojiIcon(food.photo_url);
 
   // Calcular precio por kg si hay datos
   const pricePerKg =
@@ -209,6 +221,34 @@ export default async function FoodDetailPage({ params }: FoodDetailPageProps) {
               </Card>
             )}
 
+            {/* Card: Compra Online */}
+            {food.purchase_url && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <ShoppingCart className="h-5 w-5" />
+                    Compra Online
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Link
+                    href={String(food.purchase_url)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Button className="w-full gap-2" size="lg">
+                      <ShoppingCart className="h-4 w-4" />
+                      Comprar Online
+                      <ExternalLink className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                  <p className="text-xs text-muted-foreground text-center mt-2">
+                    Abre en nueva pestaña
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Card: Calidad */}
             {(food.palatability || food.digestibility) && (
               <Card>
@@ -335,23 +375,17 @@ export default async function FoodDetailPage({ params }: FoodDetailPageProps) {
             <Card>
               <CardContent className="pt-6">
                 <div className="relative w-full max-w-2xl mx-auto">
-                  <img
-                    src={food.photo_url}
-                    alt={`Foto de ${food.name}`}
-                    className="w-full h-auto rounded-lg shadow-md"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = "none";
-                      const parent = (e.target as HTMLImageElement)
-                        .parentElement;
-                      if (parent) {
-                        parent.innerHTML = `
-                          <div class="flex items-center justify-center h-48 bg-muted rounded-lg">
-                            <p class="text-muted-foreground">Error al cargar la imagen</p>
-                          </div>
-                        `;
-                      }
-                    }}
-                  />
+                  {isEmoji ? (
+                    <div className="flex items-center justify-center h-64 bg-muted rounded-lg text-9xl">
+                      {photoDisplay}
+                    </div>
+                  ) : (
+                    <FoodImage
+                      src={photoDisplay}
+                      alt={`Foto de ${food.name}`}
+                      className="w-full h-auto rounded-lg shadow-md"
+                    />
+                  )}
                 </div>
               </CardContent>
             </Card>

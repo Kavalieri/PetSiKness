@@ -8,6 +8,7 @@ import { FoodFormSchema } from "@/lib/schemas/food";
 import type { FoodFormData } from "@/types/foods";
 import { createFood, updateFood, deleteFood } from "@/app/foods/actions";
 import { useToast } from "@/hooks/use-toast";
+import { PhotoSelector } from "@/components/foods/PhotoSelector";
 import {
   FOOD_TYPE_OPTIONS,
   PALATABILITY_OPTIONS,
@@ -36,7 +37,7 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, Trash2, AlertCircle } from "lucide-react";
+import { Loader2, Trash2, AlertCircle, ExternalLink } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -103,6 +104,9 @@ function convertFoodToFormData(food: Foods): any {
       : undefined,
     palatability: food.palatability ? String(food.palatability) : undefined,
     digestibility: food.digestibility ? String(food.digestibility) : undefined,
+    photo_url: food.photo_url ? String(food.photo_url) : undefined,
+    purchase_url: food.purchase_url ? String(food.purchase_url) : undefined,
+    notes: food.notes ? String(food.notes) : undefined,
     suitable_for_species: (food.suitable_for_species ||
       []) as unknown as string[],
     age_range: food.age_range ? String(food.age_range) : undefined,
@@ -835,22 +839,48 @@ export function FoodForm({ food, onSuccess, onCancel }: FoodFormProps) {
             )}
           />
 
-          {/* URL de Foto */}
+          {/* Foto del Producto */}
           <FormField
             control={form.control}
             name="photo_url"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>URL de Foto</FormLabel>
+                <FormLabel>Foto del Producto</FormLabel>
                 <FormControl>
-                  <Input
-                    type="url"
-                    placeholder="https://ejemplo.com/imagen-producto.jpg"
-                    {...field}
+                  <PhotoSelector
+                    foodType={form.watch("food_type") || "dry"}
+                    currentPhoto={field.value}
+                    onPhotoChange={field.onChange}
                   />
                 </FormControl>
                 <FormDescription>
-                  URL de la imagen del producto (opcional)
+                  Elige un icono, sube tu propia imagen o introduce una URL
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Enlace de Compra Online */}
+          <FormField
+            control={form.control}
+            name="purchase_url"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="flex items-center gap-2">
+                  <ExternalLink className="h-4 w-4" />
+                  Enlace de Compra Online
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    type="url"
+                    placeholder="https://www.tiendanimal.es/producto"
+                    {...field}
+                    value={field.value || ""}
+                  />
+                </FormControl>
+                <FormDescription>
+                  URL donde se puede comprar este producto (opcional)
                 </FormDescription>
                 <FormMessage />
               </FormItem>

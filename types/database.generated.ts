@@ -96,12 +96,19 @@ export interface Foods {
   notes: string | null;
   package_size_grams: number | null;
   palatability: string | null;
+  /**
+   * Foto del producto: emoji, imagen base64 o URL externa
+   */
   photo_url: string | null;
   price_per_package: Numeric | null;
   /**
    * Porcentaje de proteína sobre materia seca
    */
   protein_percentage: Numeric | null;
+  /**
+   * URL de compra online del producto (e.g., Amazon, Tiendanimal)
+   */
+  purchase_url: string | null;
   serving_size_grams: number | null;
   /**
    * Array de especies para las que es apto el alimento

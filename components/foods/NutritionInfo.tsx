@@ -18,6 +18,7 @@ import {
   analyzeNutritionalProfile,
   getProteinQuality,
   getFatQuality,
+  getCarbsQuality,
   getFiberQuality,
   MACRO_COLORS,
   type QualityLevel,
@@ -99,6 +100,8 @@ function CompactNutritionView({ food }: { food: Foods }) {
   const protein = Number(food.protein_percentage) || 0;
   const fat = Number(food.fat_percentage) || 0;
   const carbs = Number(food.carbs_percentage) || 0;
+  const fiber = Number(food.fiber_percentage) || 0;
+  const moisture = Number(food.moisture_percentage) || 0;
 
   return (
     <div className="grid grid-cols-2 gap-2 text-sm">
@@ -145,6 +148,28 @@ function CompactNutritionView({ food }: { food: Foods }) {
           </div>
         </div>
       )}
+
+      {/* Fibra */}
+      {fiber > 0 && (
+        <div className="flex items-center gap-2">
+          <Apple className="h-4 w-4 text-orange-500" />
+          <div>
+            <div className="font-medium">{fiber}%</div>
+            <div className="text-xs text-muted-foreground">Fibra</div>
+          </div>
+        </div>
+      )}
+
+      {/* Humedad */}
+      {moisture > 0 && (
+        <div className="flex items-center gap-2">
+          <Droplet className="h-4 w-4 text-cyan-500" />
+          <div>
+            <div className="font-medium">{moisture}%</div>
+            <div className="text-xs text-muted-foreground">Humedad</div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -163,6 +188,9 @@ export function NutritionInfo({ food, compact = false }: NutritionInfoProps) {
   const moisture = Number(food.moisture_percentage) || 0;
   const servingSize = Number(food.serving_size_grams) || 0;
   const foodType = String(food.food_type) as FoodType;
+  const suitableSpecies = food.suitable_for_species as unknown as
+    | string[]
+    | null;
 
   // Cálculos
   const caloriesPerServing =
@@ -172,13 +200,21 @@ export function NutritionInfo({ food, compact = false }: NutritionInfoProps) {
 
   const drySolids = moisture > 0 ? calculateDrySolids(moisture) : 100;
   const totalMacros = calculateTotalMacros(food);
-  const profile = analyzeNutritionalProfile(food);
+  const profile = analyzeNutritionalProfile(food, suitableSpecies);
 
-  // Calidad de macros
+  // Calidad de macros (con especies y humedad)
   const proteinQuality =
-    protein > 0 ? getProteinQuality(protein, foodType) : null;
-  const fatQuality = fat > 0 ? getFatQuality(fat) : null;
-  const fiberQuality = fiber > 0 ? getFiberQuality(fiber) : null;
+    protein > 0
+      ? getProteinQuality(protein, foodType, suitableSpecies, moisture || null)
+      : null;
+  const fatQuality =
+    fat > 0 ? getFatQuality(fat, suitableSpecies, moisture || null) : null;
+  const carbsQuality =
+    carbs > 0
+      ? getCarbsQuality(carbs, suitableSpecies, moisture || null)
+      : null;
+  const fiberQuality =
+    fiber > 0 ? getFiberQuality(fiber, suitableSpecies) : null;
 
   // Vista compacta
   if (compact) {
@@ -226,6 +262,25 @@ export function NutritionInfo({ food, compact = false }: NutritionInfoProps) {
             <CardTitle className="text-lg">Macronutrientes</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
+            {/* Nota informativa sobre evaluación */}
+            {moisture > 20 && (
+              <Alert>
+                <Info className="h-4 w-4" />
+                <AlertDescription className="text-xs">
+                  <strong>Evaluación en Base Seca:</strong> Este alimento tiene{" "}
+                  {moisture.toFixed(1)}% de humedad (normal en carne fresca).
+                  Los valores se normalizan a base seca para comparación
+                  precisa.{" "}
+                  {suitableSpecies?.includes("cat") && (
+                    <>
+                      <strong>Gatos carnívoros:</strong> Necesitan proteína ≥38%
+                      base seca, baja fibra y toleran bien la grasa.
+                    </>
+                  )}
+                </AlertDescription>
+              </Alert>
+            )}
+
             {/* Proteína */}
             {protein > 0 && (
               <MacroBar
@@ -258,6 +313,7 @@ export function NutritionInfo({ food, compact = false }: NutritionInfoProps) {
                 percentage={carbs}
                 grams={calculateGrams(carbs, drySolids)}
                 color="carbs"
+                quality={carbsQuality}
               />
             )}
 

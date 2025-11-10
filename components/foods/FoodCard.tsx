@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Eye, Pencil, Trash2, Package } from "lucide-react";
 import type { Foods } from "@/types/database.generated";
+import type { FoodType } from "@/types/foods";
 import {
   Card,
   CardContent,
@@ -16,6 +17,8 @@ import {
   DIGESTIBILITY_OPTIONS,
   SPECIES_OPTIONS,
 } from "@/lib/constants/foods";
+import { isEmojiIcon, getPhotoDisplay } from "@/lib/constants/food-icons";
+import { FoodImage } from "./FoodImage";
 
 // ============================================
 // TYPES
@@ -154,14 +157,29 @@ export function FoodCard({ food, onDelete }: FoodCardProps) {
   const species = getSpeciesDisplay(speciesArray);
   const price = formatPrice(priceNum, packageNum);
 
+  // Display para foto (emoji, imagen subida o URL)
+  const photoDisplay = getPhotoDisplay(
+    food.photo_url,
+    food.food_type as FoodType
+  );
+  const isEmoji = isEmojiIcon(food.photo_url);
+
   return (
     <Card className="hover:shadow-lg transition-shadow duration-200">
       {/* Header con emoji del tipo de comida */}
       <CardHeader className="pb-3">
         <div className="flex flex-col items-center gap-3">
-          {/* Emoji grande centrado */}
-          <div className="w-24 h-24 rounded-lg bg-muted flex items-center justify-center text-5xl border-2 border-border shadow-sm">
-            {foodType.emoji}
+          {/* Foto/Icono grande centrado */}
+          <div className="w-24 h-24 rounded-lg bg-muted flex items-center justify-center text-5xl border-2 border-border shadow-sm overflow-hidden">
+            {isEmoji ? (
+              <span>{photoDisplay}</span>
+            ) : (
+              <FoodImage
+                src={photoDisplay}
+                alt={food.name}
+                className="w-full h-full object-cover"
+              />
+            )}
           </div>
 
           {/* Nombre y marca centrados */}
