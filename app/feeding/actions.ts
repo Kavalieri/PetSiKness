@@ -54,6 +54,7 @@ interface FeedingWithRelations {
   pet_name: string;
   food_id: string;
   food_name: string;
+  food_brand: string | null;
   feeding_date: string;
   feeding_time: string | null;
   meal_number: number | null;
@@ -100,6 +101,7 @@ export async function getFeedings(
         p.name as pet_name,
         f.food_id,
         fo.name as food_name,
+        fo.brand as food_brand,
         f.feeding_date,
         f.feeding_time,
         f.meal_number,
@@ -180,6 +182,7 @@ export async function getFeedingById(
         p.name as pet_name,
         f.food_id,
         fo.name as food_name,
+        fo.brand as food_brand,
         f.feeding_date,
         f.feeding_time,
         f.meal_number,
@@ -234,6 +237,7 @@ export async function getTodayFeedings(
         p.name as pet_name,
         f.food_id,
         fo.name as food_name,
+        fo.brand as food_brand,
         f.feeding_date,
         f.feeding_time,
         f.meal_number,

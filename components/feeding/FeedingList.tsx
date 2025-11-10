@@ -52,6 +52,7 @@ interface Food {
 
 interface FeedingData {
   id: string;
+  household_id?: string;
   pet_id: string;
   pet_name: string;
   food_id: string;
@@ -62,12 +63,15 @@ interface FeedingData {
   meal_number: number | null;
   amount_served_grams: number;
   amount_eaten_grams: number;
-  amount_leftover_grams: number;
+  amount_leftover_grams: number | null;
   appetite_rating: string | null;
   eating_speed: string | null;
-  vomited: boolean;
-  had_diarrhea: boolean;
+  vomited: boolean | null;
+  had_diarrhea: boolean | null;
   stool_quality: string | null;
+  had_stool?: boolean | null;
+  notes?: string | null;
+  created_at?: Date;
 }
 
 interface FeedingListProps {
