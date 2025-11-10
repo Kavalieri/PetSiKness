@@ -4,3 +4,4 @@
  */
 
 export { FoodCard } from "./FoodCard";
+export { FoodList } from "./FoodList";

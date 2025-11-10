@@ -76,14 +76,14 @@ function getSpeciesDisplay(speciesArray: string[] | null) {
  */
 function formatPrice(price: number | null, packageSize: number | null) {
   if (!price) return null;
-  
+
   const priceStr = `${price.toFixed(2)}€`;
-  
+
   if (packageSize && packageSize > 0) {
     const pricePerKg = (price / (packageSize / 1000)).toFixed(2);
     return `${priceStr} (${pricePerKg}€/kg)`;
   }
-  
+
   return priceStr;
 }
 
@@ -94,7 +94,7 @@ function getQualityVariant(
   quality: string | null
 ): "default" | "secondary" | "destructive" | "outline" {
   if (!quality) return "outline";
-  
+
   switch (quality) {
     case "excellent":
       return "default"; // Verde
@@ -116,13 +116,21 @@ function getQualityVariant(
 export function FoodCard({ food, onDelete }: FoodCardProps) {
   // Convertir tipos Kysely a tipos simples
   const foodId = String(food.id);
-  const speciesArray = (food.suitable_for_species as unknown) as string[] | null;
-  const caloriesNum = food.calories_per_100g ? Number(food.calories_per_100g) : null;
-  const proteinNum = food.protein_percentage ? Number(food.protein_percentage) : null;
+  const speciesArray = food.suitable_for_species as unknown as string[] | null;
+  const caloriesNum = food.calories_per_100g
+    ? Number(food.calories_per_100g)
+    : null;
+  const proteinNum = food.protein_percentage
+    ? Number(food.protein_percentage)
+    : null;
   const fatNum = food.fat_percentage ? Number(food.fat_percentage) : null;
   const carbsNum = food.carbs_percentage ? Number(food.carbs_percentage) : null;
-  const priceNum = food.price_per_package ? Number(food.price_per_package) : null;
-  const packageNum = food.package_size_grams ? Number(food.package_size_grams) : null;
+  const priceNum = food.price_per_package
+    ? Number(food.price_per_package)
+    : null;
+  const packageNum = food.package_size_grams
+    ? Number(food.package_size_grams)
+    : null;
 
   const foodType = getFoodTypeDisplay(food.food_type);
   const palatability = getQualityDisplay(food.palatability);
@@ -143,9 +151,7 @@ export function FoodCard({ food, onDelete }: FoodCardProps) {
           <div className="text-center w-full">
             <CardTitle className="text-xl font-bold">{food.name}</CardTitle>
             {food.brand && (
-              <p className="text-sm text-muted-foreground mt-1">
-                {food.brand}
-              </p>
+              <p className="text-sm text-muted-foreground mt-1">{food.brand}</p>
             )}
           </div>
         </div>
@@ -161,9 +167,7 @@ export function FoodCard({ food, onDelete }: FoodCardProps) {
       {/* Content con información nutricional y producto */}
       <CardContent className="space-y-3 text-sm">
         {/* Información Nutricional */}
-        {(caloriesNum ||
-          proteinNum ||
-          fatNum) && (
+        {(caloriesNum || proteinNum || fatNum) && (
           <div className="space-y-1">
             <h4 className="font-semibold text-xs text-muted-foreground uppercase">
               Nutrición (por 100g)
@@ -172,17 +176,13 @@ export function FoodCard({ food, onDelete }: FoodCardProps) {
               {caloriesNum && (
                 <div className="flex items-center justify-between bg-muted px-2 py-1 rounded">
                   <span className="text-xs">Calorías:</span>
-                  <span className="font-medium">
-                    {caloriesNum} kcal
-                  </span>
+                  <span className="font-medium">{caloriesNum} kcal</span>
                 </div>
               )}
               {proteinNum && (
                 <div className="flex items-center justify-between bg-muted px-2 py-1 rounded">
                   <span className="text-xs">Proteína:</span>
-                  <span className="font-medium">
-                    {proteinNum}%
-                  </span>
+                  <span className="font-medium">{proteinNum}%</span>
                 </div>
               )}
               {fatNum && (
@@ -215,9 +215,7 @@ export function FoodCard({ food, onDelete }: FoodCardProps) {
 
         {/* Especies aptas */}
         <div className="flex flex-col gap-1">
-          <span className="text-xs text-muted-foreground">
-            Apto para:
-          </span>
+          <span className="text-xs text-muted-foreground">Apto para:</span>
           <p className="text-xs">{species}</p>
         </div>
 
