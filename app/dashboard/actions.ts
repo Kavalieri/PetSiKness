@@ -6,6 +6,29 @@ import { ok, fail } from "@/lib/result";
 import type { Result } from "@/lib/result";
 
 // ============================================
+// 🎯 FILOSOFÍA: GESTIÓN DIARIA PRIORITARIA
+// ============================================
+//
+// Este módulo está diseñado para CONTROL DIARIO de alimentación como función principal.
+//
+// FOCO PRIMARIO (sin parámetros de fecha):
+//   ✅ Gestión del DÍA ACTUAL (HOY)
+//   ✅ Control en tiempo real
+//   ✅ Alertas inmediatas
+//   ✅ Toma de decisiones diarias
+//
+// FOCO SECUNDARIO (con parámetros opcionales de fecha):
+//   📊 Análisis retrospectivo de días/semanas pasadas
+//   📈 Estudio de tendencias y patrones
+//   📉 Evaluación de datos agregados por rangos coherentes
+//
+// DISEÑO: Todas las funciones operan por defecto sobre HOY, garantizando que
+// el uso principal (gestión diaria) sea simple y directo, mientras que el
+// análisis histórico queda disponible como capacidad complementaria.
+//
+// ============================================
+
+// ============================================
 // TIPOS
 // ============================================
 
@@ -72,14 +95,20 @@ interface HouseholdOverview {
 // ============================================
 
 /**
- * Obtiene el resumen diario de alimentación desde la vista
- * Usa daily_feeding_summary view
+ * 🎯 GESTIÓN DIARIA: Obtiene el resumen de alimentación del día
+ * 
+ * FOCO PRINCIPAL: Control diario de alimentación (HOY por defecto)
+ * USO SECUNDARIO: Consulta histórica para análisis retrospectivo
+ * 
+ * @param date - Fecha ISO (YYYY-MM-DD). Default: HOY (gestión diaria)
+ * @returns Resumen agregado por mascota del día especificado
  */
 export async function getDailySummary(
   date?: string
 ): Promise<Result<DailySummary[]>> {
   try {
     const { householdId } = await requireHousehold();
+    // DEFAULT: Día actual (gestión diaria prioritaria)
     const targetDate = date || new Date().toISOString().split("T")[0];
 
     const result = await query(
@@ -115,13 +144,21 @@ export async function getDailySummary(
 }
 
 /**
- * Obtiene el balance de hoy para todas las mascotas
- * Calcula desde feedings directamente para tener datos en tiempo real
+ * 🎯 GESTIÓN DIARIA: Balance en tiempo real de alimentación
+ * 
+ * Calcula directamente desde feedings (no usa vista) para datos actualizados al segundo.
+ * FOCO: Monitoreo continuo del día actual para control inmediato.
+ * 
+ * @param date - Fecha ISO (YYYY-MM-DD). Default: HOY (uso principal: gestión diaria)
+ * @returns Balance actualizado por mascota del día especificado
  */
-export async function getTodayBalance(): Promise<Result<TodayBalance[]>> {
+export async function getTodayBalance(
+  date?: string
+): Promise<Result<TodayBalance[]>> {
   try {
     const { householdId } = await requireHousehold();
-    const today = new Date().toISOString().split("T")[0];
+    // DEFAULT: Hoy (gestión diaria en tiempo real)
+    const targetDate = date || new Date().toISOString().split("T")[0];
 
     const result = await query(
       `
@@ -148,7 +185,7 @@ export async function getTodayBalance(): Promise<Result<TodayBalance[]>> {
       GROUP BY p.id, p.name, p.daily_food_goal_grams
       ORDER BY p.name
       `,
-      [householdId, today]
+      [householdId, targetDate]
     );
 
     // Convertir achievement_pct de string a number (PostgreSQL ROUND devuelve numeric como string)
@@ -174,12 +211,22 @@ export async function getTodayBalance(): Promise<Result<TodayBalance[]>> {
 }
 
 /**
- * Obtiene estadísticas semanales agregadas
- * Últimos 7 días de datos
+ * 🎯 GESTIÓN DIARIA: Estadísticas de tendencia semanal
+ * 
+ * Muestra últimos 7 días desde la fecha especificada hacia atrás.
+ * FOCO: Contexto de la gestión diaria actual + tendencia reciente.
+ * USO SECUNDARIO: Análisis de semanas pasadas específicas.
+ * 
+ * @param endDate - Fecha final ISO (YYYY-MM-DD). Default: HOY (última semana)
+ * @returns Stats agregados de los últimos 7 días desde endDate
  */
-export async function getWeeklyStats(): Promise<Result<WeeklyStats[]>> {
+export async function getWeeklyStats(
+  endDate?: string
+): Promise<Result<WeeklyStats[]>> {
   try {
     const { householdId } = await requireHousehold();
+    // DEFAULT: Hoy (contexto de gestión diaria)
+    const targetEndDate = endDate || new Date().toISOString().split("T")[0];
 
     const result = await query(
       `
@@ -192,11 +239,12 @@ export async function getWeeklyStats(): Promise<Result<WeeklyStats[]>> {
       JOIN pets p ON p.id = dfs.pet_id
       WHERE p.household_id = $1
         AND p.is_active = true
-        AND dfs.feeding_date >= CURRENT_DATE - INTERVAL '7 days'
+        AND dfs.feeding_date <= $2::date
+        AND dfs.feeding_date >= ($2::date - INTERVAL '6 days')
       GROUP BY dfs.feeding_date
       ORDER BY dfs.feeding_date DESC
       `,
-      [householdId]
+      [householdId, targetEndDate]
     );
 
     return ok(result.rows as WeeklyStats[]);
@@ -210,12 +258,22 @@ export async function getWeeklyStats(): Promise<Result<WeeklyStats[]>> {
 }
 
 /**
- * Cuenta alertas críticas (mascotas bajo objetivo hoy)
+ * 🎯 GESTIÓN DIARIA: Conteo de alertas críticas de alimentación
+ * 
+ * Identifica mascotas con alimentación insuficiente (<90% objetivo).
+ * FOCO PRINCIPAL: Alertas del día actual para acción inmediata.
+ * USO SECUNDARIO: Revisar alertas de días pasados.
+ * 
+ * @param date - Fecha ISO (YYYY-MM-DD). Default: HOY (alertas actuales)
+ * @returns Número de mascotas bajo objetivo en el día especificado
  */
-export async function getAlertsCount(): Promise<Result<number>> {
+export async function getAlertsCount(
+  date?: string
+): Promise<Result<number>> {
   try {
     const { householdId } = await requireHousehold();
-    const today = new Date().toISOString().split("T")[0];
+    // DEFAULT: Hoy (gestión de alertas diarias)
+    const targetDate = date || new Date().toISOString().split("T")[0];
 
     const result = await query(
       `
@@ -227,7 +285,7 @@ export async function getAlertsCount(): Promise<Result<number>> {
         AND dfs.feeding_date = $2
         AND dfs.under_target = true
       `,
-      [householdId, today]
+      [householdId, targetDate]
     );
 
     return ok(result.rows[0]?.count || 0);
@@ -241,11 +299,19 @@ export async function getAlertsCount(): Promise<Result<number>> {
 }
 
 /**
- * Obtiene datos de tendencia para una mascota específica
- * Últimos 7 días
+ * 🎯 GESTIÓN DIARIA: Datos de tendencia individual de mascota
+ * 
+ * Muestra últimos 7 días desde fecha especificada para gráfico de evolución.
+ * FOCO: Contexto de gestión diaria + progreso reciente de la mascota.
+ * USO SECUNDARIO: Análisis de períodos históricos específicos.
+ * 
+ * @param petId - ID de la mascota
+ * @param endDate - Fecha final ISO (YYYY-MM-DD). Default: HOY (últimos 7 días)
+ * @returns Datos diarios para gráfico de tendencia
  */
 export async function getPetTrendData(
-  petId: string
+  petId: string,
+  endDate?: string
 ): Promise<Result<PetTrendData[]>> {
   try {
     const { householdId } = await requireHousehold();
@@ -260,6 +326,9 @@ export async function getPetTrendData(
       return fail("Mascota no encontrada");
     }
 
+    // DEFAULT: Hoy (contexto de gestión diaria)
+    const targetEndDate = endDate || new Date().toISOString().split("T")[0];
+
     const result = await query(
       `
       SELECT 
@@ -269,10 +338,11 @@ export async function getPetTrendData(
         dfs.goal_achievement_pct as achievement_pct
       FROM daily_feeding_summary dfs
       WHERE dfs.pet_id = $1
-        AND dfs.feeding_date >= CURRENT_DATE - INTERVAL '7 days'
+        AND dfs.feeding_date <= $2::date
+        AND dfs.feeding_date >= ($2::date - INTERVAL '6 days')
       ORDER BY dfs.feeding_date ASC
       `,
-      [petId]
+      [petId, targetEndDate]
     );
 
     return ok(result.rows as PetTrendData[]);
@@ -286,15 +356,22 @@ export async function getPetTrendData(
 }
 
 /**
- * Obtiene overview general del household
- * Estadísticas agregadas para dashboard principal
+ * 🎯 GESTIÓN DIARIA: Overview general del hogar
+ * 
+ * Estadísticas agregadas del día actual + contexto semanal.
+ * FOCO PRINCIPAL: Estado general de alimentación HOY.
+ * USO SECUNDARIO: Revisar overview de días pasados.
+ * 
+ * @param date - Fecha ISO (YYYY-MM-DD). Default: HOY (overview diario actual)
+ * @returns Estadísticas agregadas del hogar para el día especificado
  */
-export async function getHouseholdOverview(): Promise<
-  Result<HouseholdOverview>
-> {
+export async function getHouseholdOverview(
+  date?: string
+): Promise<Result<HouseholdOverview>> {
   try {
     const { householdId } = await requireHousehold();
-    const today = new Date().toISOString().split("T")[0];
+    // DEFAULT: Hoy (overview de gestión diaria)
+    const targetDate = date || new Date().toISOString().split("T")[0];
 
     // Total de mascotas activas
     const petsResult = await query(
@@ -303,7 +380,7 @@ export async function getHouseholdOverview(): Promise<
     );
     const totalPets = petsResult.rows[0]?.count || 0;
 
-    // Mascotas on track hoy (solo activas)
+    // Mascotas on track en la fecha especificada (solo activas)
     const onTrackResult = await query(
       `
       SELECT COUNT(*)::integer as count
@@ -314,23 +391,24 @@ export async function getHouseholdOverview(): Promise<
         AND dfs.feeding_date = $2
         AND dfs.met_target = true
       `,
-      [householdId, today]
+      [householdId, targetDate]
     );
     const petsOnTrackToday = onTrackResult.rows[0]?.count || 0;
 
-    // Total feedings últimos 7 días
+    // Total feedings últimos 7 días desde la fecha especificada
     const feedingsResult = await query(
       `
       SELECT COUNT(*)::integer as count
       FROM feedings
       WHERE household_id = $1
-        AND feeding_date >= CURRENT_DATE - INTERVAL '7 days'
+        AND feeding_date <= $2::date
+        AND feeding_date >= ($2::date - INTERVAL '6 days')
       `,
-      [householdId]
+      [householdId, targetDate]
     );
     const totalFeedingsLast7Days = feedingsResult.rows[0]?.count || 0;
 
-    // Promedio de cumplimiento (últimos 7 días, solo mascotas activas)
+    // Promedio de cumplimiento (últimos 7 días desde fecha especificada, solo mascotas activas)
     const avgResult = await query(
       `
       SELECT ROUND(AVG(goal_achievement_pct), 2) as avg
@@ -338,9 +416,10 @@ export async function getHouseholdOverview(): Promise<
       JOIN pets p ON p.id = dfs.pet_id
       WHERE p.household_id = $1
         AND p.is_active = true
-        AND dfs.feeding_date >= CURRENT_DATE - INTERVAL '7 days'
+        AND dfs.feeding_date <= $2::date
+        AND dfs.feeding_date >= ($2::date - INTERVAL '6 days')
       `,
-      [householdId]
+      [householdId, targetDate]
     );
     const avgAchievementPct = avgResult.rows[0]?.avg || 0;
 
