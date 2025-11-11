@@ -155,10 +155,7 @@ export function FeedingPageClient({
       {/* Filtro de rango de fechas - Mobile: Stack, Desktop: Flex */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
         <div className="flex-1">
-          <DateRangePicker
-            value={dateRange}
-            onChange={handleDateRangeChange}
-          />
+          <DateRangePicker value={dateRange} onChange={handleDateRangeChange} />
         </div>
         <div className="text-sm text-muted-foreground text-center sm:text-left">
           {feedings.length === 0

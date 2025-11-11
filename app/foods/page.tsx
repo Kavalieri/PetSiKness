@@ -114,14 +114,20 @@ export default async function FoodsPage() {
           <StatCard
             label="Total Alimentos"
             value={foods.length}
-            icon={<UtensilsCrossed className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />}
+            icon={
+              <UtensilsCrossed className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
+            }
           />
           {topTypes.map(({ type, count, config }) => (
             <StatCard
               key={type}
               label={config.label}
               value={count}
-              icon={<config.icon className={`h-4 w-4 sm:h-5 sm:w-5 ${config.color}`} />}
+              icon={
+                <config.icon
+                  className={`h-4 w-4 sm:h-5 sm:w-5 ${config.color}`}
+                />
+              }
             />
           ))}
         </div>
@@ -148,7 +154,9 @@ function StatCard({
       <CardContent className="p-4 sm:p-6">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-xs sm:text-sm font-medium text-muted-foreground">{label}</p>
+            <p className="text-xs sm:text-sm font-medium text-muted-foreground">
+              {label}
+            </p>
             <p className="text-xl sm:text-2xl font-bold">{value}</p>
           </div>
           {icon && <div className="opacity-80">{icon}</div>}

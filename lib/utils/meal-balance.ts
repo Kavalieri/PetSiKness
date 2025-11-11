@@ -31,14 +31,16 @@ export type MealStatus =
 export interface MealBalance {
   meal_number: number;
   scheduled_time: string; // Hora orientativa programada
-  actual_time?: string; // ✨ NUEVO: Hora real del feeding (si completada)
+  actual_time?: string; // ✨ Hora real del feeding (si completada)
   expected_grams: number;
-  eaten_grams: number;
+  served_grams: number; // ✨ NUEVO: Cantidad servida (para meta)
+  eaten_grams: number; // Cantidad comida (para tracking)
+  leftover_grams: number; // ✨ NUEVO: Calculado (served - eaten)
   status: MealStatus;
-  percentage: number;
+  percentage: number; // ✨ CAMBIO: Basado en served, no eaten
   is_due: boolean; // Si ya pasó la hora programada
   minutes_late?: number; // Minutos de retraso (si aplica)
-  minutes_early?: number; // ✨ NUEVO: Minutos de adelanto (si aplica)
+  minutes_early?: number; // ✨ Minutos de adelanto (si aplica)
 }
 
 /**
@@ -46,7 +48,8 @@ export interface MealBalance {
  */
 export interface FeedingRecord {
   feeding_time: string; // HH:mm format
-  amount_eaten_grams: number;
+  amount_served_grams: number; // ✨ CAMBIO: Ahora usamos servido para metas
+  amount_eaten_grams: number; // Para tracking de consumo real
 }
 
 // ============================================
@@ -159,23 +162,31 @@ export function calculateMealBalances(
       return diff <= TIME_WINDOW_MINUTES;
     });
 
-    // Sumar cantidad comida en esta toma
+    // ✨ NUEVO: Sumar cantidad SERVIDA (para cumplimiento de meta)
+    const servedGrams = mealFeedings.reduce(
+      (sum, f) => sum + f.amount_served_grams,
+      0
+    );
+
+    // Sumar cantidad comida (para tracking de consumo real)
     const eatenGrams = mealFeedings.reduce(
       (sum, f) => sum + f.amount_eaten_grams,
       0
     );
 
-    // ✨ NUEVO: Determinar hora real de la toma (si hubo feedings)
+    // ✨ NUEVO: Calcular sobrante
+    const leftoverGrams = servedGrams - eatenGrams;
+
+    // ✨ Hora real de la toma (si hubo feedings)
     let actualTime: string | undefined;
     if (mealFeedings.length > 0) {
-      // Usar la hora del primer feeding (asumiendo que están ordenados)
       actualTime = mealFeedings[0].feeding_time;
     }
 
-    // Calcular porcentaje de cumplimiento
+    // ✨ CAMBIO CRÍTICO: Porcentaje basado en SERVIDO, no comido
     const percentage =
       expectedPerMeal > 0
-        ? Math.round((eatenGrams / expectedPerMeal) * 100)
+        ? Math.round((servedGrams / expectedPerMeal) * 100)
         : 0;
 
     // Verificar si ya pasó la hora
@@ -207,19 +218,19 @@ export function calculateMealBalances(
       // Aún no es la hora → PENDING
       status = "pending";
     } else if (percentage >= COMPLETION_THRESHOLD) {
-      // Ya comió suficiente → COMPLETED
+      // ✨ CAMBIO: Ya se sirvió suficiente → COMPLETED
       status = "completed";
     } else if (
-      eatenGrams === 0 &&
+      servedGrams === 0 &&
       isTimeDue(schedule.scheduled_time, now, GRACE_PERIOD_MINUTES)
     ) {
-      // No ha comido nada y ya pasó el período de gracia → DELAYED
+      // No se ha servido nada y ya pasó el período de gracia → DELAYED
       status = "delayed";
-    } else if (eatenGrams > 0 && eatenGrams < expectedPerMeal) {
-      // Comió algo pero no suficiente → PARTIAL
+    } else if (servedGrams > 0 && servedGrams < expectedPerMeal) {
+      // Se sirvió algo pero no suficiente → PARTIAL
       status = "partial";
-    } else if (eatenGrams === 0) {
-      // No ha comido pero aún está en período de gracia → PENDING
+    } else if (servedGrams === 0) {
+      // No se ha servido pero aún está en período de gracia → PENDING
       status = "pending";
     } else {
       // Default: COMPLETED
@@ -229,14 +240,16 @@ export function calculateMealBalances(
     return {
       meal_number: schedule.meal_number,
       scheduled_time: schedule.scheduled_time,
-      actual_time: actualTime, // ✨ NUEVO: Hora real
+      actual_time: actualTime,
       expected_grams: expectedPerMeal,
+      served_grams: servedGrams, // ✨ NUEVO
       eaten_grams: eatenGrams,
+      leftover_grams: leftoverGrams, // ✨ NUEVO
       status,
       percentage,
       is_due: isDue,
       minutes_late: minutesLate,
-      minutes_early: minutesEarly, // ✨ NUEVO
+      minutes_early: minutesEarly,
     };
   });
 }
@@ -255,8 +268,10 @@ export interface DailySummary {
   delayed_meals: number;
   partial_meals: number;
   total_expected_grams: number;
+  total_served_grams: number; // ✨ NUEVO: Total servido (para meta)
   total_eaten_grams: number;
-  overall_percentage: number;
+  total_leftover_grams: number; // ✨ NUEVO: Total sobras
+  overall_percentage: number; // ✨ CAMBIO: Basado en served
   all_completed: boolean;
   has_delays: boolean;
 }
@@ -274,10 +289,14 @@ export function calculateDailySummary(balances: MealBalance[]): DailySummary {
   const partialMeals = balances.filter((b) => b.status === "partial").length;
 
   const totalExpected = balances.reduce((sum, b) => sum + b.expected_grams, 0);
+  // ✨ CAMBIO: Calcular servido, comido y sobras
+  const totalServed = balances.reduce((sum, b) => sum + b.served_grams, 0);
   const totalEaten = balances.reduce((sum, b) => sum + b.eaten_grams, 0);
+  const totalLeftover = balances.reduce((sum, b) => sum + b.leftover_grams, 0);
 
+  // ✨ CAMBIO CRÍTICO: Porcentaje basado en SERVIDO
   const overallPercentage =
-    totalExpected > 0 ? Math.round((totalEaten / totalExpected) * 100) : 0;
+    totalExpected > 0 ? Math.round((totalServed / totalExpected) * 100) : 0;
 
   return {
     total_meals: totalMeals,
@@ -286,7 +305,9 @@ export function calculateDailySummary(balances: MealBalance[]): DailySummary {
     delayed_meals: delayedMeals,
     partial_meals: partialMeals,
     total_expected_grams: totalExpected,
+    total_served_grams: totalServed, // ✨ NUEVO
     total_eaten_grams: totalEaten,
+    total_leftover_grams: totalLeftover, // ✨ NUEVO
     overall_percentage: overallPercentage,
     all_completed: completedMeals === totalMeals,
     has_delays: delayedMeals > 0,

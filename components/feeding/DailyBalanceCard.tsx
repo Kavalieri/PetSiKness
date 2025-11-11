@@ -16,7 +16,6 @@ import {
   getStatusIcon,
   getStatusLabel,
   getStatusColor,
-  formatMealProgress,
   type MealBalance,
 } from "@/lib/utils/meal-balance";
 
@@ -114,15 +113,27 @@ function MealCard({ balance }: { balance: MealBalance }) {
         </Badge>
       </div>
 
-      {/* Progress: cantidad comida vs esperada */}
+      {/* ✨ CAMBIO: Progress basado en SERVIDO vs esperado */}
       <div className="space-y-1">
         <div className="flex justify-between text-xs">
           <span className="text-muted-foreground">
-            {formatMealProgress(balance.eaten_grams, balance.expected_grams)}
+            Servido: {balance.served_grams}g / {balance.expected_grams}g
           </span>
           <span className="font-semibold">{balance.percentage}%</span>
         </div>
         <Progress value={Math.min(100, balance.percentage)} className="h-1.5" />
+      </div>
+
+      {/* ✨ NUEVO: Mostrar comido y sobrante */}
+      <div className="flex justify-between text-xs pt-1 border-t">
+        <div className="text-muted-foreground">
+          Comido: <span className="font-medium text-foreground">{balance.eaten_grams}g</span>
+        </div>
+        <div className="text-muted-foreground">
+          Sobra: <span className={`font-medium ${balance.leftover_grams > 0 ? "text-yellow-600" : "text-foreground"}`}>
+            {balance.leftover_grams}g
+          </span>
+        </div>
       </div>
     </div>
   );
@@ -156,21 +167,29 @@ function MealBasedBalanceCompact({ data }: { data: DailyBalanceData }) {
             {data.meal_balances.map((balance) => (
               <div
                 key={balance.meal_number}
-                className="flex items-center justify-between p-2 bg-muted/50 rounded text-xs"
+                className="flex flex-col p-2 bg-muted/50 rounded text-xs gap-1"
               >
-                <div className="flex items-center gap-2">
-                  <span>{getStatusIcon(balance.status)}</span>
-                  <span className="font-medium">
-                    {getMealName(balance.meal_number)}
-                  </span>
-                  <span className="text-muted-foreground">
-                    {/* ✨ Mostrar hora real si existe */}
-                    {balance.actual_time || balance.scheduled_time}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span>{getStatusIcon(balance.status)}</span>
+                    <span className="font-medium">
+                      {getMealName(balance.meal_number)}
+                    </span>
+                    <span className="text-muted-foreground">
+                      {/* ✨ Mostrar hora real si existe */}
+                      {balance.actual_time || balance.scheduled_time}
+                    </span>
+                  </div>
+                  <span className="font-semibold">
+                    {/* ✨ CAMBIO: Mostrar servido vs esperado */}
+                    {balance.served_grams}g/{balance.expected_grams}g
                   </span>
                 </div>
-                <span className="font-semibold">
-                  {balance.eaten_grams}g/{balance.expected_grams}g
-                </span>
+                {/* ✨ NUEVO: Mostrar comido y sobra en segunda línea */}
+                <div className="flex justify-between pl-6 text-[10px] text-muted-foreground">
+                  <span>Comido: {balance.eaten_grams}g</span>
+                  <span>Sobra: {balance.leftover_grams}g</span>
+                </div>
               </div>
             ))}
           </div>
@@ -222,7 +241,7 @@ function MealBasedBalanceFull({ data }: { data: DailyBalanceData }) {
 
       <CardContent className="space-y-4">
         {/* Grid de meal cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {data.meal_balances.map((balance) => (
             <MealCard key={balance.meal_number} balance={balance} />
           ))}
@@ -237,10 +256,11 @@ function MealBasedBalanceFull({ data }: { data: DailyBalanceData }) {
             </span>
           </div>
 
+          {/* ✨ CAMBIO: Mostrar servido, comido y sobra */}
           <div className="grid grid-cols-3 gap-2 text-center text-sm">
             <div>
-              <p className="text-muted-foreground">Comido</p>
-              <p className="font-bold text-primary">{data.total_eaten}g</p>
+              <p className="text-muted-foreground">Servido</p>
+              <p className="font-bold text-primary">{data.total_served}g</p>
             </div>
             <div>
               <p className="text-muted-foreground">Meta</p>
@@ -248,8 +268,14 @@ function MealBasedBalanceFull({ data }: { data: DailyBalanceData }) {
             </div>
             <div>
               <p className="text-muted-foreground">Sobra</p>
-              <p className="font-bold">{data.total_leftover}g</p>
+              <p className="font-bold text-yellow-600">{data.total_leftover}g</p>
             </div>
+          </div>
+
+          {/* ✨ NUEVO: Fila adicional con comido */}
+          <div className="text-center text-xs text-muted-foreground pt-2 border-t">
+            Comido real: <span className="font-semibold text-foreground">{data.total_eaten}g</span>
+            {" "}({((data.total_eaten / data.total_served) * 100).toFixed(0)}% de lo servido)
           </div>
         </div>
 

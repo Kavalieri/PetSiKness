@@ -129,7 +129,10 @@ export function PetCard({ pet, onDelete }: PetCardProps) {
         {pet.body_condition && (
           <div className="flex justify-between items-center text-xs sm:text-sm">
             <span className="text-muted-foreground">Condición:</span>
-            <Badge variant={getBodyConditionVariant(pet.body_condition)} className="text-xs">
+            <Badge
+              variant={getBodyConditionVariant(pet.body_condition)}
+              className="text-xs"
+            >
               {
                 BODY_CONDITION_EMOJIS[
                   pet.body_condition as keyof typeof BODY_CONDITION_EMOJIS

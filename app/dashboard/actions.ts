@@ -294,7 +294,11 @@ export async function getTodayBalance(
     // Agrupar feedings por pet_id
     const feedingsByPet = new Map<
       string,
-      Array<{ feeding_time: string; amount_eaten_grams: number }>
+      Array<{
+        feeding_time: string;
+        amount_served_grams: number; // ✨ NUEVO
+        amount_eaten_grams: number;
+      }>
     >();
     for (const row of feedingsResult.rows) {
       const petId = row.pet_id as string;
@@ -303,6 +307,7 @@ export async function getTodayBalance(
       }
       feedingsByPet.get(petId)!.push({
         feeding_time: row.feeding_time,
+        amount_served_grams: Number(row.amount_served_grams), // ✨ NUEVO
         amount_eaten_grams: Number(row.amount_eaten_grams),
       });
     }
