@@ -288,7 +288,7 @@ export async function getTodayFeedings(
  */
 export async function createFeeding(formData: FormData): Promise<Result> {
   try {
-    const { householdId } = await requireHousehold();
+    const { householdId, profileId } = await requireHousehold();
 
     // Preparar datos
     const data = {
@@ -344,8 +344,9 @@ export async function createFeeding(formData: FormData): Promise<Result> {
       INSERT INTO feedings (
         household_id, pet_id, food_id, feeding_date, feeding_time, meal_number,
         amount_served_grams, amount_eaten_grams,
-        appetite_rating, eating_speed, vomited, had_diarrhea, had_stool, stool_quality, notes
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+        appetite_rating, eating_speed, vomited, had_diarrhea, had_stool, stool_quality, notes,
+        recorded_by
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
       `,
       [
         householdId,
@@ -363,6 +364,7 @@ export async function createFeeding(formData: FormData): Promise<Result> {
         validated.had_stool || false,
         validated.stool_quality || null,
         validated.notes || null,
+        profileId, // Usuario que registra la alimentación
       ]
     );
 
