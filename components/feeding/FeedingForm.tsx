@@ -343,7 +343,9 @@ export function FeedingForm({
 
               {/* Leftover calculado */}
               <div className="space-y-2">
-                <FormLabel>Sobra</FormLabel>
+                <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  Sobra
+                </label>
                 <div
                   className={`flex items-center gap-2 p-3 rounded-md border ${
                     isValidLeftover
