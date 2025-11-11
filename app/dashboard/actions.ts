@@ -299,9 +299,11 @@ export async function getTodayBalance(
           : undefined,
         notes: row.notes || undefined,
       });
-      
+
       // DEBUG: Ver qué viene de la BD
-      console.log(`[DEBUG] Pet ${petId} - Toma ${row.meal_number}: expected_grams=${row.expected_grams}`);
+      console.log(
+        `[DEBUG] Pet ${petId} - Toma ${row.meal_number}: expected_grams=${row.expected_grams}`
+      );
     }
 
     // Agrupar feedings por pet_id

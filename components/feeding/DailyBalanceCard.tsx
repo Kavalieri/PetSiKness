@@ -83,20 +83,19 @@ function MealCard({ balance }: { balance: MealBalance }) {
   const statusLabel = getStatusLabel(balance.status);
   const statusColorClass = getStatusColor(balance.status);
 
-  // Valores REALES
+  // Todos los valores disponibles
+  const expectedGrams = balance.expected_grams || 0;
   const servedGrams = balance.served_grams || 0;
   const eatenGrams = balance.eaten_grams || 0;
   const leftoverGrams = balance.leftover_grams || 0;
-  const expectedGrams = balance.expected_grams || 0; // Del perfil, NO inventado
 
-  // MÉTRICA PRINCIPAL: Comido/Servido
-  const consumptionRate = servedGrams > 0 
-    ? Math.round((eatenGrams / servedGrams) * 100) 
-    : 0;
+  // Comido / Servido (correcto: comido primero)
+  const consumptionRate =
+    servedGrams > 0 ? Math.round((eatenGrams / servedGrams) * 100) : 0;
 
   return (
     <div className="p-4 border rounded-lg bg-card hover:shadow-md transition-shadow">
-      {/* Header: Nombre + Hora + Status */}
+      {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <span className="text-lg font-semibold">
@@ -104,12 +103,6 @@ function MealCard({ balance }: { balance: MealBalance }) {
           </span>
           <span className="text-sm text-muted-foreground">
             {balance.actual_time || balance.scheduled_time}
-            {balance.actual_time &&
-              balance.actual_time !== balance.scheduled_time && (
-                <span className="ml-1 text-xs opacity-60">
-                  (prog. {balance.scheduled_time})
-                </span>
-              )}
           </span>
         </div>
         <Badge className={statusColorClass} variant="outline">
@@ -117,48 +110,46 @@ function MealCard({ balance }: { balance: MealBalance }) {
         </Badge>
       </div>
 
-      {/* DATOS: Esperado (del perfil) + Real (lo que pasó) */}
-      <div className="space-y-4">
-        {/* Esperado del perfil de la mascota */}
-        <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-          <span className="text-sm font-medium">🎯 Esperado (perfil)</span>
-          <span className="text-lg font-bold">{expectedGrams}g</span>
-        </div>
-
-        {/* Cantidades REALES - Grid fijo de 3 columnas */}
-        <div className="grid grid-cols-3 gap-3">
-          <div className="text-center p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
-            <div className="text-xs text-muted-foreground mb-1">Servido</div>
-            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-              {servedGrams}g
-            </div>
-          </div>
-
-          <div className="text-center p-3 bg-green-50 dark:bg-green-950/20 rounded-lg">
-            <div className="text-xs text-muted-foreground mb-1">Comido</div>
-            <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-              {eatenGrams}g
-            </div>
-          </div>
-
-          <div className="text-center p-3 bg-yellow-50 dark:bg-yellow-950/20 rounded-lg">
-            <div className="text-xs text-muted-foreground mb-1">Sobra</div>
-            <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
-              {leftoverGrams}g
-            </div>
+      {/* Datos - Grid fijo 4 columnas */}
+      <div className="grid grid-cols-4 gap-2 mb-4">
+        <div className="text-center p-2 bg-purple-50 dark:bg-purple-950/30 rounded">
+          <div className="text-xs text-muted-foreground mb-1">Esperado</div>
+          <div className="text-lg font-bold text-purple-600 dark:text-purple-400">
+            {expectedGrams}g
           </div>
         </div>
 
-        {/* MÉTRICA: Comido/Servido (CORRECTO: comido primero) */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium">Comido / Servido</span>
-            <span className="text-xl font-bold">{consumptionRate}%</span>
+        <div className="text-center p-2 bg-blue-50 dark:bg-blue-950/30 rounded">
+          <div className="text-xs text-muted-foreground mb-1">Servido</div>
+          <div className="text-lg font-bold text-blue-600 dark:text-blue-400">
+            {servedGrams}g
           </div>
-          <Progress value={Math.min(consumptionRate, 100)} className="h-3" />
-          <div className="text-xs text-muted-foreground text-center">
-            {eatenGrams}g de {servedGrams}g
+        </div>
+
+        <div className="text-center p-2 bg-green-50 dark:bg-green-950/30 rounded">
+          <div className="text-xs text-muted-foreground mb-1">Comido</div>
+          <div className="text-lg font-bold text-green-600 dark:text-green-400">
+            {eatenGrams}g
           </div>
+        </div>
+
+        <div className="text-center p-2 bg-yellow-50 dark:bg-yellow-950/30 rounded">
+          <div className="text-xs text-muted-foreground mb-1">Sobra</div>
+          <div className="text-lg font-bold text-yellow-600 dark:text-yellow-400">
+            {leftoverGrams}g
+          </div>
+        </div>
+      </div>
+
+      {/* Métrica: Comido/Servido */}
+      <div className="space-y-1">
+        <div className="flex items-center justify-between text-sm">
+          <span className="text-muted-foreground">Comido / Servido</span>
+          <span className="font-semibold">{consumptionRate}%</span>
+        </div>
+        <Progress value={Math.min(consumptionRate, 100)} className="h-2" />
+        <div className="text-xs text-muted-foreground text-center">
+          {eatenGrams}g / {servedGrams}g
         </div>
       </div>
     </div>
