@@ -4,7 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { TrendingDown, TrendingUp, Check, AlertTriangle, Clock } from "lucide-react";
+import {
+  TrendingDown,
+  TrendingUp,
+  Check,
+  AlertTriangle,
+  Clock,
+} from "lucide-react";
 import { getMealName } from "@/lib/utils/meal-schedule";
 import {
   getStatusIcon,
@@ -93,7 +99,14 @@ function MealCard({ balance }: { balance: MealBalance }) {
             {getMealName(balance.meal_number)}
           </span>
           <span className="text-xs text-muted-foreground">
-            {balance.scheduled_time}
+            {/* ✨ Mostrar hora real si existe, sino hora programada */}
+            {balance.actual_time || balance.scheduled_time}
+            {balance.actual_time &&
+              balance.actual_time !== balance.scheduled_time && (
+                <span className="ml-1 text-[10px] opacity-60">
+                  (prog. {balance.scheduled_time})
+                </span>
+              )}
           </span>
         </div>
         <Badge className={statusColorClass} variant="outline">
@@ -151,7 +164,8 @@ function MealBasedBalanceCompact({ data }: { data: DailyBalanceData }) {
                     {getMealName(balance.meal_number)}
                   </span>
                   <span className="text-muted-foreground">
-                    {balance.scheduled_time}
+                    {/* ✨ Mostrar hora real si existe */}
+                    {balance.actual_time || balance.scheduled_time}
                   </span>
                 </div>
                 <span className="font-semibold">

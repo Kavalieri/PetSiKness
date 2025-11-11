@@ -51,6 +51,9 @@ export interface Feedings {
    */
   amount_leftover_grams: Generated<number | null>;
   amount_served_grams: number;
+  /**
+   * Calificación del apetito: refused (rechazó), poor (pobre), normal, good (bueno), excellent (excelente)
+   */
   appetite_rating: string | null;
   created_at: Generated<Timestamp>;
   /**

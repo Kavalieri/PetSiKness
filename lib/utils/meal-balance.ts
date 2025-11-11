@@ -30,13 +30,15 @@ export type MealStatus =
  */
 export interface MealBalance {
   meal_number: number;
-  scheduled_time: string;
+  scheduled_time: string; // Hora orientativa programada
+  actual_time?: string; // ✨ NUEVO: Hora real del feeding (si completada)
   expected_grams: number;
   eaten_grams: number;
   status: MealStatus;
   percentage: number;
   is_due: boolean; // Si ya pasó la hora programada
   minutes_late?: number; // Minutos de retraso (si aplica)
+  minutes_early?: number; // ✨ NUEVO: Minutos de adelanto (si aplica)
 }
 
 /**
@@ -163,6 +165,13 @@ export function calculateMealBalances(
       0
     );
 
+    // ✨ NUEVO: Determinar hora real de la toma (si hubo feedings)
+    let actualTime: string | undefined;
+    if (mealFeedings.length > 0) {
+      // Usar la hora del primer feeding (asumiendo que están ordenados)
+      actualTime = mealFeedings[0].feeding_time;
+    }
+
     // Calcular porcentaje de cumplimiento
     const percentage =
       expectedPerMeal > 0
@@ -172,9 +181,22 @@ export function calculateMealBalances(
     // Verificar si ya pasó la hora
     const isDue = isTimeDue(schedule.scheduled_time, now);
 
-    // Calcular minutos de retraso (si aplica)
+    // Calcular minutos de diferencia con hora programada
     let minutesLate: number | undefined;
-    if (isDue) {
+    let minutesEarly: number | undefined;
+
+    if (actualTime) {
+      const scheduledMinutes = timeToMinutes(schedule.scheduled_time);
+      const actualMinutes = timeToMinutes(actualTime);
+      const diff = actualMinutes - scheduledMinutes;
+
+      if (diff > 0) {
+        minutesLate = diff;
+      } else if (diff < 0) {
+        minutesEarly = Math.abs(diff);
+      }
+    } else if (isDue) {
+      // Si no hay feeding pero ya pasó la hora, calcular retraso
       minutesLate = timeToMinutes(now) - timeToMinutes(schedule.scheduled_time);
     }
 
@@ -207,12 +229,14 @@ export function calculateMealBalances(
     return {
       meal_number: schedule.meal_number,
       scheduled_time: schedule.scheduled_time,
+      actual_time: actualTime, // ✨ NUEVO: Hora real
       expected_grams: expectedPerMeal,
       eaten_grams: eatenGrams,
       status,
       percentage,
       is_due: isDue,
       minutes_late: minutesLate,
+      minutes_early: minutesEarly, // ✨ NUEVO
     };
   });
 }

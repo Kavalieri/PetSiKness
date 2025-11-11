@@ -5,7 +5,9 @@ import {
   getTodayBalance,
   getAlertsCount,
   getHouseholdOverview,
+  type TodayBalance,
 } from "./actions";
+import type { MealBalance } from "@/lib/utils/meal-balance";
 import { DailyBalanceList } from "@/components/feeding/DailyBalanceCard";
 import {
   Card,
@@ -27,7 +29,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { DashboardHeader } from "./DashboardHeader";
-
 // ============================================
 // METADATA
 // ============================================
@@ -126,8 +127,64 @@ async function StatsCards({ date }: { date: string }) {
 }
 
 // ============================================
+// ============================================
 // COMPONENTE ALERTAS CRÍTICAS
 // ============================================
+
+/**
+ * Determina si una mascota necesita atención basándose en el estado de sus tomas
+ * Lógica inteligente:
+ * - Si tiene tomas PENDING (futuras): NO alertar (progreso normal)
+ * - Si tiene tomas DELAYED: Alerta crítica
+ * - Si todas completadas pero total insuficiente: Alerta
+ */
+function needsAttention(balance: TodayBalance): {
+  needs: boolean;
+  reason?: string;
+} {
+  // Si no tiene meal_balances, usar lógica legacy
+  if (!balance.meal_balances || balance.meal_balances.length === 0) {
+    return {
+      needs: balance.status === "under",
+      reason: balance.status === "under" ? "Objetivo no alcanzado" : undefined,
+    };
+  }
+
+  const meals = balance.meal_balances;
+  const hasPending = meals.some((m: MealBalance) => m.status === "pending");
+  const hasDelayed = meals.some((m: MealBalance) => m.status === "delayed");
+  const allCompleted = meals.every(
+    (m: MealBalance) => m.status === "completed"
+  );
+
+  // Si hay tomas DELAYED: Alerta crítica
+  if (hasDelayed) {
+    const delayedCount = meals.filter(
+      (m: MealBalance) => m.status === "delayed"
+    ).length;
+    return {
+      needs: true,
+      reason: `${delayedCount} toma${delayedCount > 1 ? "s" : ""} retrasada${
+        delayedCount > 1 ? "s" : ""
+      }`,
+    };
+  }
+
+  // Si hay tomas PENDING (futuras): NO alertar
+  if (hasPending) {
+    return { needs: false };
+  }
+
+  // Si todas completadas pero total insuficiente: Alerta
+  if (allCompleted && balance.status === "under") {
+    return {
+      needs: true,
+      reason: "Total diario insuficiente",
+    };
+  }
+
+  return { needs: false };
+}
 
 async function CriticalAlerts({ date }: { date: string }) {
   const balancesResult = await getTodayBalance(date);
@@ -137,9 +194,13 @@ async function CriticalAlerts({ date }: { date: string }) {
   }
 
   const balances = balancesResult.data!;
-  const underTargetPets = balances.filter((b) => b.status === "under");
 
-  if (underTargetPets.length === 0) {
+  // ✨ Nueva lógica: filtrar mascotas que realmente necesitan atención
+  const petsNeedingAttention = balances
+    .map((b) => ({ balance: b, alert: needsAttention(b) }))
+    .filter((item) => item.alert.needs);
+
+  if (petsNeedingAttention.length === 0) {
     return null;
   }
 
@@ -158,17 +219,19 @@ async function CriticalAlerts({ date }: { date: string }) {
           : `Alerta histórica (${formattedDate})`}
       </AlertTitle>
       <AlertDescription>
-        {underTargetPets.length === 1 ? (
+        {petsNeedingAttention.length === 1 ? (
           <>
-            <strong>{underTargetPets[0].pet_name}</strong>{" "}
-            {isToday ? "no ha alcanzado" : "no alcanzó"} su objetivo diario de
-            alimentación.
+            <strong>{petsNeedingAttention[0].balance.pet_name}</strong>{" "}
+            {petsNeedingAttention[0].alert.reason || "necesita atención"}.
           </>
         ) : (
           <>
-            <strong>{underTargetPets.length} mascotas</strong>{" "}
-            {isToday ? "no han alcanzado" : "no alcanzaron"} su objetivo diario:{" "}
-            {underTargetPets.map((p) => p.pet_name).join(", ")}.
+            <strong>{petsNeedingAttention.length} mascotas</strong> necesitan
+            atención:{" "}
+            {petsNeedingAttention
+              .map((item) => `${item.balance.pet_name} (${item.alert.reason})`)
+              .join(", ")}
+            .
           </>
         )}
       </AlertDescription>

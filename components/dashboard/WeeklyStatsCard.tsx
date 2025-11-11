@@ -44,15 +44,20 @@ function aggregateWeeklyStats(stats: WeeklyStatsData[]) {
   }
 
   const totalEaten = stats.reduce((sum, day) => sum + day.total_eaten, 0);
-  
+
   // ✨ FIXED: Calcular promedio solo de días con datos
-  const daysWithData = stats.filter(day => day.days_with_data > 0);
-  const avgAchievement = daysWithData.length > 0
-    ? daysWithData.reduce((sum, day) => sum + day.avg_achievement_pct, 0) / daysWithData.length
-    : 0;
+  const daysWithData = stats.filter((day) => day.days_with_data > 0);
+  const avgAchievement =
+    daysWithData.length > 0
+      ? daysWithData.reduce((sum, day) => sum + day.avg_achievement_pct, 0) /
+        daysWithData.length
+      : 0;
 
   const daysOnTrack = stats.reduce((sum, day) => sum + day.days_on_track, 0);
-  const totalDaysWithData = stats.reduce((sum, day) => sum + day.days_with_data, 0);
+  const totalDaysWithData = stats.reduce(
+    (sum, day) => sum + day.days_with_data,
+    0
+  );
 
   return {
     totalEaten,
@@ -66,7 +71,9 @@ function aggregateWeeklyStats(stats: WeeklyStatsData[]) {
 /**
  * Determina el color del badge según el porcentaje de cumplimiento
  */
-function getAchievementColor(pct: number): "default" | "destructive" | "secondary" {
+function getAchievementColor(
+  pct: number
+): "default" | "destructive" | "secondary" {
   if (pct < 80) return "destructive";
   if (pct >= 90 && pct <= 110) return "default";
   return "secondary";
@@ -101,7 +108,8 @@ export function WeeklyStatsCard({ stats, petName }: WeeklyStatsCardProps) {
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Calendar className="h-4 w-4" />
           <span>
-            {aggregated.daysWithData} de {aggregated.totalDays} días con registros
+            {aggregated.daysWithData} de {aggregated.totalDays} días con
+            registros
           </span>
         </div>
 
@@ -109,7 +117,8 @@ export function WeeklyStatsCard({ stats, petName }: WeeklyStatsCardProps) {
         {!hasReliableData && aggregated.daysWithData > 0 && (
           <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
             <p className="text-xs text-yellow-800 dark:text-yellow-200">
-              ⚠️ Pocos datos disponibles. Las estadísticas pueden no ser representativas.
+              ⚠️ Pocos datos disponibles. Las estadísticas pueden no ser
+              representativas.
             </p>
           </div>
         )}
@@ -147,7 +156,9 @@ export function WeeklyStatsCard({ stats, petName }: WeeklyStatsCardProps) {
                 <TrendingUp className="h-4 w-4 text-primary" />
                 <span className="text-sm font-medium">Total consumido</span>
               </div>
-              <span className="text-lg font-bold">{aggregated.totalEaten}g</span>
+              <span className="text-lg font-bold">
+                {aggregated.totalEaten}g
+              </span>
             </div>
 
             {/* Días en objetivo */}
@@ -165,8 +176,11 @@ export function WeeklyStatsCard({ stats, petName }: WeeklyStatsCardProps) {
             {aggregated.daysWithData > 0 && (
               <div className="pt-2 border-t text-center">
                 <p className="text-xs text-muted-foreground">
-                  {((aggregated.daysOnTrack / aggregated.daysWithData) * 100).toFixed(0)}%
-                  de los días cumplieron el objetivo
+                  {(
+                    (aggregated.daysOnTrack / aggregated.daysWithData) *
+                    100
+                  ).toFixed(0)}
+                  % de los días cumplieron el objetivo
                 </p>
               </div>
             )}

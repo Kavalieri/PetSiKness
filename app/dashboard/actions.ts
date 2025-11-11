@@ -5,7 +5,10 @@ import { query } from "@/lib/db";
 import { requireHousehold } from "@/lib/auth";
 import { ok, fail } from "@/lib/result";
 import type { Result } from "@/lib/result";
-import { calculateMealBalances, type MealBalance } from "@/lib/utils/meal-balance";
+import {
+  calculateMealBalances,
+  type MealBalance,
+} from "@/lib/utils/meal-balance";
 
 // ============================================
 // 🎯 FILOSOFÍA: GESTIÓN DIARIA PRIORITARIA
@@ -48,7 +51,7 @@ interface DailySummary {
   over_target: boolean;
 }
 
-interface TodayBalance {
+export interface TodayBalance {
   pet_id: string;
   pet_name: string;
   total_served: number;
@@ -289,7 +292,10 @@ export async function getTodayBalance(
     }
 
     // Agrupar feedings por pet_id
-    const feedingsByPet = new Map<string, Array<{ feeding_time: string; amount_eaten_grams: number }>>();
+    const feedingsByPet = new Map<
+      string,
+      Array<{ feeding_time: string; amount_eaten_grams: number }>
+    >();
     for (const row of feedingsResult.rows) {
       const petId = row.pet_id as string;
       if (!feedingsByPet.has(petId)) {
@@ -312,11 +318,7 @@ export async function getTodayBalance(
         // ✨ Calcular meal_balances si tiene schedules
         let mealBalances: MealBalance[] | undefined;
         if (schedules.length > 0) {
-          mealBalances = calculateMealBalances(
-            dailyGoal,
-            schedules,
-            feedings
-          );
+          mealBalances = calculateMealBalances(dailyGoal, schedules, feedings);
         }
 
         return {
@@ -445,24 +447,47 @@ export async function getAlertsCount(date?: string): Promise<Result<number>> {
       }
     }
 
-    const { householdId } = await requireHousehold();
-    // DEFAULT: Hoy (gestión de alertas diarias)
-    const targetDate = date || new Date().toISOString().split("T")[0];
+    // Obtener balances con meal_balances
+    const balancesResult = await getTodayBalance(date);
+    if (!balancesResult.ok) {
+      return fail(balancesResult.message);
+    }
 
-    const result = await query(
-      `
-      SELECT COUNT(*)::integer as count
-      FROM daily_feeding_summary dfs
-      JOIN pets p ON p.id = dfs.pet_id
-      WHERE p.household_id = $1
-        AND p.is_active = true
-        AND dfs.feeding_date = $2
-        AND dfs.under_target = true
-      `,
-      [householdId, targetDate]
-    );
+    const balances = balancesResult.data!;
 
-    return ok(result.rows[0]?.count || 0);
+    // ✨ Contar mascotas que realmente necesitan atención
+    // Lógica inteligente:
+    // - Si tiene tomas PENDING (futuras): NO contar
+    // - Si tiene tomas DELAYED: SÍ contar
+    // - Si todas completadas pero total insuficiente: SÍ contar
+    let alertCount = 0;
+
+    for (const balance of balances) {
+      // Si no tiene meal_balances, usar lógica legacy
+      if (!balance.meal_balances || balance.meal_balances.length === 0) {
+        if (balance.status === "under") {
+          alertCount++;
+        }
+        continue;
+      }
+
+      const meals = balance.meal_balances;
+      const hasPending = meals.some((m) => m.status === "pending");
+      const hasDelayed = meals.some((m) => m.status === "delayed");
+      const allCompleted = meals.every((m) => m.status === "completed");
+
+      // Contar si:
+      // 1. Tiene tomas DELAYED → Alerta crítica
+      // 2. Todas completadas pero total insuficiente → Alerta
+      // NO contar si hay tomas PENDING (progreso normal esperado)
+      if (hasDelayed) {
+        alertCount++;
+      } else if (!hasPending && allCompleted && balance.status === "under") {
+        alertCount++;
+      }
+    }
+
+    return ok(alertCount);
   } catch (error) {
     console.error("Error fetching alerts count:", error);
     if (error instanceof Error) {
