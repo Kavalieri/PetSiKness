@@ -1,10 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import { format, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
+import {
+  format,
+  subDays,
+  startOfWeek,
+  endOfWeek,
+  startOfMonth,
+  endOfMonth,
+} from "date-fns";
 import { es } from "date-fns/locale";
 import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { CalendarIcon, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -76,7 +87,10 @@ export function DateRangePicker({
       label: "Esta semana",
       getRange: () => {
         const today = new Date();
-        return { from: startOfWeek(today, { locale: es }), to: endOfWeek(today, { locale: es }) };
+        return {
+          from: startOfWeek(today, { locale: es }),
+          to: endOfWeek(today, { locale: es }),
+        };
       },
     },
     {
@@ -109,7 +123,11 @@ export function DateRangePicker({
 
   // Formatear label del botón
   const buttonLabel = value
-    ? `${format(value.from, "dd MMM", { locale: es })} - ${format(value.to, "dd MMM yyyy", { locale: es })}`
+    ? `${format(value.from, "dd MMM", { locale: es })} - ${format(
+        value.to,
+        "dd MMM yyyy",
+        { locale: es }
+      )}`
     : "Seleccionar período";
 
   return (
