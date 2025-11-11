@@ -1,15 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,13 +29,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { 
-  TrendingDown, 
-  CheckCircle2, 
-  AlertTriangle, 
-  Trash2, 
+import {
+  TrendingDown,
+  CheckCircle2,
+  AlertTriangle,
+  Trash2,
   Edit,
-  UtensilsCrossed 
+  UtensilsCrossed,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
@@ -119,8 +125,9 @@ const stoolConfig = {
 // ============================================
 
 function FeedingCard({ feeding, onEdit, onDelete }: FeedingCardProps) {
-  const eatenPercentage = (feeding.amount_eaten_grams / feeding.amount_served_grams) * 100;
-  
+  const eatenPercentage =
+    (feeding.amount_eaten_grams / feeding.amount_served_grams) * 100;
+
   // Determinar estado de alimentación
   let statusIcon;
   let statusColor;
@@ -142,7 +149,8 @@ function FeedingCard({ feeding, onEdit, onDelete }: FeedingCardProps) {
           <div className="space-y-1">
             <CardTitle className="text-lg">{feeding.pet_name}</CardTitle>
             <CardDescription>
-              {feeding.food_brand ? `${feeding.food_brand} - ` : ""}{feeding.food_name}
+              {feeding.food_brand ? `${feeding.food_brand} - ` : ""}
+              {feeding.food_name}
             </CardDescription>
           </div>
           <div className="flex gap-2">
@@ -208,16 +216,41 @@ function FeedingCard({ feeding, onEdit, onDelete }: FeedingCardProps) {
 
         {/* Comportamiento */}
         <div className="flex flex-wrap gap-2">
-          {feeding.appetite_rating && appetiteConfig[feeding.appetite_rating as keyof typeof appetiteConfig] && (
-            <Badge variant={appetiteConfig[feeding.appetite_rating as keyof typeof appetiteConfig].variant}>
-              Apetito: {appetiteConfig[feeding.appetite_rating as keyof typeof appetiteConfig].label}
-            </Badge>
-          )}
-          {feeding.eating_speed && speedConfig[feeding.eating_speed as keyof typeof speedConfig] && (
-            <Badge variant="outline" className={speedConfig[feeding.eating_speed as keyof typeof speedConfig].color}>
-              Velocidad: {speedConfig[feeding.eating_speed as keyof typeof speedConfig].label}
-            </Badge>
-          )}
+          {feeding.appetite_rating &&
+            appetiteConfig[
+              feeding.appetite_rating as keyof typeof appetiteConfig
+            ] && (
+              <Badge
+                variant={
+                  appetiteConfig[
+                    feeding.appetite_rating as keyof typeof appetiteConfig
+                  ].variant
+                }
+              >
+                Apetito:{" "}
+                {
+                  appetiteConfig[
+                    feeding.appetite_rating as keyof typeof appetiteConfig
+                  ].label
+                }
+              </Badge>
+            )}
+          {feeding.eating_speed &&
+            speedConfig[feeding.eating_speed as keyof typeof speedConfig] && (
+              <Badge
+                variant="outline"
+                className={
+                  speedConfig[feeding.eating_speed as keyof typeof speedConfig]
+                    .color
+                }
+              >
+                Velocidad:{" "}
+                {
+                  speedConfig[feeding.eating_speed as keyof typeof speedConfig]
+                    .label
+                }
+              </Badge>
+            )}
         </div>
 
         {/* Alertas de salud */}
@@ -230,11 +263,19 @@ function FeedingCard({ feeding, onEdit, onDelete }: FeedingCardProps) {
             <div className="space-y-1 text-xs">
               {feeding.vomited && <p>• Vómito registrado</p>}
               {feeding.had_diarrhea && <p>• Diarrea registrada</p>}
-              {feeding.stool_quality && stoolConfig[feeding.stool_quality as keyof typeof stoolConfig] && (
-                <p>
-                  • Heces: {stoolConfig[feeding.stool_quality as keyof typeof stoolConfig].label}
-                </p>
-              )}
+              {feeding.stool_quality &&
+                stoolConfig[
+                  feeding.stool_quality as keyof typeof stoolConfig
+                ] && (
+                  <p>
+                    • Heces:{" "}
+                    {
+                      stoolConfig[
+                        feeding.stool_quality as keyof typeof stoolConfig
+                      ].label
+                    }
+                  </p>
+                )}
             </div>
           </div>
         )}
@@ -244,10 +285,45 @@ function FeedingCard({ feeding, onEdit, onDelete }: FeedingCardProps) {
 }
 
 // ============================================
+// FUNCIONES HELPER
+// ============================================
+
+/**
+ * Agrupa feedings por fecha
+ */
+function groupByDate(feedings: FeedingData[]): Map<string, FeedingData[]> {
+  const grouped = new Map<string, FeedingData[]>();
+
+  feedings.forEach((feeding) => {
+    const date = feeding.feeding_date;
+    if (!grouped.has(date)) {
+      grouped.set(date, []);
+    }
+    grouped.get(date)!.push(feeding);
+  });
+
+  // Ordenar cada grupo por hora
+  grouped.forEach((group) => {
+    group.sort((a, b) => {
+      const timeA = a.feeding_time || "00:00";
+      const timeB = b.feeding_time || "00:00";
+      return timeB.localeCompare(timeA); // DESC (más reciente primero)
+    });
+  });
+
+  return grouped;
+}
+
+// ============================================
 // COMPONENTE PRINCIPAL
 // ============================================
 
-export function FeedingList({ feedings, pets, foods, onDelete }: FeedingListProps) {
+export function FeedingList({
+  feedings,
+  pets,
+  foods,
+  onDelete,
+}: FeedingListProps) {
   const router = useRouter();
   const [filteredFeedings, setFilteredFeedings] = useState(feedings);
   const [selectedPet, setSelectedPet] = useState<string>("all");
@@ -286,7 +362,7 @@ export function FeedingList({ feedings, pets, foods, onDelete }: FeedingListProp
   // Handle delete
   const handleDeleteConfirm = async () => {
     if (!deleteId) return;
-    
+
     setIsDeleting(true);
     try {
       await onDelete(deleteId);
@@ -304,7 +380,9 @@ export function FeedingList({ feedings, pets, foods, onDelete }: FeedingListProp
       <Card>
         <CardHeader>
           <CardTitle>Filtros</CardTitle>
-          <CardDescription>Filtra los registros de alimentación</CardDescription>
+          <CardDescription>
+            Filtra los registros de alimentación
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -337,7 +415,8 @@ export function FeedingList({ feedings, pets, foods, onDelete }: FeedingListProp
                   <SelectItem value="all">Todos</SelectItem>
                   {foods.map((food) => (
                     <SelectItem key={food.id} value={food.id}>
-                      {food.brand ? `${food.brand} - ` : ""}{food.name}
+                      {food.brand ? `${food.brand} - ` : ""}
+                      {food.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -364,7 +443,7 @@ export function FeedingList({ feedings, pets, foods, onDelete }: FeedingListProp
         </CardContent>
       </Card>
 
-      {/* Lista de feedings */}
+      {/* Lista de feedings agrupados por fecha */}
       {filteredFeedings.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
@@ -379,29 +458,57 @@ export function FeedingList({ feedings, pets, foods, onDelete }: FeedingListProp
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredFeedings.map((feeding) => (
-            <FeedingCard
-              key={feeding.id}
-              feeding={feeding}
-              onEdit={(id) => router.push(`/feeding/${id}/edit`)}
-              onDelete={(id) => setDeleteId(id)}
-            />
-          ))}
+        <div className="space-y-6">
+          {Array.from(groupByDate(filteredFeedings).entries()).map(
+            ([date, feedingsInDate]) => (
+              <div key={date} className="space-y-3">
+                {/* Encabezado de fecha */}
+                <div className="flex items-center gap-3">
+                  <h3 className="text-lg font-semibold">
+                    {format(new Date(date + "T00:00:00"), "EEEE d 'de' MMMM", {
+                      locale: es,
+                    })}
+                  </h3>
+                  <Badge variant="secondary">
+                    {feedingsInDate.length} registro
+                    {feedingsInDate.length !== 1 ? "s" : ""}
+                  </Badge>
+                </div>
+
+                {/* Grid de cards para esa fecha */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {feedingsInDate.map((feeding) => (
+                    <FeedingCard
+                      key={feeding.id}
+                      feeding={feeding}
+                      onEdit={(id) => router.push(`/feeding/${id}/edit`)}
+                      onDelete={(id) => setDeleteId(id)}
+                    />
+                  ))}
+                </div>
+              </div>
+            )
+          )}
         </div>
       )}
 
       {/* Dialog de confirmación de eliminación */}
-      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+      <AlertDialog
+        open={!!deleteId}
+        onOpenChange={(open) => !open && setDeleteId(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>¿Eliminar registro?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción no se puede deshacer. El registro de alimentación será eliminado permanentemente.
+              Esta acción no se puede deshacer. El registro de alimentación será
+              eliminado permanentemente.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>
+              Cancelar
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteConfirm}
               disabled={isDeleting}
