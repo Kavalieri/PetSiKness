@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { query } from "@/lib/db";
 import { ok, fail, type Result } from "@/lib/result";
 import { requireHousehold } from "@/lib/auth";
-import { PetFormSchema, PetIdSchema, type Pet } from "@/types/pets";
+import { PetFormSchema, PetIdSchema, type Pet, type PetWithSchedules } from "@/types/pets";
 
 // ============================================
 // GET PETS - Listar mascotas del hogar
@@ -45,10 +45,11 @@ export async function getPets(): Promise<Result<Pet[]>> {
 /**
  * Obtiene una mascota por su ID
  * Valida que pertenezca al hogar del usuario actual
+ * Incluye sus horarios de tomas (meal_schedules)
  * @param id - UUID de la mascota
- * @returns Result con la mascota o error
+ * @returns Result con la mascota y sus horarios
  */
-export async function getPetById(id: string): Promise<Result<Pet>> {
+export async function getPetById(id: string): Promise<Result<PetWithSchedules>> {
   try {
     // 1. Validar ID
     const idValidation = PetIdSchema.safeParse(id);
@@ -59,8 +60,8 @@ export async function getPetById(id: string): Promise<Result<Pet>> {
     // 2. Autenticación y obtener household_id
     const { householdId } = await requireHousehold();
 
-    // 3. Query con doble filtro: id + household_id
-    const result = await query(
+    // 3. Query de mascota
+    const petResult = await query(
       `SELECT * FROM pets 
        WHERE id = $1 
        AND household_id = $2 
@@ -70,11 +71,28 @@ export async function getPetById(id: string): Promise<Result<Pet>> {
     );
 
     // 4. Verificar que existe
-    if (result.rows.length === 0) {
+    if (petResult.rows.length === 0) {
       return fail("Mascota no encontrada");
     }
 
-    return ok(result.rows[0] as Pet);
+    const pet = petResult.rows[0] as Pet;
+
+    // 5. Query de meal_schedules
+    const schedulesResult = await query(
+      `SELECT id, meal_number, scheduled_time, notes, created_at, updated_at
+       FROM pet_meal_schedules
+       WHERE pet_id = $1
+       ORDER BY meal_number ASC`,
+      [id]
+    );
+
+    // 6. Combinar pet con schedules
+    const petWithSchedules: PetWithSchedules = {
+      ...pet,
+      meal_schedules: schedulesResult.rows,
+    };
+
+    return ok(petWithSchedules);
   } catch (error) {
     console.error("Error en getPetById:", error);
     return fail(
@@ -135,7 +153,18 @@ export async function createPet(formData: FormData): Promise<Result<Pet>> {
 
     const data = validation.data;
 
-    // 4. Insertar en base de datos
+    // 4. Parsear meal_schedules si existen
+    let mealSchedules = null;
+    const mealSchedulesRaw = formData.get("meal_schedules");
+    if (mealSchedulesRaw) {
+      try {
+        mealSchedules = JSON.parse(mealSchedulesRaw as string);
+      } catch {
+        return fail("Formato inválido de horarios de tomas");
+      }
+    }
+
+    // 5. Insertar en base de datos
     const result = await query(
       `INSERT INTO pets (
         household_id,
@@ -178,10 +207,33 @@ export async function createPet(formData: FormData): Promise<Result<Pet>> {
       ]
     );
 
-    // 5. Revalidar rutas
+    const createdPet = result.rows[0] as Pet;
+
+    // 6. Insertar meal_schedules si existen
+    if (mealSchedules && Array.isArray(mealSchedules) && mealSchedules.length > 0) {
+      const scheduleValues = mealSchedules.map((schedule, index) => 
+        `($1, $${index * 2 + 2}, $${index * 2 + 3})`
+      ).join(", ");
+
+      const scheduleParams = [
+        createdPet.id,
+        ...mealSchedules.flatMap((s: { meal_number: number; scheduled_time: string }) => [
+          s.meal_number,
+          s.scheduled_time,
+        ]),
+      ];
+
+      await query(
+        `INSERT INTO pet_meal_schedules (pet_id, meal_number, scheduled_time)
+         VALUES ${scheduleValues}`,
+        scheduleParams
+      );
+    }
+
+    // 7. Revalidar rutas
     revalidatePath("/pets");
 
-    return ok(result.rows[0] as Pet);
+    return ok(createdPet);
   } catch (error) {
     console.error("Error en createPet:", error);
     return fail(
@@ -263,7 +315,18 @@ export async function updatePet(
 
     const data = validation.data;
 
-    // 6. Actualizar en base de datos
+    // 6. Parsear meal_schedules si existen
+    let mealSchedules = null;
+    const mealSchedulesRaw = formData.get("meal_schedules");
+    if (mealSchedulesRaw) {
+      try {
+        mealSchedules = JSON.parse(mealSchedulesRaw as string);
+      } catch {
+        return fail("Formato inválido de horarios de tomas");
+      }
+    }
+
+    // 7. Actualizar en base de datos
     const result = await query(
       `UPDATE pets SET
         name = $1,
@@ -305,11 +368,43 @@ export async function updatePet(
       ]
     );
 
-    // 7. Revalidar rutas
+    const updatedPet = result.rows[0] as Pet;
+
+    // 8. Actualizar meal_schedules si existen
+    if (mealSchedules && Array.isArray(mealSchedules)) {
+      // Primero eliminar los existentes
+      await query(
+        `DELETE FROM pet_meal_schedules WHERE pet_id = $1`,
+        [id]
+      );
+
+      // Luego insertar los nuevos si hay
+      if (mealSchedules.length > 0) {
+        const scheduleValues = mealSchedules.map((schedule, index) => 
+          `($1, $${index * 2 + 2}, $${index * 2 + 3})`
+        ).join(", ");
+
+        const scheduleParams = [
+          id,
+          ...mealSchedules.flatMap((s: { meal_number: number; scheduled_time: string }) => [
+            s.meal_number,
+            s.scheduled_time,
+          ]),
+        ];
+
+        await query(
+          `INSERT INTO pet_meal_schedules (pet_id, meal_number, scheduled_time)
+           VALUES ${scheduleValues}`,
+          scheduleParams
+        );
+      }
+    }
+
+    // 9. Revalidar rutas
     revalidatePath("/pets");
     revalidatePath(`/pets/${id}`);
 
-    return ok(result.rows[0] as Pet);
+    return ok(updatedPet);
   } catch (error) {
     console.error("Error en updatePet:", error);
     return fail(

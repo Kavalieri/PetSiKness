@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { PetForm } from "@/components/pets/PetForm";
-import type { Pet } from "@/types/pets";
+import type { PetWithSchedules } from "@/types/pets";
 
 /**
  * Client Component para edición de mascotas
@@ -10,10 +10,10 @@ import type { Pet } from "@/types/pets";
  * Wrapper de PetForm que maneja navegación con useRouter.
  * Recibe mascota pre-cargada del Server Component padre.
  *
- * @param pet - Mascota a editar (validada en server)
+ * @param pet - Mascota a editar (validada en server) con sus horarios de tomas
  */
 interface EditPetClientProps {
-  pet: Pet;
+  pet: PetWithSchedules;
 }
 
 export function EditPetClient({ pet }: EditPetClientProps) {
