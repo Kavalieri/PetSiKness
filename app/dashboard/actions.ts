@@ -248,6 +248,7 @@ export async function getTodayBalance(
         pms.pet_id,
         pms.meal_number,
         pms.scheduled_time,
+        pms.expected_grams,
         pms.notes
       FROM pet_meal_schedules pms
       INNER JOIN pets p ON p.id = pms.pet_id
@@ -263,6 +264,7 @@ export async function getTodayBalance(
       SELECT 
         f.pet_id,
         f.feeding_time,
+        f.amount_served_grams,
         f.amount_eaten_grams
       FROM feedings f
       INNER JOIN pets p ON p.id = f.pet_id
@@ -277,7 +279,12 @@ export async function getTodayBalance(
     // Agrupar schedules por pet_id
     const schedulesByPet = new Map<
       string,
-      Array<{ meal_number: number; scheduled_time: string; notes?: string }>
+      Array<{ 
+        meal_number: number; 
+        scheduled_time: string; 
+        expected_grams?: number;
+        notes?: string;
+      }>
     >();
     for (const row of schedulesResult.rows) {
       const petId = row.pet_id as string;
@@ -287,6 +294,7 @@ export async function getTodayBalance(
       schedulesByPet.get(petId)!.push({
         meal_number: row.meal_number,
         scheduled_time: row.scheduled_time,
+        expected_grams: row.expected_grams ? Number(row.expected_grams) : undefined,
         notes: row.notes || undefined,
       });
     }

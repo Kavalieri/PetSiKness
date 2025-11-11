@@ -150,7 +150,9 @@ function MealCard({ balance }: { balance: MealBalance }) {
         <div className="flex flex-col gap-2 min-w-[200px]">
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Cumplimiento</span>
-            <span className="font-bold text-base">{percentage.toFixed(0)}%</span>
+            <span className="font-bold text-base">
+              {percentage.toFixed(0)}%
+            </span>
           </div>
           <Progress value={Math.min(percentage, 100)} className="h-2.5" />
         </div>

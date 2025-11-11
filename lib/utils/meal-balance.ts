@@ -13,6 +13,7 @@
 export interface SimpleMealSchedule {
   meal_number: number;
   scheduled_time: string;
+  expected_grams?: number; // ✨ Cantidad esperada específica de esta toma
   notes?: string;
 }
 
@@ -143,9 +144,6 @@ export function calculateMealBalances(
     return [];
   }
 
-  // Calcular porción esperada por toma
-  const expectedPerMeal = Math.round(dailyGoalGrams / numMeals);
-
   // Ordenar schedules por meal_number (debería estar ordenado pero por si acaso)
   const sortedSchedules = [...mealSchedules].sort(
     (a, b) => a.meal_number - b.meal_number
@@ -153,6 +151,11 @@ export function calculateMealBalances(
 
   // Calcular balance para cada toma
   return sortedSchedules.map((schedule) => {
+    // ✨ CAMBIO: Usar expected_grams específico si está disponible, sino dividir meta diaria
+    const expectedGrams = schedule.expected_grams 
+      ? schedule.expected_grams 
+      : Math.round(dailyGoalGrams / numMeals);
+
     // Encontrar feedings dentro de la ventana de tiempo de esta toma
     const mealFeedings = feedings.filter((feeding) => {
       const diff = timeDifferenceMinutes(
@@ -183,10 +186,10 @@ export function calculateMealBalances(
       actualTime = mealFeedings[0].feeding_time;
     }
 
-    // ✨ CAMBIO CRÍTICO: Porcentaje basado en SERVIDO, no comido
+    // ✨ CAMBIO CRÍTICO: Porcentaje basado en SERVIDO vs esperado de ESTA toma
     const percentage =
-      expectedPerMeal > 0
-        ? Math.round((servedGrams / expectedPerMeal) * 100)
+      expectedGrams > 0
+        ? Math.round((servedGrams / expectedGrams) * 100)
         : 0;
 
     // Verificar si ya pasó la hora
@@ -226,7 +229,7 @@ export function calculateMealBalances(
     ) {
       // No se ha servido nada y ya pasó el período de gracia → DELAYED
       status = "delayed";
-    } else if (servedGrams > 0 && servedGrams < expectedPerMeal) {
+    } else if (servedGrams > 0 && servedGrams < expectedGrams) {
       // Se sirvió algo pero no suficiente → PARTIAL
       status = "partial";
     } else if (servedGrams === 0) {
@@ -241,7 +244,7 @@ export function calculateMealBalances(
       meal_number: schedule.meal_number,
       scheduled_time: schedule.scheduled_time,
       actual_time: actualTime,
-      expected_grams: expectedPerMeal,
+      expected_grams: expectedGrams,
       served_grams: servedGrams, // ✨ NUEVO
       eaten_grams: eatenGrams,
       leftover_grams: leftoverGrams, // ✨ NUEVO
