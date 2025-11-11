@@ -16,12 +16,12 @@ export default async function PetsPage() {
   await requireHousehold();
 
   return (
-    <div className="container mx-auto py-6 px-4">
+    <div className="container mx-auto p-4 sm:py-6 sm:px-4">
       {/* Header con título y botón de acción */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <h1 className="text-3xl font-bold">Mis Mascotas</h1>
+      <div className="flex flex-col gap-3 mb-4 sm:flex-row sm:justify-between sm:items-center sm:mb-6">
+        <h1 className="text-2xl sm:text-3xl font-bold">Mis Mascotas</h1>
         <Link href="/pets/new">
-          <Button>+ Añadir Mascota</Button>
+          <Button className="w-full sm:w-auto">+ Añadir Mascota</Button>
         </Link>
       </div>
 

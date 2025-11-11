@@ -77,16 +77,16 @@ export function PetCard({ pet, onDelete }: PetCardProps) {
   return (
     <Card className="hover:shadow-lg transition-shadow duration-200">
       {/* Header con avatar centrado estilo DNI */}
-      <CardHeader className="pb-3">
-        <div className="flex flex-col items-center gap-3">
+      <CardHeader className="pb-2 sm:pb-3">
+        <div className="flex flex-col items-center gap-2 sm:gap-3">
           {/* Avatar grande centrado */}
           <div className="flex-shrink-0">
             {avatar.type === "emoji" ? (
-              <div className="w-32 h-32 rounded-lg bg-muted flex items-center justify-center text-6xl border-2 border-border shadow-sm">
+              <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-lg bg-muted flex items-center justify-center text-5xl sm:text-6xl border-2 border-border shadow-sm">
                 {avatar.value}
               </div>
             ) : (
-              <div className="w-32 h-32 rounded-lg overflow-hidden border-2 border-primary shadow-md">
+              <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-lg overflow-hidden border-2 border-primary shadow-md">
                 <img
                   src={avatar.value}
                   alt={pet.name}
@@ -98,10 +98,10 @@ export function PetCard({ pet, onDelete }: PetCardProps) {
 
           {/* Nombre y especie centrados */}
           <div className="text-center w-full">
-            <CardTitle className="text-xl font-bold truncate">
+            <CardTitle className="text-lg sm:text-xl font-bold truncate">
               {pet.name}
             </CardTitle>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs sm:text-sm text-muted-foreground">
               {speciesLabel}
               {pet.breed && ` • ${pet.breed}`}
             </p>
@@ -110,26 +110,26 @@ export function PetCard({ pet, onDelete }: PetCardProps) {
       </CardHeader>
 
       {/* Content */}
-      <CardContent className="pb-3 space-y-2">
+      <CardContent className="pb-2 sm:pb-3 space-y-1.5 sm:space-y-2">
         {/* Edad */}
         {age && (
-          <div className="flex justify-between text-sm">
+          <div className="flex justify-between text-xs sm:text-sm">
             <span className="text-muted-foreground">Edad:</span>
             <span className="font-medium">{age}</span>
           </div>
         )}
 
         {/* Peso */}
-        <div className="flex justify-between text-sm">
+        <div className="flex justify-between text-xs sm:text-sm">
           <span className="text-muted-foreground">Peso:</span>
           <span className="font-medium">{weight}</span>
         </div>
 
         {/* Condición corporal */}
         {pet.body_condition && (
-          <div className="flex justify-between items-center text-sm">
+          <div className="flex justify-between items-center text-xs sm:text-sm">
             <span className="text-muted-foreground">Condición:</span>
-            <Badge variant={getBodyConditionVariant(pet.body_condition)}>
+            <Badge variant={getBodyConditionVariant(pet.body_condition)} className="text-xs">
               {
                 BODY_CONDITION_EMOJIS[
                   pet.body_condition as keyof typeof BODY_CONDITION_EMOJIS
@@ -145,27 +145,27 @@ export function PetCard({ pet, onDelete }: PetCardProps) {
         )}
 
         {/* Meta diaria */}
-        <div className="flex justify-between text-sm">
+        <div className="flex justify-between text-xs sm:text-sm">
           <span className="text-muted-foreground">Meta diaria:</span>
           <span className="font-medium">{dailyGoal}</span>
         </div>
       </CardContent>
 
       {/* Footer - Botones de acción */}
-      <CardFooter className="pt-3 border-t flex gap-2">
+      <CardFooter className="pt-2 sm:pt-3 border-t flex gap-2">
         {/* Ver detalle */}
         <Button variant="outline" size="sm" asChild className="flex-1">
           <Link href={`/pets/${petId}`}>
-            <Eye className="h-4 w-4 mr-1" />
-            Ver
+            <Eye className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+            <span className="text-xs sm:text-sm">Ver</span>
           </Link>
         </Button>
 
         {/* Editar */}
         <Button variant="outline" size="sm" asChild className="flex-1">
           <Link href={`/pets/${petId}/edit`}>
-            <Pencil className="h-4 w-4 mr-1" />
-            Editar
+            <Pencil className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+            <span className="text-xs sm:text-sm">Editar</span>
           </Link>
         </Button>
 
@@ -177,8 +177,8 @@ export function PetCard({ pet, onDelete }: PetCardProps) {
             onClick={() => onDelete(petId)}
             className="flex-1 text-destructive hover:bg-destructive hover:text-destructive-foreground"
           >
-            <Trash2 className="h-4 w-4 mr-1" />
-            Eliminar
+            <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+            <span className="text-xs sm:text-sm">Eliminar</span>
           </Button>
         )}
       </CardFooter>

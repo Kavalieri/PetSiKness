@@ -52,9 +52,9 @@ export async function PetList() {
     );
   }
 
-  // Grid de mascotas
+  // Grid de mascotas - 1 columna móvil, 2 tablet, máximo 2 desktop
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
       {pets.map((pet) => (
         <PetCard key={String(pet.id)} pet={pet} />
       ))}
