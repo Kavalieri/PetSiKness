@@ -7,7 +7,7 @@ import type {
   Pet,
   PetFormData,
   Species,
-  MealScheduleFormData,
+  PortionScheduleFormData,
   PetWithSchedules,
 } from "@/types/pets";
 import {
@@ -20,8 +20,8 @@ import {
 import { createPet, updatePet, deletePet } from "@/app/pets/actions";
 import {
   generateDefaultSchedule,
-  getMealName,
-} from "@/lib/utils/meal-schedule";
+  getPortionName,
+} from "@/lib/utils/portion-schedule";
 import { useToast } from "@/hooks/use-toast";
 import {
   SPECIES_OPTIONS,
@@ -95,8 +95,8 @@ function convertPetToFormData(pet: Pet): any {
     weight_kg: pet.weight_kg ? Number(pet.weight_kg) : undefined,
     body_condition: (pet.body_condition as string) || undefined,
     daily_food_goal_grams: Number(pet.daily_food_goal_grams),
-    daily_meals_target: pet.daily_meals_target
-      ? Number(pet.daily_meals_target)
+    daily_portions_target: pet.daily_portions_target
+      ? Number(pet.daily_portions_target)
       : 2,
     health_notes: pet.health_notes || undefined,
     allergies: pet.allergies || [],
@@ -112,7 +112,7 @@ function convertPetToFormData(pet: Pet): any {
  */
 function convertToFormData(
   data: PetFormData,
-  mealSchedules?: MealScheduleFormData[]
+  portionSchedules?: PortionScheduleFormData[]
 ): FormData {
   const formData = new FormData();
 
@@ -134,11 +134,14 @@ function convertToFormData(
     "daily_food_goal_grams",
     data.daily_food_goal_grams.toString()
   );
-  formData.append("daily_meals_target", data.daily_meals_target.toString());
+  formData.append(
+    "daily_portions_target",
+    data.daily_portions_target.toString()
+  );
 
-  // Horarios de tomas (nuevo)
-  if (mealSchedules && mealSchedules.length > 0) {
-    formData.append("meal_schedules", JSON.stringify(mealSchedules));
+  // Horarios de raciones (nuevo)
+  if (portionSchedules && portionSchedules.length > 0) {
+    formData.append("portion_schedules", JSON.stringify(portionSchedules));
   }
 
   // Salud
@@ -174,10 +177,12 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
     pet?.photo_url || undefined
   );
 
-  // Inicializar meal_schedules: desde pet existente o array vacío
-  const [mealSchedules, setMealSchedules] = useState<MealScheduleFormData[]>(
-    pet?.meal_schedules?.map((s) => ({
-      meal_number: s.meal_number,
+  // Inicializar portion_schedules: desde pet existente o array vacío
+  const [portionSchedules, setPortionSchedules] = useState<
+    PortionScheduleFormData[]
+  >(
+    pet?.portion_schedules?.map((s) => ({
+      portion_number: s.portion_number,
       scheduled_time: s.scheduled_time,
       expected_grams: s.expected_grams ? Number(s.expected_grams) : undefined,
       notes: s.notes || undefined,
@@ -196,7 +201,7 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
     weight_kg: undefined,
     body_condition: undefined,
     daily_food_goal_grams: 200,
-    daily_meals_target: 2,
+    daily_portions_target: 2,
     health_notes: undefined,
     allergies: [],
     medications: [],
@@ -232,25 +237,25 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
     }
   }, [selectedSpecies, form, pet]);
 
-  // Sincronizar meal schedules con daily_meals_target
-  const dailyMealsTarget = form.watch("daily_meals_target");
+  // Sincronizar portion schedules con daily_portions_target
+  const dailyPortionsTarget = form.watch("daily_portions_target");
 
   useEffect(() => {
-    if (dailyMealsTarget && dailyMealsTarget > 0) {
+    if (dailyPortionsTarget && dailyPortionsTarget > 0) {
       // Generar horarios por defecto si el número cambió
-      if (mealSchedules.length !== dailyMealsTarget) {
-        const defaultSchedules = generateDefaultSchedule(dailyMealsTarget);
-        setMealSchedules(defaultSchedules);
+      if (portionSchedules.length !== dailyPortionsTarget) {
+        const defaultSchedules = generateDefaultSchedule(dailyPortionsTarget);
+        setPortionSchedules(defaultSchedules);
       }
     }
-  }, [dailyMealsTarget, mealSchedules.length]);
+  }, [dailyPortionsTarget, portionSchedules.length]);
 
   // Submit handler
   async function onSubmit(data: PetFormData) {
     setIsSubmitting(true);
 
     try {
-      const formData = convertToFormData(data, mealSchedules);
+      const formData = convertToFormData(data, portionSchedules);
       const result = isEditing
         ? await updatePet(String(pet.id), formData)
         : await createPet(formData);
@@ -292,10 +297,10 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
   }
 
   /**
-   * Actualizar hora de una toma específica
+   * Actualizar hora de una ración específica
    */
-  const handleMealScheduleTimeChange = (index: number, newTime: string) => {
-    setMealSchedules((prev) => {
+  const handlePortionScheduleTimeChange = (index: number, newTime: string) => {
+    setPortionSchedules((prev) => {
       const updated = [...prev];
       updated[index] = { ...updated[index], scheduled_time: newTime };
       return updated;
@@ -303,10 +308,13 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
   };
 
   /**
-   * Actualizar cantidad esperada de una toma específica
+   * Actualizar cantidad esperada de una ración específica
    */
-  const handleMealScheduleAmountChange = (index: number, newAmount: string) => {
-    setMealSchedules((prev) => {
+  const handlePortionScheduleAmountChange = (
+    index: number,
+    newAmount: string
+  ) => {
+    setPortionSchedules((prev) => {
       const updated = [...prev];
       const amount = newAmount ? parseInt(newAmount, 10) : undefined;
       updated[index] = {
@@ -582,13 +590,13 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
               )}
             />
 
-            {/* Comidas objetivo */}
+            {/* Raciones objetivo */}
             <FormField
               control={form.control}
-              name="daily_meals_target"
+              name="daily_portions_target"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Comidas por Día</FormLabel>
+                  <FormLabel>Raciones por Día</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
@@ -605,40 +613,42 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
             />
           </div>
 
-          {/* Horarios de Tomas */}
-          {mealSchedules.length > 0 && (
+          {/* Horarios de Raciones */}
+          {portionSchedules.length > 0 && (
             <div className="space-y-3 pt-4">
               <div>
-                <h4 className="text-sm font-medium mb-1">Horarios de Tomas</h4>
+                <h4 className="text-sm font-medium mb-1">
+                  Horarios de Raciones
+                </h4>
                 <p className="text-xs text-muted-foreground">
-                  Define la hora de cada comida del día
+                  Define la hora de cada ración del día
                 </p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                {mealSchedules.map((schedule, index) => (
+                {portionSchedules.map((schedule, index) => (
                   <div
-                    key={schedule.meal_number}
+                    key={schedule.portion_number}
                     className="flex flex-col space-y-2 p-3 border rounded-lg"
                   >
                     <label className="text-sm font-medium">
-                      {getMealName(schedule.meal_number)}
+                      {getPortionName(schedule.portion_number)}
                     </label>
 
                     {/* Hora */}
                     <div className="space-y-1">
                       <label
-                        htmlFor={`meal-time-${index}`}
+                        htmlFor={`portion-time-${index}`}
                         className="text-xs text-muted-foreground"
                       >
                         Hora
                       </label>
                       <Input
-                        id={`meal-time-${index}`}
+                        id={`portion-time-${index}`}
                         type="time"
                         value={schedule.scheduled_time}
                         onChange={(e) =>
-                          handleMealScheduleTimeChange(index, e.target.value)
+                          handlePortionScheduleTimeChange(index, e.target.value)
                         }
                         className="w-full"
                       />
@@ -647,19 +657,22 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
                     {/* Cantidad */}
                     <div className="space-y-1">
                       <label
-                        htmlFor={`meal-amount-${index}`}
+                        htmlFor={`portion-amount-${index}`}
                         className="text-xs text-muted-foreground"
                       >
                         Cantidad (g)
                       </label>
                       <Input
-                        id={`meal-amount-${index}`}
+                        id={`portion-amount-${index}`}
                         type="number"
                         min="1"
                         placeholder="Opcional"
                         value={schedule.expected_grams || ""}
                         onChange={(e) =>
-                          handleMealScheduleAmountChange(index, e.target.value)
+                          handlePortionScheduleAmountChange(
+                            index,
+                            e.target.value
+                          )
                         }
                         className="w-full"
                       />
@@ -668,10 +681,10 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
                 ))}
               </div>
 
-              {mealSchedules.length > 3 && (
+              {portionSchedules.length > 3 && (
                 <p className="text-xs text-muted-foreground">
-                  💡 Tip: Mantén al menos 2-3 horas entre tomas para una mejor
-                  digestión
+                  💡 Tip: Mantén al menos 2-3 horas entre raciones para una
+                  mejor digestión
                 </p>
               )}
             </div>

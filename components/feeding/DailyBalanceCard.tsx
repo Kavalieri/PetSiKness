@@ -5,7 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { TrendingDown, TrendingUp, Check, AlertTriangle } from "lucide-react";
-import { getMealName } from "@/lib/utils/meal-schedule";
+import { getPortionName } from "@/lib/utils/portion-schedule";
 import {
   getStatusIcon,
   getStatusLabel,
@@ -99,7 +99,7 @@ function MealCard({ balance }: { balance: MealBalance }) {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <span className="text-lg font-semibold">
-            {getMealName(balance.meal_number)}
+            {getPortionName(balance.meal_number)}
           </span>
           <span className="text-sm text-muted-foreground">
             {balance.actual_time || balance.scheduled_time}
@@ -190,7 +190,7 @@ function MealBasedBalanceCompact({ data }: { data: DailyBalanceData }) {
                   <div className="flex items-center gap-2">
                     <span>{getStatusIcon(balance.status)}</span>
                     <span className="font-medium">
-                      {getMealName(balance.meal_number)}
+                      {getPortionName(balance.meal_number)}
                     </span>
                     <span className="text-muted-foreground">
                       {/* ✨ Mostrar hora real si existe */}

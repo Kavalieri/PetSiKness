@@ -240,11 +240,13 @@ export function PetDetailView({ pet, onDeleteSuccess }: PetDetailViewProps) {
 
             <div>
               <p className="text-sm text-muted-foreground">
-                Comidas por día (objetivo)
+                Raciones por día (objetivo)
               </p>
               <p className="text-base font-medium">
-                {pet.daily_meals_target ? Number(pet.daily_meals_target) : 2}{" "}
-                comidas
+                {pet.daily_portions_target
+                  ? Number(pet.daily_portions_target)
+                  : 2}{" "}
+                raciones
               </p>
             </div>
           </CardContent>

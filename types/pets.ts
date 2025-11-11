@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { Pets, PetMealSchedules } from "./database.generated";
+import type { Pets, PetPortionSchedules } from "./database.generated";
 
 // ============================================
 // ENUMS Y TIPOS AUXILIARES
@@ -72,45 +72,45 @@ export type ActivityLevel =
   (typeof ACTIVITY_LEVEL)[keyof typeof ACTIVITY_LEVEL];
 
 // ============================================
-// MEAL SCHEDULE TYPES
+// PORTION SCHEDULE TYPES
 // ============================================
 
 /**
- * Horario de una toma individual
+ * Horario de una ración individual
  */
-export type MealSchedule = PetMealSchedules;
+export type PortionSchedule = PetPortionSchedules;
 
 /**
- * Datos para crear un horario de toma (sin ID, timestamps)
+ * Datos para crear un horario de ración (sin ID, timestamps)
  */
-export type MealScheduleCreateInput = Omit<
-  MealSchedule,
+export type PortionScheduleCreateInput = Omit<
+  PortionSchedule,
   "id" | "created_at" | "updated_at"
 >;
 
 /**
  * Datos simplificados de horario para formularios
  */
-export type MealScheduleFormData = {
-  meal_number: number;
+export type PortionScheduleFormData = {
+  portion_number: number;
   scheduled_time: string; // HH:mm format
-  expected_grams?: number; // Cantidad esperada para esta toma específica
+  expected_grams?: number; // Cantidad esperada para esta ración específica
   notes?: string;
 };
 
 /**
- * Mascota con sus horarios de tomas
+ * Mascota con sus horarios de raciones
  */
 export type PetWithSchedules = Pet & {
-  meal_schedules: MealSchedule[];
+  portion_schedules: PortionSchedule[];
 };
 
 /**
  * Resumen de horario para vistas rápidas
  */
-export type MealScheduleSummary = Pick<
-  MealSchedule,
-  "meal_number" | "scheduled_time"
+export type PortionScheduleSummary = Pick<
+  PortionSchedule,
+  "portion_number" | "scheduled_time"
 >;
 
 // ============================================
@@ -228,13 +228,13 @@ export const PetFormSchema = z.object({
     .int("La meta debe ser un número entero")
     .positive("La meta debe ser mayor a 0")
     .max(5000, "Meta demasiado alta (máx. 5000g)"),
-  daily_meals_target: z
+  daily_portions_target: z
     .number({
-      invalid_type_error: "El número de comidas debe ser un número",
+      invalid_type_error: "El número de raciones debe ser un número",
     })
-    .int("El número de comidas debe ser entero")
-    .positive("Debe ser al menos 1 comida")
-    .max(10, "Máximo 10 comidas al día")
+    .int("El número de raciones debe ser entero")
+    .positive("Debe ser al menos 1 ración")
+    .max(10, "Máximo 10 raciones al día")
     .default(2),
 
   // Salud

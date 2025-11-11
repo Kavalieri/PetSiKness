@@ -1,36 +1,36 @@
 /**
- * Meal Schedule Utilities
- * Pet SiKness - Meal Scheduling System
+ * Portion Schedule Utilities
+ * Pet SiKness - Portion Scheduling System
  */
 
-import type { MealScheduleFormData } from "@/types/pets";
+import type { PortionScheduleFormData } from "@/types/pets";
 
 // ============================================
 // Default Schedule Generation
 // ============================================
 
 /**
- * Genera horarios por defecto basados en el número de comidas diarias
+ * Genera horarios por defecto basados en el número de raciones diarias
  *
  * Distribución predeterminada:
- * - 1 toma: 12:00 (mediodía)
- * - 2 tomas: 08:00, 20:00 (mañana y noche)
- * - 3 tomas: 08:00, 14:00, 20:00 (mañana, tarde, noche)
- * - 4 tomas: 07:00, 12:00, 17:00, 21:00 (cada 5 horas aprox)
- * - 5+ tomas: distribuidas uniformemente entre 07:00 y 19:00
+ * - 1 ración: 12:00 (mediodía)
+ * - 2 raciones: 08:00, 20:00 (mañana y noche)
+ * - 3 raciones: 08:00, 14:00, 20:00 (mañana, tarde, noche)
+ * - 4 raciones: 07:00, 12:00, 17:00, 21:00 (cada 5 horas aprox)
+ * - 5+ raciones: distribuidas uniformemente entre 07:00 y 19:00
  *
- * @param numMeals - Número de comidas diarias
- * @returns Array de horarios con meal_number y scheduled_time
+ * @param numPortions - Número de raciones diarias
+ * @returns Array de horarios con portion_number y scheduled_time
  */
 export function generateDefaultSchedule(
-  numMeals: number
-): MealScheduleFormData[] {
+  numPortions: number
+): PortionScheduleFormData[] {
   // Validación básica
-  if (numMeals < 1) {
-    throw new Error("El número de comidas debe ser al menos 1");
+  if (numPortions < 1) {
+    throw new Error("El número de raciones debe ser al menos 1");
   }
-  if (numMeals > 10) {
-    throw new Error("El número de comidas no puede ser mayor a 10");
+  if (numPortions > 10) {
+    throw new Error("El número de raciones no puede ser mayor a 10");
   }
 
   // Horarios predefinidos para casos comunes
@@ -42,23 +42,23 @@ export function generateDefaultSchedule(
   };
 
   // Si existe horario predefinido, usarlo
-  if (predefinedSchedules[numMeals]) {
-    return predefinedSchedules[numMeals].map((time, index) => ({
-      meal_number: index + 1,
+  if (predefinedSchedules[numPortions]) {
+    return predefinedSchedules[numPortions].map((time, index) => ({
+      portion_number: index + 1,
       scheduled_time: time,
     }));
   }
 
-  // Para 5+ comidas, distribuir uniformemente entre 07:00 y 19:00
+  // Para 5+ raciones, distribuir uniformemente entre 07:00 y 19:00
   // Total de minutos: 12 horas = 720 minutos
   const startHour = 7; // 07:00
   const endHour = 19; // 19:00
   const totalMinutes = (endHour - startHour) * 60;
-  const intervalMinutes = totalMinutes / (numMeals - 1);
+  const intervalMinutes = totalMinutes / (numPortions - 1);
 
-  const schedules: MealScheduleFormData[] = [];
+  const schedules: PortionScheduleFormData[] = [];
 
-  for (let i = 0; i < numMeals; i++) {
+  for (let i = 0; i < numPortions; i++) {
     const minutesFromStart = Math.round(i * intervalMinutes);
     const hour = startHour + Math.floor(minutesFromStart / 60);
     const minute = minutesFromStart % 60;
@@ -68,7 +68,7 @@ export function generateDefaultSchedule(
       .padStart(2, "0")}`;
 
     schedules.push({
-      meal_number: i + 1,
+      portion_number: i + 1,
       scheduled_time,
     });
   }
@@ -115,7 +115,7 @@ export function compareScheduleTimes(timeA: string, timeB: string): number {
  * @returns true si están en orden, false si no
  */
 export function areSchedulesInOrder(
-  schedules: MealScheduleFormData[]
+  schedules: PortionScheduleFormData[]
 ): boolean {
   if (schedules.length <= 1) return true;
 
@@ -140,7 +140,7 @@ export function areSchedulesInOrder(
  * @returns true si hay duplicados, false si no
  */
 export function hasDuplicateSchedules(
-  schedules: MealScheduleFormData[]
+  schedules: PortionScheduleFormData[]
 ): boolean {
   const times = schedules.map((s) => s.scheduled_time);
   const uniqueTimes = new Set(times);
@@ -190,19 +190,19 @@ export function convertTo24Hour(time: string): string {
 }
 
 /**
- * Obtiene el nombre descriptivo de una toma
+ * Obtiene el nombre descriptivo de una ración
  *
- * @param mealNumber - Número de la toma (1, 2, 3...)
- * @returns Nombre descriptivo ("Primera toma", "Segunda toma", etc.)
+ * @param portionNumber - Número de la ración (1, 2, 3...)
+ * @returns Nombre descriptivo ("Primera ración", "Segunda ración", etc.)
  */
-export function getMealName(mealNumber: number): string {
+export function getPortionName(portionNumber: number): string {
   const names: Record<number, string> = {
-    1: "Primera toma",
-    2: "Segunda toma",
-    3: "Tercera toma",
-    4: "Cuarta toma",
-    5: "Quinta toma",
+    1: "Primera ración",
+    2: "Segunda ración",
+    3: "Tercera ración",
+    4: "Cuarta ración",
+    5: "Quinta ración",
   };
 
-  return names[mealNumber] || `Toma ${mealNumber}`;
+  return names[portionNumber] || `Ración ${portionNumber}`;
 }

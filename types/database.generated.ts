@@ -70,9 +70,12 @@ export interface Feedings {
   had_stool: Generated<boolean>;
   household_id: string;
   id: Generated<string>;
-  meal_number: number | null;
   notes: string | null;
   pet_id: string;
+  /**
+   * Número de ración del día en que se registró esta alimentación
+   */
+  portion_number: number | null;
   recorded_by: string;
   stool_quality: string | null;
   updated_at: Generated<Timestamp>;
@@ -145,19 +148,19 @@ export interface Households {
   updated_at: Generated<Timestamp>;
 }
 
-export interface PetMealSchedules {
+export interface PetPortionSchedules {
   created_at: Generated<Timestamp>;
   /**
    * Cantidad esperada de gramos para esta toma específica. Opcional: si NULL, se calcula como daily_food_goal_grams / daily_meals_target.
    */
   expected_grams: number | null;
   id: Generated<string>;
-  /**
-   * Número secuencial de la toma (1, 2, 3...). Debe coincidir con daily_meals_target de la mascota.
-   */
-  meal_number: number;
   notes: string | null;
   pet_id: string;
+  /**
+   * Número de ración del día (1, 2, 3...)
+   */
+  portion_number: number;
   /**
    * Hora programada para esta toma (ej: 08:00, 14:00, 20:00). Usado para calcular puntualidad y alertas.
    */
@@ -178,10 +181,13 @@ export interface Pets {
   created_at: Generated<Timestamp>;
   created_by: string;
   /**
-   * Cantidad objetivo de comida diaria en gramos
+   * Meta diaria de alimento en gramos (suma de todas las raciones)
    */
   daily_food_goal_grams: Generated<number>;
-  daily_meals_target: Generated<number | null>;
+  /**
+   * Número objetivo de raciones diarias
+   */
+  daily_portions_target: Generated<number | null>;
   gender: string | null;
   health_notes: string | null;
   household_id: string;
@@ -218,7 +224,7 @@ export interface DB {
   foods: Foods;
   household_members: HouseholdMembers;
   households: Households;
-  pet_meal_schedules: PetMealSchedules;
+  pet_portion_schedules: PetPortionSchedules;
   pets: Pets;
   profiles: Profiles;
 }

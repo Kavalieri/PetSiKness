@@ -84,19 +84,19 @@ export async function getPetById(
 
     const pet = petResult.rows[0] as Pet;
 
-    // 5. Query de meal_schedules
+    // 5. Query de portion_schedules
     const schedulesResult = await query(
-      `SELECT id, meal_number, scheduled_time, expected_grams, notes, created_at, updated_at
-       FROM pet_meal_schedules
+      `SELECT id, portion_number, scheduled_time, expected_grams, notes, created_at, updated_at
+       FROM pet_portion_schedules
        WHERE pet_id = $1
-       ORDER BY meal_number ASC`,
+       ORDER BY portion_number ASC`,
       [id]
     );
 
     // 6. Combinar pet con schedules
     const petWithSchedules: PetWithSchedules = {
       ...pet,
-      meal_schedules: schedulesResult.rows,
+      portion_schedules: schedulesResult.rows,
     };
 
     return ok(petWithSchedules);
@@ -134,8 +134,8 @@ export async function createPet(formData: FormData): Promise<Result<Pet>> {
         : null,
       body_condition: formData.get("body_condition") || null,
       daily_food_goal_grams: Number(formData.get("daily_food_goal_grams")),
-      daily_meals_target: formData.get("daily_meals_target")
-        ? Number(formData.get("daily_meals_target"))
+      daily_portions_target: formData.get("daily_portions_target")
+        ? Number(formData.get("daily_portions_target"))
         : 2,
       health_notes: formData.get("health_notes") || null,
       allergies: formData.get("allergies")
@@ -160,14 +160,14 @@ export async function createPet(formData: FormData): Promise<Result<Pet>> {
 
     const data = validation.data;
 
-    // 4. Parsear meal_schedules si existen
-    let mealSchedules = null;
-    const mealSchedulesRaw = formData.get("meal_schedules");
-    if (mealSchedulesRaw) {
+    // 4. Parsear portion_schedules si existen
+    let portionSchedules = null;
+    const portionSchedulesRaw = formData.get("portion_schedules");
+    if (portionSchedulesRaw) {
       try {
-        mealSchedules = JSON.parse(mealSchedulesRaw as string);
+        portionSchedules = JSON.parse(portionSchedulesRaw as string);
       } catch {
-        return fail("Formato inválido de horarios de tomas");
+        return fail("Formato inválido de horarios de raciones");
       }
     }
 
@@ -183,7 +183,7 @@ export async function createPet(formData: FormData): Promise<Result<Pet>> {
         weight_kg,
         body_condition,
         daily_food_goal_grams,
-        daily_meals_target,
+        daily_portions_target,
         health_notes,
         allergies,
         medications,
@@ -203,7 +203,7 @@ export async function createPet(formData: FormData): Promise<Result<Pet>> {
         data.weight_kg,
         data.body_condition,
         data.daily_food_goal_grams,
-        data.daily_meals_target,
+        data.daily_portions_target,
         data.health_notes,
         data.allergies,
         data.medications,
@@ -216,13 +216,13 @@ export async function createPet(formData: FormData): Promise<Result<Pet>> {
 
     const createdPet = result.rows[0] as Pet;
 
-    // 6. Insertar meal_schedules si existen
+    // 6. Insertar portion_schedules si existen
     if (
-      mealSchedules &&
-      Array.isArray(mealSchedules) &&
-      mealSchedules.length > 0
+      portionSchedules &&
+      Array.isArray(portionSchedules) &&
+      portionSchedules.length > 0
     ) {
-      const scheduleValues = mealSchedules
+      const scheduleValues = portionSchedules
         .map(
           (schedule, index) =>
             `($1, $${index * 3 + 2}, $${index * 3 + 3}, $${index * 3 + 4})`
@@ -231,31 +231,31 @@ export async function createPet(formData: FormData): Promise<Result<Pet>> {
 
       const scheduleParams = [
         createdPet.id,
-        ...mealSchedules.flatMap(
+        ...portionSchedules.flatMap(
           (s: {
-            meal_number: number;
+            portion_number: number;
             scheduled_time: string;
             expected_grams?: number;
-          }) => [s.meal_number, s.scheduled_time, s.expected_grams || null]
+          }) => [s.portion_number, s.scheduled_time, s.expected_grams || null]
         ),
       ];
 
       await query(
-        `INSERT INTO pet_meal_schedules (pet_id, meal_number, scheduled_time, expected_grams)
+        `INSERT INTO pet_portion_schedules (pet_id, portion_number, scheduled_time, expected_grams)
          VALUES ${scheduleValues}`,
         scheduleParams
       );
 
       // 🔥 NUEVO: Recalcular daily_food_goal_grams como SUMA de expected_grams
-      const totalExpected = mealSchedules.reduce(
+      const totalExpected = portionSchedules.reduce(
         (sum, s: { expected_grams?: number }) => sum + (s.expected_grams || 0),
         0
       );
 
-      // Si todas las tomas tienen expected_grams configurado, actualizar daily_goal
+      // Si todas las raciones tienen expected_grams configurado, actualizar daily_goal
       if (
         totalExpected > 0 &&
-        mealSchedules.every(
+        portionSchedules.every(
           (s: { expected_grams?: number }) => s.expected_grams
         )
       ) {
@@ -325,8 +325,8 @@ export async function updatePet(
         : null,
       body_condition: formData.get("body_condition") || null,
       daily_food_goal_grams: Number(formData.get("daily_food_goal_grams")),
-      daily_meals_target: formData.get("daily_meals_target")
-        ? Number(formData.get("daily_meals_target"))
+      daily_portions_target: formData.get("daily_portions_target")
+        ? Number(formData.get("daily_portions_target"))
         : 2,
       health_notes: formData.get("health_notes") || null,
       allergies: formData.get("allergies")
@@ -373,7 +373,7 @@ export async function updatePet(
         weight_kg = $6,
         body_condition = $7,
         daily_food_goal_grams = $8,
-        daily_meals_target = $9,
+        daily_portions_target = $9,
         health_notes = $10,
         allergies = $11,
         medications = $12,
@@ -392,7 +392,7 @@ export async function updatePet(
         data.weight_kg,
         data.body_condition,
         data.daily_food_goal_grams,
-        data.daily_meals_target,
+        data.daily_portions_target,
         data.health_notes,
         data.allergies,
         data.medications,

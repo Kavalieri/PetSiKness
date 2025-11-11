@@ -294,9 +294,8 @@ export async function getTodayBalance(
       schedulesByPet.get(petId)!.push({
         meal_number: row.meal_number,
         scheduled_time: row.scheduled_time,
-        expected_grams: row.expected_grams != null
-          ? Number(row.expected_grams)
-          : undefined,
+        expected_grams:
+          row.expected_grams != null ? Number(row.expected_grams) : undefined,
         notes: row.notes || undefined,
       });
     }
