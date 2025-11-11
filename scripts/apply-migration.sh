@@ -81,6 +81,44 @@ echo -e "${GREEN}🗄️  Base de datos: $DATABASE${NC}"
 echo ""
 
 # ============================================
+# Verificar estado de la migración
+# ============================================
+
+echo -e "${YELLOW}Verificando estado de migración...${NC}"
+
+MIGRATION_STATUS=$(sudo -u postgres psql -d "$DATABASE" -t -A -c "SELECT status FROM _migrations WHERE migration_name = '$MIGRATION_NAME';" 2>/dev/null || echo "")
+
+if [ ! -z "$MIGRATION_STATUS" ]; then
+    case "$MIGRATION_STATUS" in
+        success)
+            echo -e "${YELLOW}⚠️  Esta migración ya fue aplicada exitosamente${NC}"
+            echo -e "${YELLOW}Estado actual: success${NC}"
+            read -p "¿Deseas re-aplicarla de todos modos? (yes/no): " confirm
+            if [ "$confirm" != "yes" ]; then
+                echo "Operación cancelada"
+                exit 0
+            fi
+            echo -e "${YELLOW}Re-aplicando migración...${NC}"
+            ;;
+        failed)
+            echo -e "${RED}⚠️  Esta migración falló previamente${NC}"
+            echo -e "${YELLOW}Re-intentando aplicación...${NC}"
+            ;;
+        rolled_back)
+            echo -e "${YELLOW}⚠️  Esta migración fue revertida${NC}"
+            echo -e "${YELLOW}Re-aplicando migración...${NC}"
+            ;;
+        *)
+            echo -e "${YELLOW}Estado desconocido: $MIGRATION_STATUS${NC}"
+            ;;
+    esac
+else
+    echo -e "${GREEN}✓ Migración nueva (no aplicada previamente)${NC}"
+fi
+
+echo ""
+
+# ============================================
 # Aplicar migración
 # ============================================
 
