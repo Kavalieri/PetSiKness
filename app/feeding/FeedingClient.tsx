@@ -62,11 +62,11 @@ export function FeedingClient({ feedings, pets, foods }: FeedingClientProps) {
   };
 
   return (
-    <FeedingList 
-      feedings={feedings} 
-      pets={pets} 
-      foods={foods} 
-      onDelete={handleDelete} 
+    <FeedingList
+      feedings={feedings}
+      pets={pets}
+      foods={foods}
+      onDelete={handleDelete}
     />
   );
 }

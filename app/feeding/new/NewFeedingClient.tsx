@@ -4,7 +4,13 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FeedingForm } from "@/components/feeding/FeedingForm";
 import { createFeeding } from "../actions";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -69,7 +75,9 @@ export function NewFeedingClient({ pets, foods }: NewFeedingClientProps) {
             Volver al historial
           </Link>
         </Button>
-        <h1 className="text-3xl font-bold tracking-tight">Registrar alimentación</h1>
+        <h1 className="text-3xl font-bold tracking-tight">
+          Registrar alimentación
+        </h1>
         <p className="text-muted-foreground">
           Registra una nueva comida para una mascota
         </p>
@@ -81,7 +89,8 @@ export function NewFeedingClient({ pets, foods }: NewFeedingClientProps) {
           <CardHeader>
             <CardTitle>No hay mascotas registradas</CardTitle>
             <CardDescription>
-              Debes registrar al menos una mascota antes de registrar alimentaciones.
+              Debes registrar al menos una mascota antes de registrar
+              alimentaciones.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -97,7 +106,8 @@ export function NewFeedingClient({ pets, foods }: NewFeedingClientProps) {
           <CardHeader>
             <CardTitle>No hay alimentos registrados</CardTitle>
             <CardDescription>
-              Debes registrar al menos un alimento antes de registrar alimentaciones.
+              Debes registrar al menos un alimento antes de registrar
+              alimentaciones.
             </CardDescription>
           </CardHeader>
           <CardContent>

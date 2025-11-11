@@ -20,7 +20,12 @@ export const metadata = {
 export default async function FeedingPage({
   searchParams,
 }: {
-  searchParams: { petId?: string; foodId?: string; startDate?: string; endDate?: string };
+  searchParams: {
+    petId?: string;
+    foodId?: string;
+    startDate?: string;
+    endDate?: string;
+  };
 }) {
   try {
     // Auth

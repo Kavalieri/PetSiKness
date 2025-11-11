@@ -4,7 +4,10 @@ import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { format, isToday } from "date-fns";
 import { es } from "date-fns/locale";
-import { TemporalNavigator, type ViewMode } from "@/components/shared/TemporalNavigator";
+import {
+  TemporalNavigator,
+  type ViewMode,
+} from "@/components/shared/TemporalNavigator";
 import { Home } from "lucide-react";
 
 // ============================================

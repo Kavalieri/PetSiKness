@@ -58,7 +58,9 @@ export function DateRangePickerDemo() {
               <div>
                 <strong>Rango:</strong>{" "}
                 {selectedRange
-                  ? `${selectedRange.from.toISOString().split("T")[0]} → ${selectedRange.to.toISOString().split("T")[0]}`
+                  ? `${selectedRange.from.toISOString().split("T")[0]} → ${
+                      selectedRange.to.toISOString().split("T")[0]
+                    }`
                   : "Sin selección (muestra todo)"}
               </div>
               {selectedRange && (

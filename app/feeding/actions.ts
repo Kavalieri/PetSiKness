@@ -389,6 +389,162 @@ export async function createFeeding(formData: FormData): Promise<Result> {
   }
 }
 
+/**
+ * Crea múltiples registros de alimentación (una por mascota) en una sola transacción
+ */
+export async function createMultiPetFeeding(
+  formData: FormData
+): Promise<Result<{ count: number }>> {
+  try {
+    const { householdId, profileId } = await requireHousehold();
+
+    // Extraer datos comunes
+    const common = {
+      food_id: formData.get("food_id") as string,
+      feeding_date: formData.get("feeding_date") as string,
+      feeding_time: (formData.get("feeding_time") as string) || null,
+    };
+
+    // Extraer pet_ids
+    const petIdsRaw = formData.getAll("pet_ids");
+    if (!petIdsRaw || petIdsRaw.length === 0) {
+      return fail("Debes seleccionar al menos una mascota");
+    }
+
+    const petIds = petIdsRaw as string[];
+
+    // Validar alimento
+    const foodCheck = await query(
+      "SELECT id FROM foods WHERE id = $1 AND household_id = $2",
+      [common.food_id, householdId]
+    );
+
+    if (foodCheck.rows.length === 0) {
+      return fail("Alimento no encontrado o no pertenece a tu hogar");
+    }
+
+    // Validar que todas las mascotas pertenecen al household
+    const petsCheck = await query(
+      "SELECT id FROM pets WHERE id = ANY($1) AND household_id = $2 AND is_active = true",
+      [petIds, householdId]
+    );
+
+    if (petsCheck.rows.length !== petIds.length) {
+      return fail(
+        "Una o más mascotas no pertenecen a tu hogar o están inactivas"
+      );
+    }
+
+    // Construir datos individuales por mascota
+    interface PetFeedingData {
+      pet_id: string;
+      amount_served_grams: number;
+      amount_eaten_grams: number;
+      appetite_rating: string | null;
+      eating_speed: string | null;
+      vomited: boolean;
+      had_diarrhea: boolean;
+      had_stool: boolean;
+      stool_quality: string | null;
+      notes: string | null;
+    }
+
+    const petFeedings: PetFeedingData[] = [];
+
+    for (let i = 0; i < petIds.length; i++) {
+      const petId = petIds[i];
+
+      const petData: PetFeedingData = {
+        pet_id: petId,
+        amount_served_grams: parseInt(
+          formData.get(`amount_served_grams_${i}`) as string
+        ),
+        amount_eaten_grams: parseInt(
+          formData.get(`amount_eaten_grams_${i}`) as string
+        ),
+        appetite_rating:
+          (formData.get(`appetite_rating_${i}`) as string) || null,
+        eating_speed: (formData.get(`eating_speed_${i}`) as string) || null,
+        vomited: formData.get(`vomited_${i}`) === "true",
+        had_diarrhea: formData.get(`had_diarrhea_${i}`) === "true",
+        had_stool: formData.get(`had_stool_${i}`) === "true",
+        stool_quality: (formData.get(`stool_quality_${i}`) as string) || null,
+        notes: (formData.get(`notes_${i}`) as string) || null,
+      };
+
+      // Validar datos individuales
+      if (
+        isNaN(petData.amount_served_grams) ||
+        petData.amount_served_grams <= 0
+      ) {
+        return fail(`Cantidad servida inválida para mascota ${i + 1}`);
+      }
+
+      if (isNaN(petData.amount_eaten_grams) || petData.amount_eaten_grams < 0) {
+        return fail(`Cantidad comida inválida para mascota ${i + 1}`);
+      }
+
+      petFeedings.push(petData);
+    }
+
+    // TRANSACTION: Insertar todos los registros
+    let insertedCount = 0;
+
+    for (const petFeeding of petFeedings) {
+      // Calcular meal_number automáticamente
+      const mealNumberResult = await query(
+        "SELECT COALESCE(MAX(meal_number), 0) + 1 as next_meal_number FROM feedings WHERE pet_id = $1 AND feeding_date = $2",
+        [petFeeding.pet_id, common.feeding_date]
+      );
+
+      const mealNumber = mealNumberResult.rows[0]?.next_meal_number || 1;
+
+      // Insertar feeding
+      await query(
+        `
+        INSERT INTO feedings (
+          household_id, pet_id, food_id, feeding_date, feeding_time, meal_number,
+          amount_served_grams, amount_eaten_grams,
+          appetite_rating, eating_speed, vomited, had_diarrhea, had_stool, stool_quality, notes,
+          recorded_by
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+        `,
+        [
+          householdId,
+          petFeeding.pet_id,
+          common.food_id,
+          common.feeding_date,
+          common.feeding_time,
+          mealNumber,
+          petFeeding.amount_served_grams,
+          petFeeding.amount_eaten_grams,
+          petFeeding.appetite_rating,
+          petFeeding.eating_speed,
+          petFeeding.vomited,
+          petFeeding.had_diarrhea,
+          petFeeding.had_stool,
+          petFeeding.stool_quality,
+          petFeeding.notes,
+          profileId,
+        ]
+      );
+
+      insertedCount++;
+    }
+
+    revalidatePath("/dashboard");
+    revalidatePath("/feeding");
+
+    return ok({ count: insertedCount });
+  } catch (error) {
+    console.error("Error creating multi-pet feeding:", error);
+    if (error instanceof Error) {
+      return fail(error.message);
+    }
+    return fail("Error al registrar alimentaciones múltiples");
+  }
+}
+
 // ============================================
 // ACCIONES - UPDATE
 // ============================================

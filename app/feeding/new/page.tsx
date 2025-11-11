@@ -32,9 +32,7 @@ export default async function NewFeedingPage() {
       [householdId]
     );
 
-    return (
-      <NewFeedingClient pets={petsQuery.rows} foods={foodsQuery.rows} />
-    );
+    return <NewFeedingClient pets={petsQuery.rows} foods={foodsQuery.rows} />;
   } catch (error) {
     console.error("Error en página de nuevo feeding:", error);
     notFound();

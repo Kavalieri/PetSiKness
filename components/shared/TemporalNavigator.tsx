@@ -22,7 +22,11 @@ import {
 import { es } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Calendar, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 
@@ -84,7 +88,11 @@ function formatDateRange(date: Date, mode: ViewMode): string {
     case "week": {
       const start = startOfWeek(date, { weekStartsOn: 1 });
       const end = endOfWeek(date, { weekStartsOn: 1 });
-      return `${format(start, "d MMM", { locale: es })} - ${format(end, "d MMM yyyy", { locale: es })}`;
+      return `${format(start, "d MMM", { locale: es })} - ${format(
+        end,
+        "d MMM yyyy",
+        { locale: es }
+      )}`;
     }
     case "month":
       return format(date, "MMMM yyyy", { locale: es });
@@ -136,7 +144,7 @@ function getNextPeriod(date: Date, mode: ViewMode): Date {
  */
 function isCurrentPeriod(date: Date, mode: ViewMode): boolean {
   const today = new Date();
-  
+
   switch (mode) {
     case "day":
       return isTodayFn(date);
@@ -166,21 +174,21 @@ function isCurrentPeriod(date: Date, mode: ViewMode): boolean {
 
 /**
  * 📅 TemporalNavigator
- * 
+ *
  * Componente de navegación temporal reutilizable para Dashboard y Alimentación.
- * 
+ *
  * **Características**:
  * - 4 modos de vista: Día, Semana, Mes, Año
  * - Navegación anterior/siguiente
  * - Selector de fecha con calendario
  * - Shortcut "Hoy"
  * - Responsive mobile-first
- * 
+ *
  * @example
  * ```tsx
  * const [date, setDate] = useState(new Date());
  * const [mode, setMode] = useState<ViewMode>("day");
- * 
+ *
  * <TemporalNavigator
  *   mode={mode}
  *   selectedDate={date}
@@ -231,7 +239,8 @@ export function TemporalNavigator({
   };
 
   // Verificaciones
-  const canGoPrevious = !minDate || getPreviousPeriod(selectedDate, mode) >= minDate;
+  const canGoPrevious =
+    !minDate || getPreviousPeriod(selectedDate, mode) >= minDate;
   const canGoNext = getNextPeriod(selectedDate, mode) <= maxDate;
   const isInCurrentPeriod = isCurrentPeriod(selectedDate, mode);
 
@@ -259,7 +268,9 @@ export function TemporalNavigator({
               className="h-9 flex-1 font-semibold justify-center gap-2 min-w-0"
             >
               <Calendar className="h-4 w-4 shrink-0" />
-              <span className="truncate">{formatDateRange(selectedDate, mode)}</span>
+              <span className="truncate">
+                {formatDateRange(selectedDate, mode)}
+              </span>
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="center">
@@ -267,9 +278,7 @@ export function TemporalNavigator({
               mode="single"
               selected={selectedDate}
               onSelect={handleCalendarSelect}
-              disabled={(date) => 
-                (minDate && date < minDate) || date > maxDate
-              }
+              disabled={(date) => (minDate && date < minDate) || date > maxDate}
               initialFocus
               locale={es}
             />
