@@ -477,7 +477,7 @@ export function FeedingList({
             <p className="text-muted-foreground mb-4">
               No hay registros de alimentación que coincidan con los filtros.
             </p>
-            <Button onClick={() => router.push("/feeding/new")}>
+            <Button onClick={() => router.push("/feeding/new-unified")}>
               Registrar alimentación
             </Button>
           </CardContent>
