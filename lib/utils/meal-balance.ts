@@ -151,10 +151,8 @@ export function calculateMealBalances(
 
   // Calcular balance para cada toma
   return sortedSchedules.map((schedule) => {
-    // ✨ CAMBIO: Usar expected_grams específico si está disponible, sino dividir meta diaria
-    const expectedGrams = schedule.expected_grams
-      ? schedule.expected_grams
-      : Math.round(dailyGoalGrams / numMeals);
+    // Esperado por toma: División equitativa de la meta diaria
+    const expectedGrams = Math.round(dailyGoalGrams / numMeals);
 
     // Encontrar feedings dentro de la ventana de tiempo de esta toma
     const mealFeedings = feedings.filter((feeding) => {

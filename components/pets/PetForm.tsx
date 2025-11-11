@@ -179,6 +179,9 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
     pet?.meal_schedules?.map((s) => ({
       meal_number: s.meal_number,
       scheduled_time: s.scheduled_time,
+      expected_grams: s.expected_grams
+        ? Number(s.expected_grams)
+        : undefined,
       notes: s.notes || undefined,
     })) || []
   );

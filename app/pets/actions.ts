@@ -86,7 +86,7 @@ export async function getPetById(
 
     // 5. Query de meal_schedules
     const schedulesResult = await query(
-      `SELECT id, meal_number, scheduled_time, notes, created_at, updated_at
+      `SELECT id, meal_number, scheduled_time, expected_grams, notes, created_at, updated_at
        FROM pet_meal_schedules
        WHERE pet_id = $1
        ORDER BY meal_number ASC`,
@@ -223,24 +223,47 @@ export async function createPet(formData: FormData): Promise<Result<Pet>> {
       mealSchedules.length > 0
     ) {
       const scheduleValues = mealSchedules
-        .map((schedule, index) => `($1, $${index * 2 + 2}, $${index * 2 + 3})`)
+        .map(
+          (schedule, index) =>
+            `($1, $${index * 3 + 2}, $${index * 3 + 3}, $${index * 3 + 4})`
+        )
         .join(", ");
 
       const scheduleParams = [
         createdPet.id,
         ...mealSchedules.flatMap(
-          (s: { meal_number: number; scheduled_time: string }) => [
-            s.meal_number,
-            s.scheduled_time,
-          ]
+          (s: {
+            meal_number: number;
+            scheduled_time: string;
+            expected_grams?: number;
+          }) => [s.meal_number, s.scheduled_time, s.expected_grams || null]
         ),
       ];
 
       await query(
-        `INSERT INTO pet_meal_schedules (pet_id, meal_number, scheduled_time)
+        `INSERT INTO pet_meal_schedules (pet_id, meal_number, scheduled_time, expected_grams)
          VALUES ${scheduleValues}`,
         scheduleParams
       );
+
+      // 🔥 NUEVO: Recalcular daily_food_goal_grams como SUMA de expected_grams
+      const totalExpected = mealSchedules.reduce(
+        (sum, s: { expected_grams?: number }) => sum + (s.expected_grams || 0),
+        0
+      );
+
+      // Si todas las tomas tienen expected_grams configurado, actualizar daily_goal
+      if (
+        totalExpected > 0 &&
+        mealSchedules.every(
+          (s: { expected_grams?: number }) => s.expected_grams
+        )
+      ) {
+        await query(
+          `UPDATE pets SET daily_food_goal_grams = $1 WHERE id = $2`,
+          [totalExpected, createdPet.id]
+        );
+      }
     }
 
     // 7. Revalidar rutas
@@ -392,25 +415,51 @@ export async function updatePet(
       if (mealSchedules.length > 0) {
         const scheduleValues = mealSchedules
           .map(
-            (schedule, index) => `($1, $${index * 2 + 2}, $${index * 2 + 3})`
+            (schedule, index) =>
+              `($1, $${index * 3 + 2}, $${index * 3 + 3}, $${index * 3 + 4})`
           )
           .join(", ");
 
         const scheduleParams = [
           id,
           ...mealSchedules.flatMap(
-            (s: { meal_number: number; scheduled_time: string }) => [
+            (s: {
+              meal_number: number;
+              scheduled_time: string;
+              expected_grams?: number;
+            }) => [
               s.meal_number,
               s.scheduled_time,
+              s.expected_grams || null,
             ]
           ),
         ];
 
         await query(
-          `INSERT INTO pet_meal_schedules (pet_id, meal_number, scheduled_time)
+          `INSERT INTO pet_meal_schedules (pet_id, meal_number, scheduled_time, expected_grams)
            VALUES ${scheduleValues}`,
           scheduleParams
         );
+
+        // 🔥 NUEVO: Recalcular daily_food_goal_grams como SUMA de expected_grams
+        const totalExpected = mealSchedules.reduce(
+          (sum, s: { expected_grams?: number }) =>
+            sum + (s.expected_grams || 0),
+          0
+        );
+
+        // Si todas las tomas tienen expected_grams configurado, actualizar daily_goal
+        if (
+          totalExpected > 0 &&
+          mealSchedules.every(
+            (s: { expected_grams?: number }) => s.expected_grams
+          )
+        ) {
+          await query(
+            `UPDATE pets SET daily_food_goal_grams = $1 WHERE id = $2`,
+            [totalExpected, id]
+          );
+        }
       }
     }
 
