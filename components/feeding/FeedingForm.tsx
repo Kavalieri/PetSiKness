@@ -208,7 +208,7 @@ export function FeedingForm({
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
-                      disabled={mode === "edit" || isSubmitting}
+                      disabled={isSubmitting}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -316,26 +316,28 @@ export function FeedingForm({
 
               {/* Leftover calculado */}
               <div className="space-y-2">
-                <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                  Sobra
+                <label className="text-sm font-medium leading-none">
+                  Sobra (calculado)
                 </label>
                 <div
-                  className={`flex items-center gap-2 p-3 rounded-md border ${
+                  className={`flex flex-col gap-1 p-3 rounded-md border ${
                     isValidLeftover
-                      ? "bg-green-50 border-green-200"
-                      : "bg-red-50 border-red-200"
+                      ? "bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800"
+                      : "bg-red-50 dark:bg-red-950 border-red-200 dark:border-red-800"
                   }`}
                 >
-                  {isValidLeftover ? (
-                    <CheckCircle2 className="h-5 w-5 text-green-600" />
-                  ) : (
-                    <AlertCircle className="h-5 w-5 text-red-600" />
-                  )}
-                  <span className="font-semibold">{leftoverGrams}g</span>
+                  <div className="flex items-center gap-2">
+                    {isValidLeftover ? (
+                      <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
+                    ) : (
+                      <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
+                    )}
+                    <span className="text-2xl font-bold">{leftoverGrams}g</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Servido ({watchedServed}g) - Comido ({watchedEaten}g) = Sobra
+                  </p>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Calculado automáticamente
-                </p>
               </div>
             </div>
           </CardContent>

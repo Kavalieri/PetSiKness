@@ -119,6 +119,7 @@ export function EditFeedingClient({
         </CardHeader>
         <CardContent>
           <FeedingForm
+            key={feeding.id} // Forzar remontaje del formulario con los valores correctos
             pets={pets}
             foods={foods}
             mode="edit"

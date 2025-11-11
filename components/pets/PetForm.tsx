@@ -304,10 +304,7 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
   /**
    * Actualizar cantidad esperada de una toma específica
    */
-  const handleMealScheduleAmountChange = (
-    index: number,
-    newAmount: string
-  ) => {
+  const handleMealScheduleAmountChange = (index: number, newAmount: string) => {
     setMealSchedules((prev) => {
       const updated = [...prev];
       const amount = newAmount ? parseInt(newAmount, 10) : undefined;
