@@ -405,13 +405,25 @@ export async function createMultiPetFeeding(
       feeding_time: (formData.get("feeding_time") as string) || null,
     };
 
-    // Extraer pet_ids
-    const petIdsRaw = formData.getAll("pet_ids");
-    if (!petIdsRaw || petIdsRaw.length === 0) {
+    // Extraer pet_ids (puede venir como JSON string o como múltiples valores)
+    const petIdsRaw = formData.get("pet_ids");
+    if (!petIdsRaw) {
       return fail("Debes seleccionar al menos una mascota");
     }
 
-    const petIds = petIdsRaw as string[];
+    // Parse JSON si es string, sino usar getAll
+    let petIds: string[];
+    try {
+      petIds = JSON.parse(petIdsRaw as string);
+    } catch {
+      // Si no es JSON válido, intentar con getAll
+      const multipleIds = formData.getAll("pet_ids");
+      petIds = multipleIds as string[];
+    }
+
+    if (!petIds || petIds.length === 0) {
+      return fail("Debes seleccionar al menos una mascota");
+    }
 
     // Validar alimento
     const foodCheck = await query(
