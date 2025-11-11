@@ -298,13 +298,17 @@ function groupByDate(feedings: FeedingData[]): Map<string, FeedingData[]> {
     // Convertir fecha a string (puede venir como Date o string desde el servidor)
     let dateStr: string;
     const dateValue = feeding.feeding_date as string | Date;
-    
+
     if (dateValue instanceof Date) {
       dateStr = format(dateValue, "yyyy-MM-dd");
     } else if (typeof dateValue === "string") {
       dateStr = dateValue;
     } else {
-      console.warn("Feeding con fecha inválida:", feeding.id, feeding.feeding_date);
+      console.warn(
+        "Feeding con fecha inválida:",
+        feeding.id,
+        feeding.feeding_date
+      );
       return;
     }
 

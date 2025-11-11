@@ -142,6 +142,22 @@ export interface Households {
   updated_at: Generated<Timestamp>;
 }
 
+export interface PetMealSchedules {
+  created_at: Generated<Timestamp>;
+  id: Generated<string>;
+  /**
+   * Número secuencial de la toma (1, 2, 3...). Debe coincidir con daily_meals_target de la mascota.
+   */
+  meal_number: number;
+  notes: string | null;
+  pet_id: string;
+  /**
+   * Hora programada para esta toma (ej: 08:00, 14:00, 20:00). Usado para calcular puntualidad y alertas.
+   */
+  scheduled_time: string;
+  updated_at: Generated<Timestamp>;
+}
+
 export interface Pets {
   activity_level: string | null;
   allergies: string[] | null;
@@ -195,6 +211,7 @@ export interface DB {
   foods: Foods;
   household_members: HouseholdMembers;
   households: Households;
+  pet_meal_schedules: PetMealSchedules;
   pets: Pets;
   profiles: Profiles;
 }

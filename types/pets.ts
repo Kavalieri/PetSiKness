@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { Pets } from "./database.generated";
+import type { Pets, PetMealSchedules } from "./database.generated";
 
 // ============================================
 // ENUMS Y TIPOS AUXILIARES
@@ -72,7 +72,48 @@ export type ActivityLevel =
   (typeof ACTIVITY_LEVEL)[keyof typeof ACTIVITY_LEVEL];
 
 // ============================================
-// TIPOS DE DATOS
+// MEAL SCHEDULE TYPES
+// ============================================
+
+/**
+ * Horario de una toma individual
+ */
+export type MealSchedule = PetMealSchedules;
+
+/**
+ * Datos para crear un horario de toma (sin ID, timestamps)
+ */
+export type MealScheduleCreateInput = Omit<
+  MealSchedule,
+  "id" | "created_at" | "updated_at"
+>;
+
+/**
+ * Datos simplificados de horario para formularios
+ */
+export type MealScheduleFormData = {
+  meal_number: number;
+  scheduled_time: string; // HH:mm format
+  notes?: string;
+};
+
+/**
+ * Mascota con sus horarios de tomas
+ */
+export type PetWithSchedules = Pet & {
+  meal_schedules: MealSchedule[];
+};
+
+/**
+ * Resumen de horario para vistas rápidas
+ */
+export type MealScheduleSummary = Pick<
+  MealSchedule,
+  "meal_number" | "scheduled_time"
+>;
+
+// ============================================
+// TIPOS DE DATOS (PETS)
 // ============================================
 
 /**
