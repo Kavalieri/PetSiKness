@@ -99,15 +99,25 @@ Sistema de gestión alimentaria para mascotas que permite:
 
 - Qué: food_id, pet_id
 - Cuándo: feeding_date, feeding_time, meal_number
-- Cantidades: served (servido), eaten (comido), leftover (sobra)
+- **Cantidades (⚠️ CRÍTICO - Cambio de lógica 11/11/2025)**:
+  - `amount_served_grams`: Lo que se sirve (BASE PARA META ✅)
+  - `amount_eaten_grams`: Lo que come (tracking de consumo)
+  - `amount_leftover_grams`: Sobra calculada (served - eaten)
 - Comportamiento: appetite_rating, eating_speed
 - Resultados digestivos: vómito, diarrea, calidad de heces
 
+**⚠️ CAMBIO CRÍTICO DE LÓGICA DE NEGOCIO (11/11/2025)**:
+- **Meta cumplida**: Basada en `amount_served_grams` (lo servido), NO en lo comido
+- **Razón**: Control de porciones + documentar desperdicio
+- **Sobrantes**: Métrica clave para equilibrar consumos por mascota
+- **Comido**: Tracking secundario de consumo real
+
 **Daily Summary (Resumen Diario)**: Vista agregada
 
-- Total comido vs objetivo diario
-- Porcentaje de cumplimiento
+- Total servido vs objetivo diario ⭐ (era "comido" antes)
+- Porcentaje de cumplimiento basado en served
 - Status: `under_target`, `met_target`, `over_target`
+- Métricas adicionales: total_eaten, total_leftover
 
 ---
 
@@ -409,6 +419,80 @@ export async function createPet(formData: FormData): Promise<Result> {
 
 7. **Entornos y despliegue**
    - Prueba en DEV antes de aplicar a PROD
+
+---
+
+## ⚠️ CAMBIO CRÍTICO: Lógica de Metas (11 Noviembre 2025)
+
+**Breaking Change en sistema de cumplimiento de objetivos nutricionales**
+
+### Lógica ANTERIOR (❌ DEPRECADA)
+
+- Meta cumplida si mascota **comió** suficiente (`amount_eaten_grams >= daily_goal`)
+- Problema: No diferencia entre "no servido" y "no comido"
+- No documentaba desperdicio de alimento
+
+### Lógica ACTUAL (✅ VIGENTE desde 11/11/2025)
+
+**Meta basada en cantidad SERVIDA, no comida**
+
+```typescript
+// Cumplimiento de meta
+const goalAchievement = (amount_served_grams / daily_food_goal_grams) * 100;
+const status =
+  goalAchievement >= 90
+    ? "completed"
+    : goalAchievement >= 70
+    ? "partial"
+    : "delayed";
+
+// Sobrante = métrica clave
+const leftover = amount_served_grams - amount_eaten_grams;
+```
+
+### Razones del Cambio
+
+1. **Control de porciones**: Meta = "sirvió lo que debía servir"
+2. **Documentar desperdicio**: Sobrantes indican problemas de apetito/palatabilidad
+3. **Equilibrio**: Usuario puede ajustar porciones según sobrantes históricos
+4. **Separación clara**:
+   - `served` = Control de alimentador (lo servido)
+   - `eaten` = Comportamiento de mascota (lo consumido)
+   - `leftover` = Indicador de ajuste necesario
+
+### Impacto en Código
+
+**Backend** (`lib/utils/meal-balance.ts`):
+
+- `MealBalance.served_grams`: Cantidad servida (para meta)
+- `MealBalance.eaten_grams`: Cantidad comida (tracking)
+- `MealBalance.leftover_grams`: Calculado (served - eaten)
+- `MealBalance.percentage`: `(served / expected) * 100` ⚠️
+
+**API** (`app/dashboard/actions.ts`):
+
+- Queries incluyen `amount_served_grams` obligatoriamente
+- `FeedingRecord` requiere served + eaten
+
+**UI** (`components/feeding/DailyBalanceCard.tsx`):
+
+- Progress bar: "Servido vs Meta" (antes era "Comido vs Meta")
+- Visible: Servido, Comido, Sobra
+- Colores: Sobra en amarillo si > 0
+
+### Migración de Datos
+
+**NO requiere migración** - Columnas ya existían en BD:
+
+```sql
+-- Tabla feedings (desde baseline v1.0.0)
+amount_served_grams INTEGER NOT NULL,
+amount_eaten_grams INTEGER NOT NULL,
+amount_leftover_grams INTEGER GENERATED ALWAYS AS
+  (amount_served_grams - amount_eaten_grams) STORED
+```
+
+Solo cambió la **interpretación** en lógica de negocio.
 
 ---
 
