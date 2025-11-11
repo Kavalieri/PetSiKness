@@ -1,4 +1,6 @@
 import { Suspense } from "react";
+import { format, isToday as isTodayFn } from "date-fns";
+import { es } from "date-fns/locale";
 import {
   getTodayBalance,
   getAlertsCount,
@@ -53,6 +55,12 @@ async function StatsCards({ date }: { date: string }) {
   const overview = overviewResult.data!;
   const alertsCount = alertsCountResult.data!;
 
+  // Determinar si es fecha actual
+  const today = new Date().toISOString().split("T")[0];
+  const isToday = date === today;
+  const dateObj = new Date(date + "T00:00:00");
+  const formattedDate = format(dateObj, "d 'de' MMM", { locale: es });
+
   const stats = [
     {
       title: "Mascotas totales",
@@ -64,14 +72,14 @@ async function StatsCards({ date }: { date: string }) {
       title: "Cumpliendo meta",
       value: overview.pets_on_track_today,
       icon: Target,
-      description: "Hoy",
+      description: isToday ? "Hoy" : formattedDate,
       color: "text-green-600",
     },
     {
       title: "Alertas",
       value: alertsCount,
       icon: AlertTriangle,
-      description: "Necesitan atención",
+      description: isToday ? "Necesitan atención" : `Alertas del ${formattedDate}`,
       color: alertsCount > 0 ? "text-destructive" : "text-green-600",
     },
     {
@@ -133,20 +141,28 @@ async function CriticalAlerts({ date }: { date: string }) {
     return null;
   }
 
+  // Determinar si es fecha actual
+  const today = new Date().toISOString().split("T")[0];
+  const isToday = date === today;
+  const dateObj = new Date(date + "T00:00:00");
+  const formattedDate = format(dateObj, "d 'de' MMMM", { locale: es });
+
   return (
     <Alert variant="destructive">
       <AlertTriangle className="h-4 w-4" />
-      <AlertTitle>¡Atención necesaria!</AlertTitle>
+      <AlertTitle>
+        {isToday ? "¡Atención necesaria!" : `Alerta histórica (${formattedDate})`}
+      </AlertTitle>
       <AlertDescription>
         {underTargetPets.length === 1 ? (
           <>
-            <strong>{underTargetPets[0].pet_name}</strong> no ha alcanzado su
-            objetivo diario de alimentación.
+            <strong>{underTargetPets[0].pet_name}</strong>{" "}
+            {isToday ? "no ha alcanzado" : "no alcanzó"} su objetivo diario de alimentación.
           </>
         ) : (
           <>
-            <strong>{underTargetPets.length} mascotas</strong> no han alcanzado
-            su objetivo diario:{" "}
+            <strong>{underTargetPets.length} mascotas</strong>{" "}
+            {isToday ? "no han alcanzado" : "no alcanzaron"} su objetivo diario:{" "}
             {underTargetPets.map((p) => p.pet_name).join(", ")}.
           </>
         )}
@@ -171,13 +187,15 @@ async function TodayBalances({ date }: { date: string }) {
   const balances = balancesResult.data!;
 
   // Determinar si es hoy para el título
-  const today = new Date().toISOString().split("T")[0];
-  const isToday = date === today;
+  const dateObj = new Date(date + 'T00:00:00');
+  const isToday = isTodayFn(dateObj);
 
-  const title = isToday ? "Balance del día" : `Balance del ${date}`;
+  const title = isToday 
+    ? "Balance del día" 
+    : `Balance del ${format(dateObj, "d 'de' MMMM", { locale: es })}`;
   const subtitle = isToday
     ? "Progreso de alimentación de hoy"
-    : "Progreso de alimentación histórico";
+    : `Datos históricos del ${format(dateObj, "EEEE d 'de' MMMM 'de' yyyy", { locale: es })}`;
 
   return (
     <section>
