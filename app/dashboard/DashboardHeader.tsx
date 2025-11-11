@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { format, isToday } from "date-fns";
 import { es } from "date-fns/locale";
@@ -26,20 +26,25 @@ import { Home } from "lucide-react";
 export function DashboardHeader() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+
   // Leer fecha de URL o usar HOY por defecto
   const dateParam = searchParams.get("date");
-  const [selectedDate, setSelectedDate] = useState<Date>(() => {
-    return dateParam ? new Date(dateParam) : new Date();
-  });
+  
+  // Estado inicial siempre es la fecha del servidor para evitar hydration mismatch
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+
+  // Sincronizar con el param de URL después de montar
+  useEffect(() => {
+    setSelectedDate(dateParam ? new Date(dateParam) : new Date());
+  }, [dateParam]);
 
   const handleDateChange = (date: Date) => {
     setSelectedDate(date);
-    
+
     // Navegar a nueva URL con fecha
     const dateISO = format(date, "yyyy-MM-dd");
     const params = new URLSearchParams(searchParams.toString());
-    
+
     // Si es HOY, remover el parámetro (DEFAULT)
     const today = format(new Date(), "yyyy-MM-dd");
     if (dateISO === today) {
@@ -47,9 +52,26 @@ export function DashboardHeader() {
     } else {
       params.set("date", dateISO);
     }
-    
+
     router.push(`/dashboard?${params.toString()}`);
   };
+
+  // Mostrar loading state durante hidratación
+  if (!selectedDate) {
+    return (
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+            <Home className="h-8 w-8" />
+            Dashboard
+          </h1>
+          <p className="text-muted-foreground">
+            Resumen de alimentación de tus mascotas
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   // Formatear para UI
   const dateLabel = isToday(selectedDate)
