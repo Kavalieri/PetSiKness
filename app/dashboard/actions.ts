@@ -1,5 +1,6 @@
 "use server";
 
+import { z } from "zod";
 import { query } from "@/lib/db";
 import { requireHousehold } from "@/lib/auth";
 import { ok, fail } from "@/lib/result";
@@ -91,15 +92,45 @@ interface HouseholdOverview {
 }
 
 // ============================================
+// VALIDACIÓN ZOD
+// ============================================
+
+/**
+ * Valida fecha en formato ISO YYYY-MM-DD
+ */
+const DateSchema = z
+  .string()
+  .regex(
+    /^\d{4}-\d{2}-\d{2}$/,
+    "Fecha debe estar en formato ISO (YYYY-MM-DD)"
+  )
+  .refine(
+    (date) => {
+      const parsed = new Date(date);
+      return !isNaN(parsed.getTime());
+    },
+    { message: "Fecha inválida" }
+  )
+  .optional();
+
+/**
+ * Valida UUID v4
+ */
+const UuidSchema = z
+  .string()
+  .uuid("ID de mascota debe ser UUID válido")
+  .optional();
+
+// ============================================
 // ACCIONES - ANALYTICS
 // ============================================
 
 /**
  * 🎯 GESTIÓN DIARIA: Obtiene el resumen de alimentación del día
- * 
+ *
  * FOCO PRINCIPAL: Control diario de alimentación (HOY por defecto)
  * USO SECUNDARIO: Consulta histórica para análisis retrospectivo
- * 
+ *
  * @param date - Fecha ISO (YYYY-MM-DD). Default: HOY (gestión diaria)
  * @returns Resumen agregado por mascota del día especificado
  */
@@ -107,6 +138,16 @@ export async function getDailySummary(
   date?: string
 ): Promise<Result<DailySummary[]>> {
   try {
+    // Validación de parámetros
+    if (date) {
+      const validation = DateSchema.safeParse(date);
+      if (!validation.success) {
+        return fail(
+          validation.error.errors[0]?.message || "Fecha inválida"
+        );
+      }
+    }
+
     const { householdId } = await requireHousehold();
     // DEFAULT: Día actual (gestión diaria prioritaria)
     const targetDate = date || new Date().toISOString().split("T")[0];
@@ -145,10 +186,10 @@ export async function getDailySummary(
 
 /**
  * 🎯 GESTIÓN DIARIA: Balance en tiempo real de alimentación
- * 
+ *
  * Calcula directamente desde feedings (no usa vista) para datos actualizados al segundo.
  * FOCO: Monitoreo continuo del día actual para control inmediato.
- * 
+ *
  * @param date - Fecha ISO (YYYY-MM-DD). Default: HOY (uso principal: gestión diaria)
  * @returns Balance actualizado por mascota del día especificado
  */
@@ -156,6 +197,16 @@ export async function getTodayBalance(
   date?: string
 ): Promise<Result<TodayBalance[]>> {
   try {
+    // Validación de parámetros
+    if (date) {
+      const validation = DateSchema.safeParse(date);
+      if (!validation.success) {
+        return fail(
+          validation.error.errors[0]?.message || "Fecha inválida"
+        );
+      }
+    }
+
     const { householdId } = await requireHousehold();
     // DEFAULT: Hoy (gestión diaria en tiempo real)
     const targetDate = date || new Date().toISOString().split("T")[0];
@@ -212,11 +263,11 @@ export async function getTodayBalance(
 
 /**
  * 🎯 GESTIÓN DIARIA: Estadísticas de tendencia semanal
- * 
+ *
  * Muestra últimos 7 días desde la fecha especificada hacia atrás.
  * FOCO: Contexto de la gestión diaria actual + tendencia reciente.
  * USO SECUNDARIO: Análisis de semanas pasadas específicas.
- * 
+ *
  * @param endDate - Fecha final ISO (YYYY-MM-DD). Default: HOY (última semana)
  * @returns Stats agregados de los últimos 7 días desde endDate
  */
@@ -224,6 +275,16 @@ export async function getWeeklyStats(
   endDate?: string
 ): Promise<Result<WeeklyStats[]>> {
   try {
+    // Validación de parámetros
+    if (endDate) {
+      const validation = DateSchema.safeParse(endDate);
+      if (!validation.success) {
+        return fail(
+          validation.error.errors[0]?.message || "Fecha inválida"
+        );
+      }
+    }
+
     const { householdId } = await requireHousehold();
     // DEFAULT: Hoy (contexto de gestión diaria)
     const targetEndDate = endDate || new Date().toISOString().split("T")[0];
@@ -259,18 +320,26 @@ export async function getWeeklyStats(
 
 /**
  * 🎯 GESTIÓN DIARIA: Conteo de alertas críticas de alimentación
- * 
+ *
  * Identifica mascotas con alimentación insuficiente (<90% objetivo).
  * FOCO PRINCIPAL: Alertas del día actual para acción inmediata.
  * USO SECUNDARIO: Revisar alertas de días pasados.
- * 
+ *
  * @param date - Fecha ISO (YYYY-MM-DD). Default: HOY (alertas actuales)
  * @returns Número de mascotas bajo objetivo en el día especificado
  */
-export async function getAlertsCount(
-  date?: string
-): Promise<Result<number>> {
+export async function getAlertsCount(date?: string): Promise<Result<number>> {
   try {
+    // Validación de parámetros
+    if (date) {
+      const validation = DateSchema.safeParse(date);
+      if (!validation.success) {
+        return fail(
+          validation.error.errors[0]?.message || "Fecha inválida"
+        );
+      }
+    }
+
     const { householdId } = await requireHousehold();
     // DEFAULT: Hoy (gestión de alertas diarias)
     const targetDate = date || new Date().toISOString().split("T")[0];
@@ -300,11 +369,11 @@ export async function getAlertsCount(
 
 /**
  * 🎯 GESTIÓN DIARIA: Datos de tendencia individual de mascota
- * 
+ *
  * Muestra últimos 7 días desde fecha especificada para gráfico de evolución.
  * FOCO: Contexto de gestión diaria + progreso reciente de la mascota.
  * USO SECUNDARIO: Análisis de períodos históricos específicos.
- * 
+ *
  * @param petId - ID de la mascota
  * @param endDate - Fecha final ISO (YYYY-MM-DD). Default: HOY (últimos 7 días)
  * @returns Datos diarios para gráfico de tendencia
@@ -314,6 +383,21 @@ export async function getPetTrendData(
   endDate?: string
 ): Promise<Result<PetTrendData[]>> {
   try {
+    // Validación de parámetros
+    const petIdValidation = z.string().uuid().safeParse(petId);
+    if (!petIdValidation.success) {
+      return fail("ID de mascota inválido");
+    }
+
+    if (endDate) {
+      const dateValidation = DateSchema.safeParse(endDate);
+      if (!dateValidation.success) {
+        return fail(
+          dateValidation.error.errors[0]?.message || "Fecha inválida"
+        );
+      }
+    }
+
     const { householdId } = await requireHousehold();
 
     // Verificar ownership
@@ -357,11 +441,11 @@ export async function getPetTrendData(
 
 /**
  * 🎯 GESTIÓN DIARIA: Overview general del hogar
- * 
+ *
  * Estadísticas agregadas del día actual + contexto semanal.
  * FOCO PRINCIPAL: Estado general de alimentación HOY.
  * USO SECUNDARIO: Revisar overview de días pasados.
- * 
+ *
  * @param date - Fecha ISO (YYYY-MM-DD). Default: HOY (overview diario actual)
  * @returns Estadísticas agregadas del hogar para el día especificado
  */
@@ -369,6 +453,16 @@ export async function getHouseholdOverview(
   date?: string
 ): Promise<Result<HouseholdOverview>> {
   try {
+    // Validación de parámetros
+    if (date) {
+      const validation = DateSchema.safeParse(date);
+      if (!validation.success) {
+        return fail(
+          validation.error.errors[0]?.message || "Fecha inválida"
+        );
+      }
+    }
+
     const { householdId } = await requireHousehold();
     // DEFAULT: Hoy (overview de gestión diaria)
     const targetDate = date || new Date().toISOString().split("T")[0];
