@@ -29,17 +29,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  TrendingDown,
-  CheckCircle2,
-  AlertTriangle,
-  Trash2,
-  Edit,
-  UtensilsCrossed,
-} from "lucide-react";
+import { UtensilsCrossed } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { MealGroupCard } from "./MealGroupCard";
 
 // ============================================
 // TIPOS
@@ -87,247 +81,81 @@ interface FeedingListProps {
   onDelete: (id: string) => Promise<void>;
 }
 
-interface FeedingCardProps {
-  feeding: FeedingData;
-  onEdit: (id: string) => void;
-  onDelete: (id: string) => void;
-}
-
-// ============================================
-// MAPEOS Y CONFIGURACIÓN
-// ============================================
-
-const appetiteConfig = {
-  refused: { label: "Rechazado", variant: "destructive" as const },
-  poor: { label: "Pobre", variant: "secondary" as const },
-  normal: { label: "Normal", variant: "default" as const },
-  good: { label: "Bueno", variant: "default" as const },
-  excellent: { label: "Excelente", variant: "default" as const },
-};
-
-const speedConfig = {
-  very_slow: { label: "Muy lento", color: "text-red-600" },
-  slow: { label: "Lento", color: "text-orange-600" },
-  normal: { label: "Normal", color: "text-blue-600" },
-  fast: { label: "Rápido", color: "text-green-600" },
-  very_fast: { label: "Muy rápido", color: "text-green-700" },
-};
-
-const stoolConfig = {
-  liquid: { label: "Líquida", variant: "destructive" as const },
-  soft: { label: "Blanda", variant: "secondary" as const },
-  normal: { label: "Normal", variant: "default" as const },
-  hard: { label: "Dura", variant: "secondary" as const },
-};
-
-// ============================================
-// COMPONENTE CARD INDIVIDUAL
-// ============================================
-
-function FeedingCard({ feeding, onEdit, onDelete }: FeedingCardProps) {
-  const eatenPercentage =
-    (feeding.amount_eaten_grams / feeding.amount_served_grams) * 100;
-
-  // Determinar estado de alimentación
-  let statusIcon;
-  let statusColor;
-  if (eatenPercentage >= 90) {
-    statusIcon = <CheckCircle2 className="h-5 w-5 text-green-600" />;
-    statusColor = "text-green-700";
-  } else if (eatenPercentage >= 70) {
-    statusIcon = <TrendingDown className="h-5 w-5 text-yellow-600" />;
-    statusColor = "text-yellow-700";
-  } else {
-    statusIcon = <TrendingDown className="h-5 w-5 text-red-600" />;
-    statusColor = "text-red-700";
-  }
-
-  return (
-    <Card>
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="space-y-1">
-            <CardTitle className="text-lg">{feeding.pet_name}</CardTitle>
-            <CardDescription>
-              {feeding.food_brand ? `${feeding.food_brand} - ` : ""}
-              {feeding.food_name}
-            </CardDescription>
-          </div>
-          <div className="flex gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => onEdit(feeding.id)}
-            >
-              <Edit className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => onDelete(feeding.id)}
-            >
-              <Trash2 className="h-4 w-4 text-destructive" />
-            </Button>
-          </div>
-        </div>
-      </CardHeader>
-
-      <CardContent className="space-y-4">
-        {/* Fecha y hora */}
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">
-            {format(new Date(feeding.feeding_date), "PPP", { locale: es })}
-          </span>
-          {feeding.feeding_time && (
-            <span className="font-medium">
-              {feeding.feeding_time.slice(0, 5)}
-              {feeding.meal_number && ` (Comida #${feeding.meal_number})`}
-            </span>
-          )}
-        </div>
-
-        {/* Cantidades con indicador visual */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium">Cantidad comida</span>
-            <div className="flex items-center gap-2">
-              {statusIcon}
-              <span className={`font-bold ${statusColor}`}>
-                {eatenPercentage.toFixed(0)}%
-              </span>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-3 gap-2 text-xs">
-            <div className="text-center p-2 bg-muted rounded">
-              <p className="text-muted-foreground">Servido</p>
-              <p className="font-semibold">{feeding.amount_served_grams}g</p>
-            </div>
-            <div className="text-center p-2 bg-primary/10 rounded">
-              <p className="text-muted-foreground">Comido</p>
-              <p className="font-semibold">{feeding.amount_eaten_grams}g</p>
-            </div>
-            <div className="text-center p-2 bg-muted rounded">
-              <p className="text-muted-foreground">Sobra</p>
-              <p className="font-semibold">{feeding.amount_leftover_grams}g</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Comportamiento */}
-        <div className="flex flex-wrap gap-2">
-          {feeding.appetite_rating &&
-            appetiteConfig[
-              feeding.appetite_rating as keyof typeof appetiteConfig
-            ] && (
-              <Badge
-                variant={
-                  appetiteConfig[
-                    feeding.appetite_rating as keyof typeof appetiteConfig
-                  ].variant
-                }
-              >
-                Apetito:{" "}
-                {
-                  appetiteConfig[
-                    feeding.appetite_rating as keyof typeof appetiteConfig
-                  ].label
-                }
-              </Badge>
-            )}
-          {feeding.eating_speed &&
-            speedConfig[feeding.eating_speed as keyof typeof speedConfig] && (
-              <Badge
-                variant="outline"
-                className={
-                  speedConfig[feeding.eating_speed as keyof typeof speedConfig]
-                    .color
-                }
-              >
-                Velocidad:{" "}
-                {
-                  speedConfig[feeding.eating_speed as keyof typeof speedConfig]
-                    .label
-                }
-              </Badge>
-            )}
-        </div>
-
-        {/* Alertas de salud */}
-        {(feeding.vomited || feeding.had_diarrhea || feeding.stool_quality) && (
-          <div className="space-y-1 p-3 border-l-4 border-destructive bg-destructive/5 rounded">
-            <div className="flex items-center gap-2 text-sm font-medium text-destructive">
-              <AlertTriangle className="h-4 w-4" />
-              Alertas de salud
-            </div>
-            <div className="space-y-1 text-xs">
-              {feeding.vomited && <p>• Vómito registrado</p>}
-              {feeding.had_diarrhea && <p>• Diarrea registrada</p>}
-              {feeding.stool_quality &&
-                stoolConfig[
-                  feeding.stool_quality as keyof typeof stoolConfig
-                ] && (
-                  <p>
-                    • Heces:{" "}
-                    {
-                      stoolConfig[
-                        feeding.stool_quality as keyof typeof stoolConfig
-                      ].label
-                    }
-                  </p>
-                )}
-            </div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
 // ============================================
 // FUNCIONES HELPER
 // ============================================
 
 /**
- * Agrupa feedings por fecha
+ * Interfaces para agrupación por día y toma
  */
-function groupByDate(feedings: FeedingData[]): Map<string, FeedingData[]> {
-  const grouped = new Map<string, FeedingData[]>();
+interface MealGroup {
+  mealNumber: number;
+  feedings: FeedingData[];
+}
+
+interface DayGroup {
+  date: string;
+  mealGroups: MealGroup[];
+}
+
+/**
+ * Agrupa feedings por fecha y luego por meal_number
+ */
+function groupByDayAndMeal(feedings: FeedingData[]): DayGroup[] {
+  // 1. Agrupar por fecha
+  const byDate = new Map<string, FeedingData[]>();
 
   feedings.forEach((feeding) => {
-    // Convertir fecha a string (puede venir como Date o string desde el servidor)
-    let dateStr: string;
     const dateValue = feeding.feeding_date as string | Date;
+    const dateStr =
+      dateValue instanceof Date
+        ? format(dateValue, "yyyy-MM-dd")
+        : typeof dateValue === "string"
+        ? dateValue
+        : "";
 
-    if (dateValue instanceof Date) {
-      dateStr = format(dateValue, "yyyy-MM-dd");
-    } else if (typeof dateValue === "string") {
-      dateStr = dateValue;
-    } else {
-      console.warn(
-        "Feeding con fecha inválida:",
-        feeding.id,
-        feeding.feeding_date
-      );
+    if (!dateStr) {
+      console.warn("Feeding con fecha inválida:", feeding.id);
       return;
     }
 
-    if (!grouped.has(dateStr)) {
-      grouped.set(dateStr, []);
+    if (!byDate.has(dateStr)) {
+      byDate.set(dateStr, []);
     }
-    grouped.get(dateStr)!.push(feeding);
+    byDate.get(dateStr)!.push(feeding);
   });
 
-  // Ordenar cada grupo por hora
-  grouped.forEach((group) => {
-    group.sort((a, b) => {
-      const timeA = a.feeding_time || "00:00";
-      const timeB = b.feeding_time || "00:00";
-      return timeB.localeCompare(timeA); // DESC (más reciente primero)
+  // 2. Para cada fecha, agrupar por meal_number
+  const result: DayGroup[] = [];
+  const sortedDates = Array.from(byDate.keys()).sort((a, b) =>
+    b.localeCompare(a)
+  ); // DESC
+
+  sortedDates.forEach((date) => {
+    const feedingsInDate = byDate.get(date)!;
+
+    // Agrupar por meal_number
+    const byMeal = new Map<number, FeedingData[]>();
+    feedingsInDate.forEach((feeding) => {
+      const mealNum = feeding.meal_number || 0;
+      if (!byMeal.has(mealNum)) {
+        byMeal.set(mealNum, []);
+      }
+      byMeal.get(mealNum)!.push(feeding);
     });
+
+    // Convertir a array y ordenar
+    const mealGroups: MealGroup[] = Array.from(byMeal.entries())
+      .map(([mealNumber, feedings]) => ({
+        mealNumber,
+        feedings: feedings.sort((a, b) => a.pet_name.localeCompare(b.pet_name)),
+      }))
+      .sort((a, b) => a.mealNumber - b.mealNumber);
+
+    result.push({ date, mealGroups });
   });
 
-  return grouped;
+  return result;
 }
 
 // ============================================
@@ -483,49 +311,51 @@ export function FeedingList({
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-6">
-          {Array.from(groupByDate(filteredFeedings).entries()).map(
-            ([date, feedingsInDate]) => (
-              <div key={date} className="space-y-3">
-                {/* Encabezado de fecha */}
-                <div className="flex items-center gap-3">
-                  <h3 className="text-lg font-semibold">
-                    {(() => {
-                      try {
-                        // Parsear fecha con formato ISO
-                        const dateObj = new Date(date + "T00:00:00");
-                        if (isNaN(dateObj.getTime())) {
-                          return date; // Fallback a mostrar string crudo
-                        }
-                        return format(dateObj, "EEEE d 'de' MMMM", {
-                          locale: es,
-                        });
-                      } catch (error) {
-                        console.error("Error formateando fecha:", date, error);
-                        return date; // Fallback
+        <div className="space-y-8">
+          {groupByDayAndMeal(filteredFeedings).map((dayGroup) => (
+            <div key={dayGroup.date} className="space-y-4">
+              {/* Encabezado de fecha */}
+              <div className="flex items-center gap-3 sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 py-2 z-10 border-b">
+                <h3 className="text-xl font-bold">
+                  {(() => {
+                    try {
+                      const dateObj = new Date(dayGroup.date + "T00:00:00");
+                      if (isNaN(dateObj.getTime())) {
+                        return dayGroup.date;
                       }
-                    })()}
-                  </h3>
-                  <Badge variant="secondary">
-                    {feedingsInDate.length} registro
-                    {feedingsInDate.length !== 1 ? "s" : ""}
-                  </Badge>
-                </div>
-
-                {/* Grid de cards para esa fecha */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {feedingsInDate.map((feeding) => (
-                    <FeedingCard
-                      key={feeding.id}
-                      feeding={feeding}
-                      onEdit={(id) => router.push(`/feeding/${id}/edit`)}
-                      onDelete={(id) => setDeleteId(id)}
-                    />
-                  ))}
-                </div>
+                      return format(dateObj, "EEEE d 'de' MMMM", {
+                        locale: es,
+                      });
+                    } catch (error) {
+                      console.error(
+                        "Error formateando fecha:",
+                        dayGroup.date,
+                        error
+                      );
+                      return dayGroup.date;
+                    }
+                  })()}
+                </h3>
+                <Badge variant="secondary">
+                  {dayGroup.mealGroups.length} toma
+                  {dayGroup.mealGroups.length !== 1 ? "s" : ""}
+                </Badge>
               </div>
-            )
-          )}
+
+              {/* Tomas del día (full-width stack) */}
+              <div className="space-y-3">
+                {dayGroup.mealGroups.map((mealGroup) => (
+                  <MealGroupCard
+                    key={`${dayGroup.date}-meal-${mealGroup.mealNumber}`}
+                    mealNumber={mealGroup.mealNumber}
+                    feedings={mealGroup.feedings}
+                    onEdit={(id) => router.push(`/feeding/${id}/edit`)}
+                    onDelete={(id) => setDeleteId(id)}
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
