@@ -77,6 +77,8 @@ interface WeeklyStats {
   total_eaten: number;
   avg_achievement_pct: number;
   days_on_track: number;
+  days_with_data: number; // ✨ NUEVO: Días con registros
+  total_days: number; // ✨ NUEVO: Total de días en el rango
 }
 
 interface PetTrendData {
@@ -351,6 +353,19 @@ export async function getTodayBalance(
  * @param endDate - Fecha final ISO (YYYY-MM-DD). Default: HOY (última semana)
  * @returns Stats agregados de los últimos 7 días desde endDate
  */
+/**
+ * 🎯 GESTIÓN DIARIA: Estadísticas de tendencia semanal
+ *
+ * Muestra últimos 7 días desde la fecha especificada hacia atrás.
+ * FOCO: Contexto de la gestión diaria actual + tendencia reciente.
+ * USO SECUNDARIO: Análisis de semanas pasadas específicas.
+ *
+ * ✨ FIXED: Filtrar días sin datos para evitar promedios distorsionados.
+ * Muestra contexto: "87% (5/7 días con datos)" para interpretación correcta.
+ *
+ * @param endDate - Fecha final ISO (YYYY-MM-DD). Default: HOY (última semana)
+ * @returns Stats agregados de los últimos 7 días desde endDate
+ */
 export async function getWeeklyStats(
   endDate?: string
 ): Promise<Result<WeeklyStats[]>> {
@@ -372,8 +387,12 @@ export async function getWeeklyStats(
       SELECT 
         dfs.feeding_date as date,
         SUM(dfs.total_eaten_grams) as total_eaten,
-        ROUND(AVG(dfs.goal_achievement_pct), 2) as avg_achievement_pct,
-        COUNT(*) FILTER (WHERE dfs.met_target = true) as days_on_track
+        -- ✨ FIXED: Solo promediar días con datos reales
+        ROUND(AVG(dfs.goal_achievement_pct) FILTER (WHERE dfs.total_eaten_grams > 0), 2) as avg_achievement_pct,
+        COUNT(*) FILTER (WHERE dfs.met_target = true) as days_on_track,
+        -- ✨ NUEVO: Contar días con datos vs total de días
+        COUNT(*) FILTER (WHERE dfs.total_eaten_grams > 0) as days_with_data,
+        7 as total_days
       FROM daily_feeding_summary dfs
       JOIN pets p ON p.id = dfs.pet_id
       WHERE p.household_id = $1
@@ -386,7 +405,17 @@ export async function getWeeklyStats(
       [householdId, targetEndDate]
     );
 
-    return ok(result.rows as WeeklyStats[]);
+    // ✨ Convertir tipos numéricos correctamente
+    const stats: WeeklyStats[] = result.rows.map((row) => ({
+      date: row.date,
+      total_eaten: Number(row.total_eaten || 0),
+      avg_achievement_pct: parseFloat(String(row.avg_achievement_pct || "0")),
+      days_on_track: Number(row.days_on_track || 0),
+      days_with_data: Number(row.days_with_data || 0),
+      total_days: 7,
+    }));
+
+    return ok(stats);
   } catch (error) {
     console.error("Error fetching weekly stats:", error);
     if (error instanceof Error) {
