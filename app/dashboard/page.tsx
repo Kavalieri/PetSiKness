@@ -86,14 +86,18 @@ async function StatsCards({ date }: { date: string }) {
       color: alertsCount > 0 ? "text-destructive" : "text-green-600",
     },
     {
-      title: "Promedio semanal",
-      value: `${Number(overview.avg_achievement_pct || 0).toFixed(0)}%`,
+      title: "Ayer cumplido",
+      value: `${Number(overview.yesterday_achievement_pct || 0).toFixed(0)}%`,
       icon: TrendingUp,
-      description: "Últimos 7 días",
+      description: isToday
+        ? "Día anterior completo"
+        : `Día previo a ${formattedDate}`,
       color:
-        Number(overview.avg_achievement_pct || 0) >= 90
+        Number(overview.yesterday_achievement_pct || 0) >= 90
           ? "text-green-600"
-          : "text-yellow-600",
+          : Number(overview.yesterday_achievement_pct || 0) >= 70
+          ? "text-yellow-600"
+          : "text-red-600",
     },
   ];
 

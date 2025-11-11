@@ -17,8 +17,8 @@ export default async function HomePage() {
       redirect("/onboarding");
     }
 
-    // Si tiene hogar, redirigir a mascotas
-    redirect("/pets");
+    // Si tiene hogar, redirigir a dashboard
+    redirect("/dashboard");
   }
 
   // Landing page para usuarios no autenticados

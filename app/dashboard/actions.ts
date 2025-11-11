@@ -95,7 +95,7 @@ interface HouseholdOverview {
   total_pets: number;
   pets_on_track_today: number;
   total_feedings_last_7_days: number;
-  avg_achievement_pct: number;
+  yesterday_achievement_pct: number; // Cambio: cumplimiento del día anterior (día completo)
 }
 
 // ============================================
@@ -630,26 +630,30 @@ export async function getHouseholdOverview(
     );
     const totalFeedingsLast7Days = feedingsResult.rows[0]?.count || 0;
 
-    // Promedio de cumplimiento (últimos 7 días desde fecha especificada, solo mascotas activas)
-    const avgResult = await query(
+    // Promedio de cumplimiento del DÍA ANTERIOR (día completo, más útil que promedio semanal)
+    // Solo si targetDate es HOY, calculamos ayer. Si es histórico, calculamos el día anterior a esa fecha.
+    const yesterdayDate = new Date(targetDate);
+    yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+    const yesterdayStr = yesterdayDate.toISOString().split("T")[0];
+
+    const yesterdayResult = await query(
       `
       SELECT ROUND(AVG(goal_achievement_pct), 2) as avg
       FROM daily_feeding_summary dfs
       JOIN pets p ON p.id = dfs.pet_id
       WHERE p.household_id = $1
         AND p.is_active = true
-        AND dfs.feeding_date <= $2::date
-        AND dfs.feeding_date >= ($2::date - INTERVAL '6 days')
+        AND dfs.feeding_date = $2::date
       `,
-      [householdId, targetDate]
+      [householdId, yesterdayStr]
     );
-    const avgAchievementPct = Number(avgResult.rows[0]?.avg || 0);
+    const yesterdayAchievementPct = Number(yesterdayResult.rows[0]?.avg || 0);
 
     const overview: HouseholdOverview = {
       total_pets: totalPets,
       pets_on_track_today: petsOnTrackToday,
       total_feedings_last_7_days: totalFeedingsLast7Days,
-      avg_achievement_pct: avgAchievementPct,
+      yesterday_achievement_pct: yesterdayAchievementPct,
     };
 
     return ok(overview);
