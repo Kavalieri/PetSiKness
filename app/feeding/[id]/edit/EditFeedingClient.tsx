@@ -66,8 +66,8 @@ export function EditFeedingClient({
   const formattedDate = (() => {
     const d = new Date(feeding.feeding_date);
     const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
   })();
 

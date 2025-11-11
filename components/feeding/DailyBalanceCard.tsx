@@ -89,58 +89,70 @@ function MealCard({ balance }: { balance: MealBalance }) {
   const statusLabel = getStatusLabel(balance.status);
   const statusColorClass = getStatusColor(balance.status);
 
+  // Manejar valores nulos/undefined
+  const servedGrams = balance.served_grams || 0;
+  const eatenGrams = balance.eaten_grams || 0;
+  const leftoverGrams = balance.leftover_grams || 0;
+  const expectedGrams = balance.expected_grams || 0;
+  const percentage = balance.percentage || 0;
+
   return (
-    <div className="p-3 border rounded-lg space-y-2 bg-card">
-      {/* Header: Nombre de toma + Hora */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold">
-            {getMealName(balance.meal_number)}
-          </span>
-          <span className="text-xs text-muted-foreground">
-            {/* ✨ Mostrar hora real si existe, sino hora programada */}
-            {balance.actual_time || balance.scheduled_time}
-            {balance.actual_time &&
-              balance.actual_time !== balance.scheduled_time && (
-                <span className="ml-1 text-[10px] opacity-60">
-                  (prog. {balance.scheduled_time})
+    <div className="p-4 border rounded-lg bg-card hover:shadow-md transition-shadow">
+      {/* Layout horizontal completo */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        {/* Izquierda: Info de toma + cantidades */}
+        <div className="flex-1 space-y-3">
+          {/* Header: Nombre + Hora + Badge */}
+          <div className="flex items-center justify-between sm:justify-start sm:gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-base font-semibold">
+                {getMealName(balance.meal_number)}
+              </span>
+              <span className="text-sm text-muted-foreground">
+                {balance.actual_time || balance.scheduled_time}
+                {balance.actual_time &&
+                  balance.actual_time !== balance.scheduled_time && (
+                    <span className="ml-1 text-xs opacity-60">
+                      (prog. {balance.scheduled_time})
+                    </span>
+                  )}
+              </span>
+            </div>
+            <Badge className={statusColorClass} variant="outline">
+              {statusIcon} {statusLabel}
+            </Badge>
+          </div>
+
+          {/* Cantidades horizontales */}
+          <div className="flex flex-wrap gap-4 text-sm">
+            <div className="flex flex-col">
+              <span className="text-xs text-muted-foreground">Servido</span>
+              <span className="font-semibold">
+                {servedGrams}g / {expectedGrams}g
+              </span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-xs text-muted-foreground">Comido</span>
+              <span className="font-semibold">{eatenGrams}g</span>
+            </div>
+            {leftoverGrams > 0 && (
+              <div className="flex flex-col">
+                <span className="text-xs text-muted-foreground">Sobra</span>
+                <span className="font-semibold text-yellow-600">
+                  {leftoverGrams}g
                 </span>
-              )}
-          </span>
+              </div>
+            )}
+          </div>
         </div>
-        <Badge className={statusColorClass} variant="outline">
-          {statusIcon} {statusLabel}
-        </Badge>
-      </div>
 
-      {/* ✨ CAMBIO: Progress basado en SERVIDO vs esperado */}
-      <div className="space-y-1">
-        <div className="flex justify-between text-xs">
-          <span className="text-muted-foreground">
-            Servido: {balance.served_grams}g / {balance.expected_grams}g
-          </span>
-          <span className="font-semibold">{balance.percentage}%</span>
-        </div>
-        <Progress value={Math.min(100, balance.percentage)} className="h-1.5" />
-      </div>
-
-      {/* ✨ NUEVO: Mostrar comido y sobrante */}
-      <div className="flex justify-between text-xs pt-1 border-t">
-        <div className="text-muted-foreground">
-          Comido:{" "}
-          <span className="font-medium text-foreground">
-            {balance.eaten_grams}g
-          </span>
-        </div>
-        <div className="text-muted-foreground">
-          Sobra:{" "}
-          <span
-            className={`font-medium ${
-              balance.leftover_grams > 0 ? "text-yellow-600" : "text-foreground"
-            }`}
-          >
-            {balance.leftover_grams}g
-          </span>
+        {/* Derecha: Progress bar + porcentaje */}
+        <div className="flex flex-col gap-2 min-w-[200px]">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">Cumplimiento</span>
+            <span className="font-bold text-base">{percentage.toFixed(0)}%</span>
+          </div>
+          <Progress value={Math.min(percentage, 100)} className="h-2.5" />
         </div>
       </div>
     </div>
@@ -248,8 +260,8 @@ function MealBasedBalanceFull({ data }: { data: DailyBalanceData }) {
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {/* Grid de meal cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {/* Meal cards horizontales full-width */}
+        <div className="flex flex-col gap-3">
           {data.meal_balances.map((balance) => (
             <MealCard key={balance.meal_number} balance={balance} />
           ))}
