@@ -152,8 +152,8 @@ export function calculateMealBalances(
   // Calcular balance para cada toma
   return sortedSchedules.map((schedule) => {
     // ✨ CAMBIO: Usar expected_grams específico si está disponible, sino dividir meta diaria
-    const expectedGrams = schedule.expected_grams 
-      ? schedule.expected_grams 
+    const expectedGrams = schedule.expected_grams
+      ? schedule.expected_grams
       : Math.round(dailyGoalGrams / numMeals);
 
     // Encontrar feedings dentro de la ventana de tiempo de esta toma
@@ -188,9 +188,7 @@ export function calculateMealBalances(
 
     // ✨ CAMBIO CRÍTICO: Porcentaje basado en SERVIDO vs esperado de ESTA toma
     const percentage =
-      expectedGrams > 0
-        ? Math.round((servedGrams / expectedGrams) * 100)
-        : 0;
+      expectedGrams > 0 ? Math.round((servedGrams / expectedGrams) * 100) : 0;
 
     // Verificar si ya pasó la hora
     const isDue = isTimeDue(schedule.scheduled_time, now);
