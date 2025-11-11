@@ -98,7 +98,7 @@ async function StatsCards({ date }: { date: string }) {
   ];
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
       {stats.map((stat, index) => {
         const Icon = stat.icon;
         return (
@@ -269,12 +269,12 @@ async function TodayBalances({ date }: { date: string }) {
 
   return (
     <section>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-col gap-3 mb-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-2xl font-bold">{title}</h2>
-          <p className="text-muted-foreground">{subtitle}</p>
+          <h2 className="text-xl sm:text-2xl font-bold">{title}</h2>
+          <p className="text-sm text-muted-foreground">{subtitle}</p>
         </div>
-        <Button asChild>
+        <Button asChild size="default" className="w-full sm:w-auto">
           <Link href="/feeding/new-unified">
             <UtensilsCrossed className="h-4 w-4 mr-2" />
             Registrar comida
@@ -315,8 +315,8 @@ function QuickActions() {
 
   return (
     <section>
-      <h2 className="text-2xl font-bold mb-4">Acciones rápidas</h2>
-      <div className="grid gap-4 md:grid-cols-3">
+      <h2 className="text-xl sm:text-2xl font-bold mb-4">Acciones rápidas</h2>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {actions.map((action, index) => {
           const Icon = action.icon;
           return (
@@ -345,8 +345,8 @@ function QuickActions() {
 
 function DashboardSkeleton() {
   return (
-    <div className="space-y-8">
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className="space-y-6">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {[1, 2, 3, 4].map((i) => (
           <Card key={i}>
             <CardHeader className="space-y-2">
@@ -375,7 +375,7 @@ export default async function DashboardPage({
   const date = searchParams.date || new Date().toISOString().split("T")[0];
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
       {/* Header con navegación temporal (Client Component) */}
       <DashboardHeader />
 
