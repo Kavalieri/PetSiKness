@@ -58,13 +58,13 @@ interface ChartTooltipProps {
 
 /**
  * Tooltip personalizado para gráficos Recharts
- * 
+ *
  * Provee:
  * - Estilo consistente con el theme
  * - Formateo personalizado de valores
  * - Indicadores de color por serie
  * - Soporte dark mode
- * 
+ *
  * @example
  * ```tsx
  * <LineChart data={data}>

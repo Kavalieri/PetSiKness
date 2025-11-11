@@ -41,13 +41,13 @@ interface ChartLegendProps {
 
 /**
  * Leyenda personalizada para gráficos Recharts
- * 
+ *
  * Provee:
  * - Estilo consistente con el theme
  * - Responsive (oculta en móvil si es necesario)
  * - Formateo personalizado de labels
  * - Soporte dark mode
- * 
+ *
  * @example
  * ```tsx
  * <LineChart data={data}>
@@ -95,10 +95,7 @@ export function ChartLegend({
           : rawValue;
 
         return (
-          <div
-            key={`legend-item-${index}`}
-            className="flex items-center gap-2"
-          >
+          <div key={`legend-item-${index}`} className="flex items-center gap-2">
             {/* Indicador de color */}
             <div
               className="h-3 w-3 rounded-full"

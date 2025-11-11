@@ -57,13 +57,13 @@ interface TableFiltersProps {
 
 /**
  * Barra de filtros para tablas
- * 
+ *
  * Provee:
  * - Búsqueda global
  * - Filtros por categorías (mascota, alimento, etc.)
  * - Botón reset
  * - Responsive (stack en móvil)
- * 
+ *
  * @example
  * ```tsx
  * <TableFilters
@@ -94,9 +94,7 @@ export function TableFilters({
   onReset,
   className,
 }: TableFiltersProps) {
-  const hasActiveFilters = Boolean(
-    searchValue || filters.some((f) => f.value)
-  );
+  const hasActiveFilters = Boolean(searchValue || filters.some((f) => f.value));
 
   return (
     <div className={cn("space-y-4", className)}>

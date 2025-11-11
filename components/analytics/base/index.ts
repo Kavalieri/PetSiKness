@@ -1,6 +1,6 @@
 /**
  * Analytics Components - Base
- * 
+ *
  * Componentes base reutilizables para el sistema de analytics.
  */
 

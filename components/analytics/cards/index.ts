@@ -1,6 +1,6 @@
 /**
  * Analytics Components - Cards
- * 
+ *
  * Cards para mostrar métricas y tendencias.
  */
 
