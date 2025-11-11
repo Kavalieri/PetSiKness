@@ -63,10 +63,19 @@ export function EditFeedingClient({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Formatear fecha al formato YYYY-MM-DD requerido por input type="date"
-  const formattedDate =
-    typeof feeding.feeding_date === "string"
-      ? feeding.feeding_date.split("T")[0] // Si es ISO string, tomar solo la fecha
-      : feeding.feeding_date; // Si ya está en formato correcto
+  // PostgreSQL devuelve DATE, Next.js puede serializarlo como Date object o string
+  const formattedDate = (() => {
+    const date = feeding.feeding_date;
+    
+    // Si ya es string
+    if (typeof date === "string") {
+      return date.includes("T") ? date.split("T")[0] : date;
+    }
+    
+    // Si es Date object o cualquier otra cosa, convertir a Date
+    const dateObj = new Date(date as string | number | Date);
+    return dateObj.toISOString().split("T")[0];
+  })();
 
   const handleSubmit = async (formData: FormData) => {
     setIsSubmitting(true);

@@ -335,7 +335,8 @@ export function FeedingForm({
                     <span className="text-2xl font-bold">{leftoverGrams}g</span>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Servido ({watchedServed}g) - Comido ({watchedEaten}g) = Sobra
+                    Servido ({watchedServed}g) - Comido ({watchedEaten}g) =
+                    Sobra
                   </p>
                 </div>
               </div>
