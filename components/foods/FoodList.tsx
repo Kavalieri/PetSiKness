@@ -337,7 +337,7 @@ export function FoodList() {
       {/* Filters Panel (Collapsible) */}
       {showFilters && (
         <div className="border rounded-lg p-4 space-y-4 bg-muted/30">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {/* Food Type Filter */}
             <div className="space-y-2">
               <Label htmlFor="food-type">Tipo de Alimento</Label>
@@ -423,8 +423,8 @@ export function FoodList() {
         </p>
       </div>
 
-      {/* Food Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Food Grid - 1 columna móvil, 2 tablet/desktop */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
         {foods.map((food) => (
           <FoodCard
             key={String(food.id)}

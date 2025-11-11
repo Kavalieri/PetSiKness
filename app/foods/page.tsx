@@ -83,26 +83,26 @@ export default async function FoodsPage() {
     .filter((item) => item.config); // Filtrar tipos sin config
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
+    <div className="container mx-auto p-4 sm:px-4 sm:py-8 max-w-7xl">
       {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8">
+      <div className="flex flex-col gap-3 mb-6 sm:flex-row sm:items-center sm:justify-between sm:mb-8">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-orange-100 dark:bg-orange-900/20 rounded-lg">
-            <UtensilsCrossed className="h-8 w-8 text-orange-600 dark:text-orange-400" />
+            <UtensilsCrossed className="h-6 w-6 sm:h-8 sm:w-8 text-orange-600 dark:text-orange-400" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
               Catálogo de Alimentos
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               Gestiona los alimentos para tus mascotas
             </p>
           </div>
         </div>
 
         <Link href="/foods/new">
-          <Button size="lg" className="w-full sm:w-auto">
-            <PlusCircle className="mr-2 h-5 w-5" />
+          <Button size="default" className="w-full sm:w-auto">
+            <PlusCircle className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
             Añadir Alimento
           </Button>
         </Link>
@@ -110,18 +110,18 @@ export default async function FoodsPage() {
 
       {/* Estadísticas rápidas */}
       {foods.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6 sm:gap-4 sm:mb-8">
           <StatCard
             label="Total Alimentos"
             value={foods.length}
-            icon={<UtensilsCrossed className="h-5 w-5 text-muted-foreground" />}
+            icon={<UtensilsCrossed className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />}
           />
           {topTypes.map(({ type, count, config }) => (
             <StatCard
               key={type}
               label={config.label}
               value={count}
-              icon={<config.icon className={`h-5 w-5 ${config.color}`} />}
+              icon={<config.icon className={`h-4 w-4 sm:h-5 sm:w-5 ${config.color}`} />}
             />
           ))}
         </div>
@@ -145,11 +145,11 @@ function StatCard({
 }) {
   return (
     <Card>
-      <CardContent className="p-6">
+      <CardContent className="p-4 sm:p-6">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-muted-foreground">{label}</p>
-            <p className="text-2xl font-bold">{value}</p>
+            <p className="text-xs sm:text-sm font-medium text-muted-foreground">{label}</p>
+            <p className="text-xl sm:text-2xl font-bold">{value}</p>
           </div>
           {icon && <div className="opacity-80">{icon}</div>}
         </div>
