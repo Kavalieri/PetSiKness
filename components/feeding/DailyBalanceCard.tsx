@@ -88,32 +88,14 @@ function MealCard({ balance }: { balance: MealBalance }) {
   const statusLabel = getStatusLabel(balance.status);
   const statusColorClass = getStatusColor(balance.status);
 
-  // Valores base (con fallback a 0)
+  // Valores REALES (lo que pasó)
   const servedGrams = balance.served_grams || 0;
   const eatenGrams = balance.eaten_grams || 0;
   const leftoverGrams = balance.leftover_grams || 0;
-  const expectedGrams = balance.expected_grams || 0;
 
-  // 📊 MÉTRICAS CRUZADAS ÚTILES
-  
-  // 1. Consumo Real: Comido/Servido (% de aprovechamiento)
+  // MÉTRICA PRINCIPAL: Comido/Servido (lo que realmente importa)
   const consumptionRate = servedGrams > 0 
     ? Math.round((eatenGrams / servedGrams) * 100) 
-    : 0;
-  
-  // 2. Cumplimiento de Meta: Servido/Esperado (% de meta)
-  const goalAchievement = expectedGrams > 0 
-    ? Math.round((servedGrams / expectedGrams) * 100) 
-    : 0;
-  
-  // 3. Balance Real: Comido vs Esperado (para evaluar si comió lo suficiente)
-  const actualIntake = expectedGrams > 0 
-    ? Math.round((eatenGrams / expectedGrams) * 100) 
-    : 0;
-  
-  // 4. Desperdicio: Sobra como % de lo servido
-  const wasteRate = servedGrams > 0 
-    ? Math.round((leftoverGrams / servedGrams) * 100) 
     : 0;
 
   return (
@@ -139,106 +121,48 @@ function MealCard({ balance }: { balance: MealBalance }) {
         </Badge>
       </div>
 
-      {/* Layout horizontal: Cantidades + Métricas */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Columna 1: CANTIDADES ABSOLUTAS */}
-        <div className="space-y-3">
-          <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-            Cantidades
-          </h4>
-          
-          {/* Esperado (baseline) */}
-          <div className="flex items-center justify-between p-2 bg-muted/30 rounded">
-            <span className="text-sm">🎯 Esperado</span>
-            <span className="font-semibold text-base">{expectedGrams}g</span>
-          </div>
-          
-          {/* Servido */}
-          <div className="flex items-center justify-between p-2 bg-muted/30 rounded">
-            <span className="text-sm">📥 Servido</span>
-            <div className="text-right">
-              <span className="font-semibold text-base">{servedGrams}g</span>
-              <span className={`ml-2 text-xs ${
-                goalAchievement >= 90 ? 'text-green-600' : 
-                goalAchievement >= 70 ? 'text-yellow-600' : 
-                'text-red-600'
-              }`}>
-                ({goalAchievement}%)
-              </span>
+      {/* DATOS REALES: Lo que pasó en esta toma */}
+      <div className="space-y-4">
+        {/* Cantidades absolutas */}
+        <div className="grid grid-cols-3 gap-3">
+          <div className="text-center p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
+            <div className="text-xs text-muted-foreground mb-1">Servido</div>
+            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+              {servedGrams}g
             </div>
           </div>
           
-          {/* Comido */}
-          <div className="flex items-center justify-between p-2 bg-muted/30 rounded">
-            <span className="text-sm">🍽️ Comido</span>
-            <div className="text-right">
-              <span className="font-semibold text-base">{eatenGrams}g</span>
-              <span className={`ml-2 text-xs ${
-                actualIntake >= 90 ? 'text-green-600' : 
-                actualIntake >= 70 ? 'text-yellow-600' : 
-                'text-red-600'
-              }`}>
-                ({actualIntake}%)
-              </span>
+          <div className="text-center p-3 bg-green-50 dark:bg-green-950/20 rounded-lg">
+            <div className="text-xs text-muted-foreground mb-1">Comido</div>
+            <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+              {eatenGrams}g
             </div>
           </div>
           
-          {/* Sobrante (solo si hay) */}
-          {leftoverGrams > 0 && (
-            <div className="flex items-center justify-between p-2 bg-yellow-50 dark:bg-yellow-950/20 rounded">
-              <span className="text-sm">⚠️ Sobra</span>
-              <div className="text-right">
-                <span className="font-semibold text-base text-yellow-700 dark:text-yellow-500">
-                  {leftoverGrams}g
-                </span>
-                <span className="ml-2 text-xs text-yellow-600">
-                  ({wasteRate}%)
-                </span>
-              </div>
+          <div className="text-center p-3 bg-yellow-50 dark:bg-yellow-950/20 rounded-lg">
+            <div className="text-xs text-muted-foreground mb-1">Sobra</div>
+            <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+              {leftoverGrams}g
             </div>
-          )}
+          </div>
         </div>
 
-        {/* Columna 2: MÉTRICAS CRUZADAS */}
-        <div className="space-y-3">
-          <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-            Análisis
-          </h4>
-          
-          {/* Métrica 1: Cumplimiento de Meta */}
-          <div className="space-y-1">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Cumplimiento Meta</span>
-              <span className="font-bold">{goalAchievement}%</span>
-            </div>
-            <Progress value={Math.min(goalAchievement, 100)} className="h-2" />
-            <p className="text-xs text-muted-foreground">
-              Servido vs Esperado ({servedGrams}g / {expectedGrams}g)
-            </p>
+        {/* MÉTRICA CLAVE: Comido/Servido */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium">
+              Comido / Servido
+            </span>
+            <span className="text-xl font-bold">
+              {consumptionRate}%
+            </span>
           </div>
-          
-          {/* Métrica 2: Tasa de Consumo */}
-          <div className="space-y-1">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Tasa Consumo</span>
-              <span className="font-bold">{consumptionRate}%</span>
-            </div>
-            <Progress value={Math.min(consumptionRate, 100)} className="h-2" />
-            <p className="text-xs text-muted-foreground">
-              Comido vs Servido ({eatenGrams}g / {servedGrams}g)
-            </p>
-          </div>
-          
-          {/* Métrica 3: Ingesta Real */}
-          <div className="space-y-1">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Ingesta Real</span>
-              <span className="font-bold">{actualIntake}%</span>
-            </div>
-            <Progress value={Math.min(actualIntake, 100)} className="h-2" />
-            <p className="text-xs text-muted-foreground">
-              Comido vs Esperado ({eatenGrams}g / {expectedGrams}g)
-            </p>
+          <Progress 
+            value={Math.min(consumptionRate, 100)} 
+            className="h-3"
+          />
+          <div className="text-xs text-muted-foreground text-center">
+            {eatenGrams}g de {servedGrams}g servidos
           </div>
         </div>
       </div>
