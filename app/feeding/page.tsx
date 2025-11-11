@@ -44,11 +44,6 @@ export default async function FeedingPage({
       throw new Error(feedingsResult.message);
     }
 
-    console.log(
-      "[FeedingPage] Feedings obtenidos:",
-      feedingsResult.data?.length
-    );
-
     // Obtener mascotas y alimentos para los filtros
     const petsQuery = await query(
       `SELECT id, name FROM pets WHERE household_id = $1 AND is_active = true ORDER BY name`,

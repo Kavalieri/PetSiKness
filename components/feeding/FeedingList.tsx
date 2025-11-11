@@ -295,17 +295,23 @@ function groupByDate(feedings: FeedingData[]): Map<string, FeedingData[]> {
   const grouped = new Map<string, FeedingData[]>();
 
   feedings.forEach((feeding) => {
-    // Validación defensiva: ignorar registros sin fecha válida
-    const date = feeding.feeding_date;
-    if (!date || typeof date !== "string") {
-      console.warn("Feeding con fecha inválida:", feeding.id);
+    // Convertir fecha a string (puede venir como Date o string desde el servidor)
+    let dateStr: string;
+    const dateValue = feeding.feeding_date as string | Date;
+    
+    if (dateValue instanceof Date) {
+      dateStr = format(dateValue, "yyyy-MM-dd");
+    } else if (typeof dateValue === "string") {
+      dateStr = dateValue;
+    } else {
+      console.warn("Feeding con fecha inválida:", feeding.id, feeding.feeding_date);
       return;
     }
 
-    if (!grouped.has(date)) {
-      grouped.set(date, []);
+    if (!grouped.has(dateStr)) {
+      grouped.set(dateStr, []);
     }
-    grouped.get(date)!.push(feeding);
+    grouped.get(dateStr)!.push(feeding);
   });
 
   // Ordenar cada grupo por hora

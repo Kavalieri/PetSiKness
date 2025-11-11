@@ -194,6 +194,12 @@ const FoodFormSchemaBase = z.object({
     .max(500, "Máximo 500 caracteres")
     .trim()
     .optional(),
+  product_image_url: z
+    .string()
+    .url("Debe ser una URL válida")
+    .max(1000, "Máximo 1000 caracteres")
+    .trim()
+    .optional(),
 
   // ========================================
   // Restricciones (Optional)

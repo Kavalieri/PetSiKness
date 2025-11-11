@@ -106,6 +106,9 @@ function convertFoodToFormData(food: Foods): any {
     digestibility: food.digestibility ? String(food.digestibility) : undefined,
     photo_url: food.photo_url ? String(food.photo_url) : undefined,
     purchase_url: food.purchase_url ? String(food.purchase_url) : undefined,
+    product_image_url: food.product_image_url
+      ? String(food.product_image_url)
+      : undefined,
     notes: food.notes ? String(food.notes) : undefined,
     suitable_for_species: (food.suitable_for_species ||
       []) as unknown as string[],
@@ -881,6 +884,32 @@ export function FoodForm({ food, onSuccess, onCancel }: FoodFormProps) {
                 </FormControl>
                 <FormDescription>
                   URL donde se puede comprar este producto (opcional)
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* URL de Imagen del Producto */}
+          <FormField
+            control={form.control}
+            name="product_image_url"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="flex items-center gap-2">
+                  <ExternalLink className="h-4 w-4" />
+                  URL de Imagen del Producto
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    type="url"
+                    placeholder="https://www.ejemplo.com/imagen-producto.jpg"
+                    {...field}
+                    value={field.value || ""}
+                  />
+                </FormControl>
+                <FormDescription>
+                  URL de la imagen oficial del producto (opcional)
                 </FormDescription>
                 <FormMessage />
               </FormItem>
