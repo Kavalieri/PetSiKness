@@ -128,12 +128,14 @@ export function FeedingPageClient({
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Alimentación</h1>
-          <p className="text-muted-foreground">
+    <div className="container mx-auto p-4 md:p-6 space-y-4 md:space-y-6">
+      {/* Header - Mobile: Stack vertical, Desktop: Flex horizontal */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-1">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
+            Alimentación
+          </h1>
+          <p className="text-sm text-muted-foreground">
             {dateRange
               ? `Registros del ${format(
                   dateRange.from,
@@ -142,7 +144,7 @@ export function FeedingPageClient({
               : "Historial completo de registros de alimentación"}
           </p>
         </div>
-        <Button asChild>
+        <Button asChild size="default" className="w-full sm:w-auto">
           <Link href="/feeding/new-unified">
             <Plus className="h-4 w-4 mr-2" />
             Registrar Comida
@@ -150,10 +152,15 @@ export function FeedingPageClient({
         </Button>
       </div>
 
-      {/* Filtro de rango de fechas */}
-      <div className="flex items-center gap-4">
-        <DateRangePicker value={dateRange} onChange={handleDateRangeChange} />
-        <div className="text-sm text-muted-foreground">
+      {/* Filtro de rango de fechas - Mobile: Stack, Desktop: Flex */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+        <div className="flex-1">
+          <DateRangePicker
+            value={dateRange}
+            onChange={handleDateRangeChange}
+          />
+        </div>
+        <div className="text-sm text-muted-foreground text-center sm:text-left">
           {feedings.length === 0
             ? "No hay registros"
             : `${feedings.length} registro${feedings.length !== 1 ? "s" : ""}`}
