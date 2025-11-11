@@ -83,14 +83,16 @@ function MealCard({ balance }: { balance: MealBalance }) {
   const statusLabel = getStatusLabel(balance.status);
   const statusColorClass = getStatusColor(balance.status);
 
-  // Valores REALES (lo que pasó)
+  // Valores REALES
   const servedGrams = balance.served_grams || 0;
   const eatenGrams = balance.eaten_grams || 0;
   const leftoverGrams = balance.leftover_grams || 0;
+  const expectedGrams = balance.expected_grams || 0; // Del perfil, NO inventado
 
-  // MÉTRICA PRINCIPAL: Comido/Servido (lo que realmente importa)
-  const consumptionRate =
-    servedGrams > 0 ? Math.round((eatenGrams / servedGrams) * 100) : 0;
+  // MÉTRICA PRINCIPAL: Comido/Servido
+  const consumptionRate = servedGrams > 0 
+    ? Math.round((eatenGrams / servedGrams) * 100) 
+    : 0;
 
   return (
     <div className="p-4 border rounded-lg bg-card hover:shadow-md transition-shadow">
@@ -115,9 +117,15 @@ function MealCard({ balance }: { balance: MealBalance }) {
         </Badge>
       </div>
 
-      {/* DATOS REALES: Lo que pasó en esta toma */}
+      {/* DATOS: Esperado (del perfil) + Real (lo que pasó) */}
       <div className="space-y-4">
-        {/* Cantidades absolutas */}
+        {/* Esperado del perfil de la mascota */}
+        <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+          <span className="text-sm font-medium">🎯 Esperado (perfil)</span>
+          <span className="text-lg font-bold">{expectedGrams}g</span>
+        </div>
+
+        {/* Cantidades REALES - Grid fijo de 3 columnas */}
         <div className="grid grid-cols-3 gap-3">
           <div className="text-center p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
             <div className="text-xs text-muted-foreground mb-1">Servido</div>
@@ -141,7 +149,7 @@ function MealCard({ balance }: { balance: MealBalance }) {
           </div>
         </div>
 
-        {/* MÉTRICA CLAVE: Comido/Servido */}
+        {/* MÉTRICA: Comido/Servido (CORRECTO: comido primero) */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium">Comido / Servido</span>
@@ -149,7 +157,7 @@ function MealCard({ balance }: { balance: MealBalance }) {
           </div>
           <Progress value={Math.min(consumptionRate, 100)} className="h-3" />
           <div className="text-xs text-muted-foreground text-center">
-            {eatenGrams}g de {servedGrams}g servidos
+            {eatenGrams}g de {servedGrams}g
           </div>
         </div>
       </div>
@@ -221,7 +229,9 @@ function MealBasedBalanceCompact({ data }: { data: DailyBalanceData }) {
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Comido total</span>
-              <span className="font-semibold text-green-600">{data.total_eaten}g</span>
+              <span className="font-semibold text-green-600">
+                {data.total_eaten}g
+              </span>
             </div>
           </div>
         </div>
@@ -299,9 +309,10 @@ function MealBasedBalanceFull({ data }: { data: DailyBalanceData }) {
           <div className="text-center text-xs text-muted-foreground pt-2 border-t">
             Tasa de consumo:{" "}
             <span className="font-semibold text-foreground">
-              {data.total_served > 0 
+              {data.total_served > 0
                 ? ((data.total_eaten / data.total_served) * 100).toFixed(0)
-                : 0}%
+                : 0}
+              %
             </span>
           </div>
         </div>
@@ -390,11 +401,15 @@ export function DailyBalanceCard({
               </div>
               <div>
                 <p className="text-muted-foreground">Comido</p>
-                <p className="font-semibold text-green-600">{data.total_eaten}g</p>
+                <p className="font-semibold text-green-600">
+                  {data.total_eaten}g
+                </p>
               </div>
               <div>
                 <p className="text-muted-foreground">Sobra</p>
-                <p className="font-semibold text-yellow-600">{data.total_leftover}g</p>
+                <p className="font-semibold text-yellow-600">
+                  {data.total_leftover}g
+                </p>
               </div>
             </div>
           </div>
@@ -422,17 +437,19 @@ export function DailyBalanceCard({
           <div className="flex justify-between items-center">
             <span className="text-sm font-medium">Tasa de Consumo</span>
             <span className="text-2xl font-bold">
-              {data.total_served > 0 
+              {data.total_served > 0
                 ? ((data.total_eaten / data.total_served) * 100).toFixed(1)
-                : 0}%
+                : 0}
+              %
             </span>
           </div>
-          <Progress 
-            value={data.total_served > 0 
-              ? Math.min((data.total_eaten / data.total_served) * 100, 100)
-              : 0
-            } 
-            className="h-3" 
+          <Progress
+            value={
+              data.total_served > 0
+                ? Math.min((data.total_eaten / data.total_served) * 100, 100)
+                : 0
+            }
+            className="h-3"
           />
           <div className="text-xs text-muted-foreground text-center">
             Comido / Servido: {data.total_eaten}g / {data.total_served}g
@@ -453,7 +470,9 @@ export function DailyBalanceCard({
           </div>
           <div className="text-center">
             <p className="text-sm text-muted-foreground mb-1">Sobra</p>
-            <p className="text-xl font-bold text-yellow-600">{data.total_leftover}g</p>
+            <p className="text-xl font-bold text-yellow-600">
+              {data.total_leftover}g
+            </p>
           </div>
         </div>
 
