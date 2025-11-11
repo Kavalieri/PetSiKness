@@ -285,7 +285,7 @@ async function TodayBalances({ date }: { date: string }) {
           </Link>
         </Button>
       </div>
-      <DailyBalanceList balances={balances} compact />
+      <DailyBalanceList balances={balances} />
     </section>
   );
 }
