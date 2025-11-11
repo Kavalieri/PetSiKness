@@ -17,7 +17,7 @@ const FeedingSchema = z
     food_id: z.string().uuid("ID de alimento inválido"),
     feeding_date: z.string().min(1, "Fecha requerida"),
     feeding_time: z.string().optional(),
-    meal_number: z.coerce.number().int().positive().optional(),
+    // meal_number se calcula automáticamente en el backend
     amount_served_grams: z.coerce
       .number()
       .int()
@@ -296,7 +296,6 @@ export async function createFeeding(formData: FormData): Promise<Result> {
       food_id: formData.get("food_id"),
       feeding_date: formData.get("feeding_date"),
       feeding_time: formData.get("feeding_time") || undefined,
-      meal_number: formData.get("meal_number") || undefined,
       amount_served_grams: formData.get("amount_served_grams"),
       amount_eaten_grams: formData.get("amount_eaten_grams"),
       appetite_rating: formData.get("appetite_rating") || undefined,
@@ -338,6 +337,15 @@ export async function createFeeding(formData: FormData): Promise<Result> {
       return fail("Alimento no encontrado o no pertenece a tu hogar");
     }
 
+    // Calcular meal_number automáticamente
+    // Obtener el máximo meal_number para esta mascota en esta fecha
+    const mealNumberResult = await query(
+      "SELECT COALESCE(MAX(meal_number), 0) + 1 as next_meal_number FROM feedings WHERE pet_id = $1 AND feeding_date = $2",
+      [validated.pet_id, validated.feeding_date]
+    );
+
+    const mealNumber = mealNumberResult.rows[0]?.next_meal_number || 1;
+
     // Insertar feeding
     await query(
       `
@@ -354,7 +362,7 @@ export async function createFeeding(formData: FormData): Promise<Result> {
         validated.food_id,
         validated.feeding_date,
         validated.feeding_time || null,
-        validated.meal_number || null,
+        mealNumber, // Calculado automáticamente
         validated.amount_served_grams,
         validated.amount_eaten_grams,
         validated.appetite_rating || null,
@@ -414,7 +422,6 @@ export async function updateFeeding(formData: FormData): Promise<Result> {
       food_id: formData.get("food_id"), // Necesario para validación
       feeding_date: formData.get("feeding_date"),
       feeding_time: formData.get("feeding_time") || undefined,
-      meal_number: formData.get("meal_number") || undefined,
       amount_served_grams: formData.get("amount_served_grams"),
       amount_eaten_grams: formData.get("amount_eaten_grams"),
       appetite_rating: formData.get("appetite_rating") || undefined,
@@ -436,6 +443,36 @@ export async function updateFeeding(formData: FormData): Promise<Result> {
     }
 
     const validated = parsed.data;
+
+    // Obtener pet_id del registro existente
+    const existingFeeding = await query(
+      "SELECT pet_id, feeding_date FROM feedings WHERE id = $1 AND household_id = $2",
+      [id, householdId]
+    );
+
+    if (existingFeeding.rows.length === 0) {
+      return fail("Registro de alimentación no encontrado");
+    }
+
+    const currentPetId = existingFeeding.rows[0].pet_id;
+    const currentDate = existingFeeding.rows[0].feeding_date;
+
+    // Recalcular meal_number si cambió la fecha
+    let mealNumber: number;
+    if (validated.feeding_date !== currentDate) {
+      const mealNumberResult = await query(
+        "SELECT COALESCE(MAX(meal_number), 0) + 1 as next_meal_number FROM feedings WHERE pet_id = $1 AND feeding_date = $2 AND id != $3",
+        [currentPetId, validated.feeding_date, id]
+      );
+      mealNumber = mealNumberResult.rows[0]?.next_meal_number || 1;
+    } else {
+      // Mantener el meal_number actual si no cambió la fecha
+      const currentMealResult = await query(
+        "SELECT meal_number FROM feedings WHERE id = $1",
+        [id]
+      );
+      mealNumber = currentMealResult.rows[0]?.meal_number || 1;
+    }
 
     // Actualizar (sin cambiar pet_id ni food_id)
     await query(
@@ -459,7 +496,7 @@ export async function updateFeeding(formData: FormData): Promise<Result> {
       [
         validated.feeding_date,
         validated.feeding_time || null,
-        validated.meal_number || null,
+        mealNumber, // Recalculado automáticamente
         validated.amount_served_grams,
         validated.amount_eaten_grams,
         validated.appetite_rating || null,

@@ -4,7 +4,13 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FeedingForm } from "@/components/feeding/FeedingForm";
 import { updateFeeding } from "../../actions";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -48,16 +54,20 @@ interface EditFeedingClientProps {
   foods: Food[];
 }
 
-export function EditFeedingClient({ feeding, pets, foods }: EditFeedingClientProps) {
+export function EditFeedingClient({
+  feeding,
+  pets,
+  foods,
+}: EditFeedingClientProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (formData: FormData) => {
     setIsSubmitting(true);
-    
+
     // Añadir el ID al FormData
     formData.append("id", feeding.id);
-    
+
     const result = await updateFeeding(formData);
 
     if (result.ok) {
@@ -87,7 +97,9 @@ export function EditFeedingClient({ feeding, pets, foods }: EditFeedingClientPro
             Volver al historial
           </Link>
         </Button>
-        <h1 className="text-3xl font-bold tracking-tight">Editar alimentación</h1>
+        <h1 className="text-3xl font-bold tracking-tight">
+          Editar alimentación
+        </h1>
         <p className="text-muted-foreground">
           Modifica los datos de la alimentación de {feeding.pet_name}
         </p>
@@ -97,9 +109,7 @@ export function EditFeedingClient({ feeding, pets, foods }: EditFeedingClientPro
       <Card>
         <CardHeader>
           <CardTitle>Editar alimentación</CardTitle>
-          <CardDescription>
-            Actualiza los datos del registro
-          </CardDescription>
+          <CardDescription>Actualiza los datos del registro</CardDescription>
         </CardHeader>
         <CardContent>
           <FeedingForm
@@ -111,15 +121,32 @@ export function EditFeedingClient({ feeding, pets, foods }: EditFeedingClientPro
               food_id: feeding.food_id,
               feeding_date: feeding.feeding_date,
               feeding_time: feeding.feeding_time || undefined,
-              meal_number: feeding.meal_number || undefined,
+              // meal_number se calcula automáticamente en el backend
               amount_served_grams: feeding.amount_served_grams,
               amount_eaten_grams: feeding.amount_eaten_grams,
-              appetite_rating: (feeding.appetite_rating as "refused" | "poor" | "normal" | "good" | "excellent") || undefined,
-              eating_speed: (feeding.eating_speed as "very_slow" | "slow" | "normal" | "fast" | "very_fast") || undefined,
+              appetite_rating:
+                (feeding.appetite_rating as
+                  | "refused"
+                  | "poor"
+                  | "normal"
+                  | "good"
+                  | "excellent") || undefined,
+              eating_speed:
+                (feeding.eating_speed as
+                  | "very_slow"
+                  | "slow"
+                  | "normal"
+                  | "fast"
+                  | "very_fast") || undefined,
               vomited: feeding.vomited || false,
               had_diarrhea: feeding.had_diarrhea || false,
               had_stool: feeding.had_stool || false,
-              stool_quality: (feeding.stool_quality as "liquid" | "soft" | "normal" | "hard") || undefined,
+              stool_quality:
+                (feeding.stool_quality as
+                  | "liquid"
+                  | "soft"
+                  | "normal"
+                  | "hard") || undefined,
               notes: feeding.notes || undefined,
             }}
             onSubmit={handleSubmit}

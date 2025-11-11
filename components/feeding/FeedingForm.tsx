@@ -37,12 +37,7 @@ const feedingFormSchema = z
     food_id: z.string().uuid("Selecciona un alimento"),
     feeding_date: z.string().min(1, "Fecha requerida"),
     feeding_time: z.string().optional(),
-    meal_number: z.coerce
-      .number()
-      .int()
-      .positive()
-      .optional()
-      .or(z.literal("")),
+    // meal_number se calcula automáticamente en el backend
     amount_served_grams: z.coerce
       .number()
       .int()
@@ -121,7 +116,7 @@ export function FeedingForm({
       food_id: defaultValues?.food_id || "",
       feeding_date: defaultValues?.feeding_date || defaultDate,
       feeding_time: defaultValues?.feeding_time || defaultTime,
-      meal_number: defaultValues?.meal_number,
+      // meal_number se calcula automáticamente en el backend
       amount_served_grams: defaultValues?.amount_served_grams || 0,
       amount_eaten_grams: defaultValues?.amount_eaten_grams || 0,
       appetite_rating: defaultValues?.appetite_rating,
@@ -263,29 +258,7 @@ export function FeedingForm({
                 )}
               />
 
-              {/* Número de comida */}
-              <FormField
-                control={form.control}
-                name="meal_number"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Comida del día (1, 2, 3...)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        min="1"
-                        {...field}
-                        value={field.value || ""}
-                        disabled={isSubmitting}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      Primera, segunda, tercera comida del día
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {/* Número de comida se calcula automáticamente */}
             </div>
           </CardContent>
         </Card>
