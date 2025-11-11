@@ -79,16 +79,18 @@ async function StatsCards({ date }: { date: string }) {
       title: "Alertas",
       value: alertsCount,
       icon: AlertTriangle,
-      description: isToday ? "Necesitan atención" : `Alertas del ${formattedDate}`,
+      description: isToday
+        ? "Necesitan atención"
+        : `Alertas del ${formattedDate}`,
       color: alertsCount > 0 ? "text-destructive" : "text-green-600",
     },
     {
       title: "Promedio semanal",
-      value: `${overview.avg_achievement_pct.toFixed(0)}%`,
+      value: `${Number(overview.avg_achievement_pct || 0).toFixed(0)}%`,
       icon: TrendingUp,
       description: "Últimos 7 días",
       color:
-        overview.avg_achievement_pct >= 90
+        Number(overview.avg_achievement_pct || 0) >= 90
           ? "text-green-600"
           : "text-yellow-600",
     },
@@ -151,13 +153,16 @@ async function CriticalAlerts({ date }: { date: string }) {
     <Alert variant="destructive">
       <AlertTriangle className="h-4 w-4" />
       <AlertTitle>
-        {isToday ? "¡Atención necesaria!" : `Alerta histórica (${formattedDate})`}
+        {isToday
+          ? "¡Atención necesaria!"
+          : `Alerta histórica (${formattedDate})`}
       </AlertTitle>
       <AlertDescription>
         {underTargetPets.length === 1 ? (
           <>
             <strong>{underTargetPets[0].pet_name}</strong>{" "}
-            {isToday ? "no ha alcanzado" : "no alcanzó"} su objetivo diario de alimentación.
+            {isToday ? "no ha alcanzado" : "no alcanzó"} su objetivo diario de
+            alimentación.
           </>
         ) : (
           <>
@@ -187,15 +192,17 @@ async function TodayBalances({ date }: { date: string }) {
   const balances = balancesResult.data!;
 
   // Determinar si es hoy para el título
-  const dateObj = new Date(date + 'T00:00:00');
+  const dateObj = new Date(date + "T00:00:00");
   const isToday = isTodayFn(dateObj);
 
-  const title = isToday 
-    ? "Balance del día" 
+  const title = isToday
+    ? "Balance del día"
     : `Balance del ${format(dateObj, "d 'de' MMMM", { locale: es })}`;
   const subtitle = isToday
     ? "Progreso de alimentación de hoy"
-    : `Datos históricos del ${format(dateObj, "EEEE d 'de' MMMM 'de' yyyy", { locale: es })}`;
+    : `Datos históricos del ${format(dateObj, "EEEE d 'de' MMMM 'de' yyyy", {
+        locale: es,
+      })}`;
 
   return (
     <section>

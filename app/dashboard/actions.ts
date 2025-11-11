@@ -100,10 +100,7 @@ interface HouseholdOverview {
  */
 const DateSchema = z
   .string()
-  .regex(
-    /^\d{4}-\d{2}-\d{2}$/,
-    "Fecha debe estar en formato ISO (YYYY-MM-DD)"
-  )
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "Fecha debe estar en formato ISO (YYYY-MM-DD)")
   .refine(
     (date) => {
       const parsed = new Date(date);
@@ -142,9 +139,7 @@ export async function getDailySummary(
     if (date) {
       const validation = DateSchema.safeParse(date);
       if (!validation.success) {
-        return fail(
-          validation.error.errors[0]?.message || "Fecha inválida"
-        );
+        return fail(validation.error.errors[0]?.message || "Fecha inválida");
       }
     }
 
@@ -201,9 +196,7 @@ export async function getTodayBalance(
     if (date) {
       const validation = DateSchema.safeParse(date);
       if (!validation.success) {
-        return fail(
-          validation.error.errors[0]?.message || "Fecha inválida"
-        );
+        return fail(validation.error.errors[0]?.message || "Fecha inválida");
       }
     }
 
@@ -279,9 +272,7 @@ export async function getWeeklyStats(
     if (endDate) {
       const validation = DateSchema.safeParse(endDate);
       if (!validation.success) {
-        return fail(
-          validation.error.errors[0]?.message || "Fecha inválida"
-        );
+        return fail(validation.error.errors[0]?.message || "Fecha inválida");
       }
     }
 
@@ -334,9 +325,7 @@ export async function getAlertsCount(date?: string): Promise<Result<number>> {
     if (date) {
       const validation = DateSchema.safeParse(date);
       if (!validation.success) {
-        return fail(
-          validation.error.errors[0]?.message || "Fecha inválida"
-        );
+        return fail(validation.error.errors[0]?.message || "Fecha inválida");
       }
     }
 
@@ -457,9 +446,7 @@ export async function getHouseholdOverview(
     if (date) {
       const validation = DateSchema.safeParse(date);
       if (!validation.success) {
-        return fail(
-          validation.error.errors[0]?.message || "Fecha inválida"
-        );
+        return fail(validation.error.errors[0]?.message || "Fecha inválida");
       }
     }
 
@@ -515,7 +502,7 @@ export async function getHouseholdOverview(
       `,
       [householdId, targetDate]
     );
-    const avgAchievementPct = avgResult.rows[0]?.avg || 0;
+    const avgAchievementPct = Number(avgResult.rows[0]?.avg || 0);
 
     const overview: HouseholdOverview = {
       total_pets: totalPets,
