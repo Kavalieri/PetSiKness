@@ -1,6 +1,6 @@
 # 🐾 Pet SiKness
 
-**Sistema de gestión alimentaria para mascotas**
+**Sistema de gestión alimentaria para mascotas con análisis temporal**
 
 [![Next.js](https://img.shields.io/badge/Next.js-14.2-black)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.4-blue)](https://www.typescriptlang.org/)
@@ -27,6 +27,10 @@ Pet SiKness es una aplicación web moderna para el seguimiento y gestión de la 
 - ✅ **Diario de Alimentación**: Registro detallado con cantidades exactas y comportamiento
 - ✅ **Balance Diario**: Cálculo automático de cumplimiento de objetivos con indicadores visuales
 - ✅ **Dashboard Analítico**: Resumen en tiempo real con alertas críticas y tendencias semanales
+- ✅ **Navegación Temporal** 🆕: Análisis por día/semana/mes/año con navegación intuitiva
+- ✅ **Filtros de Rango** 🆕: DateRangePicker con 5 presets (hoy, últimos 7/30 días, semana, mes)
+- ✅ **Agrupación Visual** 🆕: Historial organizado por fechas con headers y badges
+- ✅ **Registro Multi-Mascota** 🆕: Alimentación grupal con datos comunes + cantidades individuales
 - ✅ **Formularios Inteligentes**: Validación en tiempo real y cálculo automático de sobras
 - ✅ **Filtros Avanzados**: Búsqueda por mascota, alimento, fecha y estado
 - ✅ **Multi-hogar**: Gestión de múltiples familias de mascotas
@@ -405,5 +409,5 @@ MIT License - ver archivo [LICENSE](LICENSE) para detalles
 
 ---
 
-**Última actualización**: 10 de Noviembre de 2025 - v1.1.0
-**Estado**: ✅ Fase 4 completada - Sistema completo de alimentación con Dashboard y Analytics
+**Última actualización**: 11 de Noviembre de 2025 - v1.2.0
+**Estado**: ✅ Fase 4.5 completada - Sistema completo de alimentación con navegación temporal y registro multi-mascota
