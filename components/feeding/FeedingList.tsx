@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -297,11 +297,11 @@ function groupByDate(feedings: FeedingData[]): Map<string, FeedingData[]> {
   feedings.forEach((feeding) => {
     // Validación defensiva: ignorar registros sin fecha válida
     const date = feeding.feeding_date;
-    if (!date || typeof date !== 'string') {
-      console.warn('Feeding con fecha inválida:', feeding.id);
+    if (!date || typeof date !== "string") {
+      console.warn("Feeding con fecha inválida:", feeding.id);
       return;
     }
-    
+
     if (!grouped.has(date)) {
       grouped.set(date, []);
     }
@@ -337,6 +337,15 @@ export function FeedingList({
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Sincronizar filteredFeedings cuando feedings cambia (ej: después de cambiar rango de fechas)
+  useEffect(() => {
+    setFilteredFeedings(feedings);
+    // Resetear filtros locales al cambiar el dataset base
+    setSelectedPet("all");
+    setSelectedFood("all");
+    setSelectedDate("");
+  }, [feedings]);
 
   // Aplicar filtros
   const applyFilters = () => {
@@ -482,7 +491,7 @@ export function FeedingList({
                           locale: es,
                         });
                       } catch (error) {
-                        console.error('Error formateando fecha:', date, error);
+                        console.error("Error formateando fecha:", date, error);
                         return date; // Fallback
                       }
                     })()}

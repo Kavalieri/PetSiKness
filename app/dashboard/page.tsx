@@ -212,7 +212,7 @@ async function TodayBalances({ date }: { date: string }) {
           <p className="text-muted-foreground">{subtitle}</p>
         </div>
         <Button asChild>
-          <Link href="/feeding/new">
+          <Link href="/feeding/new-unified">
             <UtensilsCrossed className="h-4 w-4 mr-2" />
             Registrar comida
           </Link>
@@ -238,7 +238,7 @@ function QuickActions() {
     {
       title: "Registrar comida",
       description: "Nueva alimentación",
-      href: "/feeding/new",
+      href: "/feeding/new-unified",
       icon: UtensilsCrossed,
       variant: "default" as const,
     },

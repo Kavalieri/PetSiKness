@@ -8,7 +8,7 @@ import { deleteFeeding } from "./actions";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Plus, Users } from "lucide-react";
+import { Plus } from "lucide-react";
 import Link from "next/link";
 
 // ============================================
@@ -142,20 +142,12 @@ export function FeedingPageClient({
               : "Historial completo de registros de alimentación"}
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button asChild variant="outline">
-            <Link href="/feeding/new-multi">
-              <Users className="h-4 w-4 mr-2" />
-              Registro Grupal
-            </Link>
-          </Button>
-          <Button asChild>
-            <Link href="/feeding/new">
-              <Plus className="h-4 w-4 mr-2" />
-              Nueva Comida
-            </Link>
-          </Button>
-        </div>
+        <Button asChild>
+          <Link href="/feeding/new-unified">
+            <Plus className="h-4 w-4 mr-2" />
+            Registrar Comida
+          </Link>
+        </Button>
       </div>
 
       {/* Filtro de rango de fechas */}
