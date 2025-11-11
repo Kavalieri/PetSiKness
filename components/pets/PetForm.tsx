@@ -3,7 +3,12 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { Pet, PetFormData, Species } from "@/types/pets";
+import type {
+  Pet,
+  PetFormData,
+  Species,
+  MealScheduleFormData,
+} from "@/types/pets";
 import {
   PetFormSchema,
   SPECIES,
@@ -12,6 +17,10 @@ import {
   ACTIVITY_LEVEL,
 } from "@/types/pets";
 import { createPet, updatePet, deletePet } from "@/app/pets/actions";
+import {
+  generateDefaultSchedule,
+  getMealName,
+} from "@/lib/utils/meal-schedule";
 import { useToast } from "@/hooks/use-toast";
 import {
   SPECIES_OPTIONS,
@@ -100,7 +109,10 @@ function convertPetToFormData(pet: Pet): any {
 /**
  * Convertir datos de formulario a FormData para Server Action
  */
-function convertToFormData(data: PetFormData): FormData {
+function convertToFormData(
+  data: PetFormData,
+  mealSchedules?: MealScheduleFormData[]
+): FormData {
   const formData = new FormData();
 
   // Básicos
@@ -122,6 +134,11 @@ function convertToFormData(data: PetFormData): FormData {
     data.daily_food_goal_grams.toString()
   );
   formData.append("daily_meals_target", data.daily_meals_target.toString());
+
+  // Horarios de tomas (nuevo)
+  if (mealSchedules && mealSchedules.length > 0) {
+    formData.append("meal_schedules", JSON.stringify(mealSchedules));
+  }
 
   // Salud
   if (data.health_notes) formData.append("health_notes", data.health_notes);
@@ -154,6 +171,9 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
   const [breeds, setBreeds] = useState<string[]>([]);
   const [photoUrl, setPhotoUrl] = useState<string | undefined>(
     pet?.photo_url || undefined
+  );
+  const [mealSchedules, setMealSchedules] = useState<MealScheduleFormData[]>(
+    []
   );
 
   const isEditing = !!pet;
@@ -204,12 +224,25 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
     }
   }, [selectedSpecies, form, pet]);
 
+  // Sincronizar meal schedules con daily_meals_target
+  const dailyMealsTarget = form.watch("daily_meals_target");
+
+  useEffect(() => {
+    if (dailyMealsTarget && dailyMealsTarget > 0) {
+      // Generar horarios por defecto si el número cambió
+      if (mealSchedules.length !== dailyMealsTarget) {
+        const defaultSchedules = generateDefaultSchedule(dailyMealsTarget);
+        setMealSchedules(defaultSchedules);
+      }
+    }
+  }, [dailyMealsTarget, mealSchedules.length]);
+
   // Submit handler
   async function onSubmit(data: PetFormData) {
     setIsSubmitting(true);
 
     try {
-      const formData = convertToFormData(data);
+      const formData = convertToFormData(data, mealSchedules);
       const result = isEditing
         ? await updatePet(String(pet.id), formData)
         : await createPet(formData);
@@ -249,6 +282,17 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
       setIsSubmitting(false);
     }
   }
+
+  /**
+   * Actualizar hora de una toma específica
+   */
+  const handleMealScheduleTimeChange = (index: number, newTime: string) => {
+    setMealSchedules((prev) => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], scheduled_time: newTime };
+      return updated;
+    });
+  };
 
   /**
    * Manejar eliminación de mascota
@@ -537,6 +581,50 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
               )}
             />
           </div>
+
+          {/* Horarios de Tomas */}
+          {mealSchedules.length > 0 && (
+            <div className="space-y-3 pt-4">
+              <div>
+                <h4 className="text-sm font-medium mb-1">Horarios de Tomas</h4>
+                <p className="text-xs text-muted-foreground">
+                  Define la hora de cada comida del día
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                {mealSchedules.map((schedule, index) => (
+                  <div
+                    key={schedule.meal_number}
+                    className="flex flex-col space-y-1"
+                  >
+                    <label
+                      htmlFor={`meal-time-${index}`}
+                      className="text-sm font-medium"
+                    >
+                      {getMealName(schedule.meal_number)}
+                    </label>
+                    <Input
+                      id={`meal-time-${index}`}
+                      type="time"
+                      value={schedule.scheduled_time}
+                      onChange={(e) =>
+                        handleMealScheduleTimeChange(index, e.target.value)
+                      }
+                      className="w-full"
+                    />
+                  </div>
+                ))}
+              </div>
+
+              {mealSchedules.length > 3 && (
+                <p className="text-xs text-muted-foreground">
+                  💡 Tip: Mantén al menos 2-3 horas entre tomas para una mejor
+                  digestión
+                </p>
+              )}
+            </div>
+          )}
         </div>
 
         <Separator />
@@ -754,8 +842,9 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
                 <AlertDialogHeader>
                   <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Esta acción no se puede deshacer. Se eliminará permanentemente
-                    la mascota <strong>{pet?.name}</strong> y todos sus datos asociados.
+                    Esta acción no se puede deshacer. Se eliminará
+                    permanentemente la mascota <strong>{pet?.name}</strong> y
+                    todos sus datos asociados.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -788,7 +877,9 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
             )}
 
             <Button type="submit" disabled={isSubmitting || isDeleting}>
-              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isSubmitting && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
               {isEditing ? "Guardar Cambios" : "Crear Mascota"}
             </Button>
           </div>

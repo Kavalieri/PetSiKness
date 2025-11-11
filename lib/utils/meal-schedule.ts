@@ -11,14 +11,14 @@ import type { MealScheduleFormData } from "@/types/pets";
 
 /**
  * Genera horarios por defecto basados en el número de comidas diarias
- * 
+ *
  * Distribución predeterminada:
  * - 1 toma: 12:00 (mediodía)
  * - 2 tomas: 08:00, 20:00 (mañana y noche)
  * - 3 tomas: 08:00, 14:00, 20:00 (mañana, tarde, noche)
  * - 4 tomas: 07:00, 12:00, 17:00, 21:00 (cada 5 horas aprox)
  * - 5+ tomas: distribuidas uniformemente entre 07:00 y 19:00
- * 
+ *
  * @param numMeals - Número de comidas diarias
  * @returns Array de horarios con meal_number y scheduled_time
  */
@@ -63,7 +63,9 @@ export function generateDefaultSchedule(
     const hour = startHour + Math.floor(minutesFromStart / 60);
     const minute = minutesFromStart % 60;
 
-    const scheduled_time = `${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`;
+    const scheduled_time = `${hour.toString().padStart(2, "0")}:${minute
+      .toString()
+      .padStart(2, "0")}`;
 
     schedules.push({
       meal_number: i + 1,
@@ -80,7 +82,7 @@ export function generateDefaultSchedule(
 
 /**
  * Valida que un horario esté en formato HH:mm válido
- * 
+ *
  * @param time - Hora en formato string
  * @returns true si es válida, false si no
  */
@@ -91,7 +93,7 @@ export function isValidTimeFormat(time: string): boolean {
 
 /**
  * Compara dos horarios para ordenamiento cronológico
- * 
+ *
  * @param timeA - Primera hora (HH:mm)
  * @param timeB - Segunda hora (HH:mm)
  * @returns Número negativo si A es antes que B, positivo si A es después, 0 si iguales
@@ -108,7 +110,7 @@ export function compareScheduleTimes(timeA: string, timeB: string): number {
 
 /**
  * Verifica si un array de horarios está en orden cronológico
- * 
+ *
  * @param schedules - Array de horarios
  * @returns true si están en orden, false si no
  */
@@ -133,7 +135,7 @@ export function areSchedulesInOrder(
 
 /**
  * Verifica si hay horarios duplicados
- * 
+ *
  * @param schedules - Array de horarios
  * @returns true si hay duplicados, false si no
  */
@@ -151,7 +153,7 @@ export function hasDuplicateSchedules(
 
 /**
  * Formatea un horario para mostrar en UI
- * 
+ *
  * @param time - Hora en formato HH:mm
  * @returns String formateado (ej: "08:00 AM", "14:00 PM")
  */
@@ -167,7 +169,7 @@ export function formatScheduleTime(time: string): string {
 
 /**
  * Convierte un horario de 12h a 24h
- * 
+ *
  * @param time - Hora en formato "8:00 AM" o "2:30 PM"
  * @returns Hora en formato "08:00" o "14:30"
  */
@@ -189,7 +191,7 @@ export function convertTo24Hour(time: string): string {
 
 /**
  * Obtiene el nombre descriptivo de una toma
- * 
+ *
  * @param mealNumber - Número de la toma (1, 2, 3...)
  * @returns Nombre descriptivo ("Primera toma", "Segunda toma", etc.)
  */

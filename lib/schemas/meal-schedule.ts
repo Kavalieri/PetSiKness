@@ -56,7 +56,10 @@ export const MealScheduleSchema = z.object({
       "El formato de hora debe ser HH:mm (ej: 08:00, 14:30)"
     ),
 
-  notes: z.string().max(500, "Las notas no pueden exceder 500 caracteres").optional(),
+  notes: z
+    .string()
+    .max(500, "Las notas no pueden exceder 500 caracteres")
+    .optional(),
 });
 
 // ============================================
