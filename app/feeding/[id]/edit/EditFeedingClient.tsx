@@ -62,6 +62,12 @@ export function EditFeedingClient({
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Formatear fecha al formato YYYY-MM-DD requerido por input type="date"
+  const formattedDate =
+    typeof feeding.feeding_date === "string"
+      ? feeding.feeding_date.split("T")[0] // Si es ISO string, tomar solo la fecha
+      : feeding.feeding_date; // Si ya está en formato correcto
+
   const handleSubmit = async (formData: FormData) => {
     setIsSubmitting(true);
 
@@ -119,7 +125,7 @@ export function EditFeedingClient({
             defaultValues={{
               pet_id: feeding.pet_id,
               food_id: feeding.food_id,
-              feeding_date: feeding.feeding_date,
+              feeding_date: formattedDate,
               feeding_time: feeding.feeding_time || undefined,
               // meal_number se calcula automáticamente en el backend
               amount_served_grams: feeding.amount_served_grams,
