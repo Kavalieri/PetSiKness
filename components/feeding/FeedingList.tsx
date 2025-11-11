@@ -295,7 +295,13 @@ function groupByDate(feedings: FeedingData[]): Map<string, FeedingData[]> {
   const grouped = new Map<string, FeedingData[]>();
 
   feedings.forEach((feeding) => {
+    // Validación defensiva: ignorar registros sin fecha válida
     const date = feeding.feeding_date;
+    if (!date || typeof date !== 'string') {
+      console.warn('Feeding con fecha inválida:', feeding.id);
+      return;
+    }
+    
     if (!grouped.has(date)) {
       grouped.set(date, []);
     }
@@ -465,9 +471,21 @@ export function FeedingList({
                 {/* Encabezado de fecha */}
                 <div className="flex items-center gap-3">
                   <h3 className="text-lg font-semibold">
-                    {format(new Date(date + "T00:00:00"), "EEEE d 'de' MMMM", {
-                      locale: es,
-                    })}
+                    {(() => {
+                      try {
+                        // Parsear fecha con formato ISO
+                        const dateObj = new Date(date + "T00:00:00");
+                        if (isNaN(dateObj.getTime())) {
+                          return date; // Fallback a mostrar string crudo
+                        }
+                        return format(dateObj, "EEEE d 'de' MMMM", {
+                          locale: es,
+                        });
+                      } catch (error) {
+                        console.error('Error formateando fecha:', date, error);
+                        return date; // Fallback
+                      }
+                    })()}
                   </h3>
                   <Badge variant="secondary">
                     {feedingsInDate.length} registro

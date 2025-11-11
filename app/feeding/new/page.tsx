@@ -21,9 +21,9 @@ export default async function NewFeedingPage() {
     // Auth
     const { householdId } = await requireHousehold();
 
-    // Obtener mascotas y alimentos
+    // Obtener mascotas activas y alimentos
     const petsQuery = await query(
-      `SELECT id, name, species FROM pets WHERE household_id = $1 ORDER BY name`,
+      `SELECT id, name, species FROM pets WHERE household_id = $1 AND is_active = true ORDER BY name`,
       [householdId]
     );
 
