@@ -147,6 +147,10 @@ export interface Households {
 
 export interface PetMealSchedules {
   created_at: Generated<Timestamp>;
+  /**
+   * Cantidad esperada de gramos para esta toma específica. Opcional: si NULL, se calcula como daily_food_goal_grams / daily_meals_target.
+   */
+  expected_grams: number | null;
   id: Generated<string>;
   /**
    * Número secuencial de la toma (1, 2, 3...). Debe coincidir con daily_meals_target de la mascota.

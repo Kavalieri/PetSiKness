@@ -127,10 +127,18 @@ function MealCard({ balance }: { balance: MealBalance }) {
       {/* ✨ NUEVO: Mostrar comido y sobrante */}
       <div className="flex justify-between text-xs pt-1 border-t">
         <div className="text-muted-foreground">
-          Comido: <span className="font-medium text-foreground">{balance.eaten_grams}g</span>
+          Comido:{" "}
+          <span className="font-medium text-foreground">
+            {balance.eaten_grams}g
+          </span>
         </div>
         <div className="text-muted-foreground">
-          Sobra: <span className={`font-medium ${balance.leftover_grams > 0 ? "text-yellow-600" : "text-foreground"}`}>
+          Sobra:{" "}
+          <span
+            className={`font-medium ${
+              balance.leftover_grams > 0 ? "text-yellow-600" : "text-foreground"
+            }`}
+          >
             {balance.leftover_grams}g
           </span>
         </div>
@@ -268,14 +276,20 @@ function MealBasedBalanceFull({ data }: { data: DailyBalanceData }) {
             </div>
             <div>
               <p className="text-muted-foreground">Sobra</p>
-              <p className="font-bold text-yellow-600">{data.total_leftover}g</p>
+              <p className="font-bold text-yellow-600">
+                {data.total_leftover}g
+              </p>
             </div>
           </div>
 
           {/* ✨ NUEVO: Fila adicional con comido */}
           <div className="text-center text-xs text-muted-foreground pt-2 border-t">
-            Comido real: <span className="font-semibold text-foreground">{data.total_eaten}g</span>
-            {" "}({((data.total_eaten / data.total_served) * 100).toFixed(0)}% de lo servido)
+            Comido real:{" "}
+            <span className="font-semibold text-foreground">
+              {data.total_eaten}g
+            </span>{" "}
+            ({((data.total_eaten / data.total_served) * 100).toFixed(0)}% de lo
+            servido)
           </div>
         </div>
 

@@ -302,6 +302,24 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
   };
 
   /**
+   * Actualizar cantidad esperada de una toma específica
+   */
+  const handleMealScheduleAmountChange = (
+    index: number,
+    newAmount: string
+  ) => {
+    setMealSchedules((prev) => {
+      const updated = [...prev];
+      const amount = newAmount ? parseInt(newAmount, 10) : undefined;
+      updated[index] = {
+        ...updated[index],
+        expected_grams: amount && amount > 0 ? amount : undefined,
+      };
+      return updated;
+    });
+  };
+
+  /**
    * Manejar eliminación de mascota
    */
   const handleDelete = async () => {
@@ -603,23 +621,51 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
                 {mealSchedules.map((schedule, index) => (
                   <div
                     key={schedule.meal_number}
-                    className="flex flex-col space-y-1"
+                    className="flex flex-col space-y-2 p-3 border rounded-lg"
                   >
-                    <label
-                      htmlFor={`meal-time-${index}`}
-                      className="text-sm font-medium"
-                    >
+                    <label className="text-sm font-medium">
                       {getMealName(schedule.meal_number)}
                     </label>
-                    <Input
-                      id={`meal-time-${index}`}
-                      type="time"
-                      value={schedule.scheduled_time}
-                      onChange={(e) =>
-                        handleMealScheduleTimeChange(index, e.target.value)
-                      }
-                      className="w-full"
-                    />
+
+                    {/* Hora */}
+                    <div className="space-y-1">
+                      <label
+                        htmlFor={`meal-time-${index}`}
+                        className="text-xs text-muted-foreground"
+                      >
+                        Hora
+                      </label>
+                      <Input
+                        id={`meal-time-${index}`}
+                        type="time"
+                        value={schedule.scheduled_time}
+                        onChange={(e) =>
+                          handleMealScheduleTimeChange(index, e.target.value)
+                        }
+                        className="w-full"
+                      />
+                    </div>
+
+                    {/* Cantidad */}
+                    <div className="space-y-1">
+                      <label
+                        htmlFor={`meal-amount-${index}`}
+                        className="text-xs text-muted-foreground"
+                      >
+                        Cantidad (g)
+                      </label>
+                      <Input
+                        id={`meal-amount-${index}`}
+                        type="number"
+                        min="1"
+                        placeholder="Opcional"
+                        value={schedule.expected_grams || ""}
+                        onChange={(e) =>
+                          handleMealScheduleAmountChange(index, e.target.value)
+                        }
+                        className="w-full"
+                      />
+                    </div>
                   </div>
                 ))}
               </div>

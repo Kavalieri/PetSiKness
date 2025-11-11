@@ -107,6 +107,7 @@ Sistema de gestión alimentaria para mascotas que permite:
 - Resultados digestivos: vómito, diarrea, calidad de heces
 
 **⚠️ CAMBIO CRÍTICO DE LÓGICA DE NEGOCIO (11/11/2025)**:
+
 - **Meta cumplida**: Basada en `amount_served_grams` (lo servido), NO en lo comido
 - **Razón**: Control de porciones + documentar desperdicio
 - **Sobrantes**: Métrica clave para equilibrar consumos por mascota

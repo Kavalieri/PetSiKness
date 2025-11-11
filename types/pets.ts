@@ -94,6 +94,7 @@ export type MealScheduleCreateInput = Omit<
 export type MealScheduleFormData = {
   meal_number: number;
   scheduled_time: string; // HH:mm format
+  expected_grams?: number; // Cantidad esperada para esta toma específica
   notes?: string;
 };
 
