@@ -16,6 +16,7 @@
 **LOC añadidas**: ~1,200
 
 **Componentes nuevos**:
+
 - ✅ TemporalNavigator: Navegación día/semana/mes/año
 - ✅ DateRangePicker: Selector de rango con 5 presets
 - ✅ DateRangePickerDemo: Demo interactivo
@@ -23,12 +24,14 @@
 - ✅ groupByDate(): Agrupación visual por fecha en FeedingList
 
 **Backend**:
+
 - ✅ Validación Zod para parámetros temporales
 - ✅ getDashboardOverview() con startDate/endDate
 - ✅ getFeedings() con filtros de rango
 - ✅ createMultiPetFeeding() para registro grupal
 
 **UX Improvements**:
+
 - ✅ Dashboard: Análisis retrospectivo completo
 - ✅ Feeding: Agrupación por fecha con headers
 - ✅ Multi-pet: 70% menos tiempo (3-4 min → 1 min)

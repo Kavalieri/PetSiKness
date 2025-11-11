@@ -7,6 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import {
   ArrowLeft,
   Edit,
@@ -144,6 +145,26 @@ export default async function FoodDetailPage({ params }: FoodDetailPageProps) {
 
       {/* Contenido principal */}
       <div className="space-y-8">
+        {/* Sección 0: Imagen del Producto */}
+        {food.product_image_url && (
+          <section>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex justify-center">
+                  <div className="relative max-w-md w-full h-96">
+                    <Image
+                      src={food.product_image_url}
+                      alt={`Imagen de ${food.name}`}
+                      fill
+                      className="object-contain rounded-lg"
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </section>
+        )}
+
         {/* Sección 1: Información Nutricional ⭐ */}
         <section>
           <h2 className="text-2xl font-bold mb-4">Información Nutricional</h2>

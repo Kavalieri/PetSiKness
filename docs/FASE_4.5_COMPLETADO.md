@@ -3,7 +3,7 @@
 **Fecha finalización**: 11 Noviembre 2025  
 **Versión**: 1.2.0  
 **Commits**: 8  
-**Duración**: 2 días  
+**Duración**: 2 días
 
 ---
 
@@ -17,14 +17,14 @@ Implementar sistema completo de **navegación temporal y análisis histórico** 
 
 ### Core Features (6/6) ✅
 
-| Issue | Título | Estado | Commit |
-|-------|--------|--------|--------|
-| #43 | Backend: Validación Zod fecha/periodo | ✅ COMPLETO | `cbce02d` |
-| #42 | TemporalNavigator multi-periodo | ✅ COMPLETO | `c5a6f61` |
-| #46 | Dashboard: Integración navegación temporal | ✅ COMPLETO | `ff9abbd` |
-| #45 | DateRangePicker con presets | ✅ COMPLETO | `c683f23` |
-| #47 | Feeding: Filtro rango fechas + grouping | ✅ COMPLETO | `b6905e5` |
-| #50 | Registro multi-mascota | ✅ COMPLETO | `2011d6f` |
+| Issue | Título                                     | Estado      | Commit    |
+| ----- | ------------------------------------------ | ----------- | --------- |
+| #43   | Backend: Validación Zod fecha/periodo      | ✅ COMPLETO | `cbce02d` |
+| #42   | TemporalNavigator multi-periodo            | ✅ COMPLETO | `c5a6f61` |
+| #46   | Dashboard: Integración navegación temporal | ✅ COMPLETO | `ff9abbd` |
+| #45   | DateRangePicker con presets                | ✅ COMPLETO | `c683f23` |
+| #47   | Feeding: Filtro rango fechas + grouping    | ✅ COMPLETO | `b6905e5` |
+| #50   | Registro multi-mascota                     | ✅ COMPLETO | `2011d6f` |
 
 ### Bugfixes (2)
 
@@ -33,10 +33,10 @@ Implementar sistema completo de **navegación temporal y análisis histórico** 
 
 ### Optional/Deferred (2)
 
-| Issue | Título | Decisión | Razón |
-|-------|--------|----------|-------|
-| #44 | DatePicker simple | ❌ SKIP | Redundante con Calendar + DateRangePicker |
-| #48 | Analytics avanzados | 🔄 DEFER | Fase futura (charts, export) |
+| Issue | Título              | Decisión | Razón                                     |
+| ----- | ------------------- | -------- | ----------------------------------------- |
+| #44   | DatePicker simple   | ❌ SKIP  | Redundante con Calendar + DateRangePicker |
+| #48   | Analytics avanzados | 🔄 DEFER | Fase futura (charts, export)              |
 
 ---
 
@@ -47,6 +47,7 @@ Implementar sistema completo de **navegación temporal y análisis histórico** 
 **Propósito**: Navegación universal por día/semana/mes/año
 
 **Props**:
+
 ```typescript
 interface TemporalNavigatorProps {
   currentDate: Date;
@@ -57,6 +58,7 @@ interface TemporalNavigatorProps {
 ```
 
 **Features**:
+
 - ✅ 4 modos de navegación (día, semana, mes, año)
 - ✅ Tabs para cambiar periodo
 - ✅ Botones Anterior/Siguiente con iconos
@@ -66,6 +68,7 @@ interface TemporalNavigatorProps {
 - ✅ Formato localizado: "lunes 11 de noviembre", "Semana 10", "Noviembre 2025", "2025"
 
 **Cálculos de periodo**:
+
 ```typescript
 // Semana: inicio (lunes), fin (domingo)
 const firstDayOfWeek = startOfWeek(date, { weekStartsOn: 1 });
@@ -85,6 +88,7 @@ const lastDayOfMonth = endOfMonth(date);
 **Propósito**: Selector de rango de fechas con presets rápidos
 
 **Props**:
+
 ```typescript
 interface DateRangePickerProps {
   value?: DateRange;
@@ -99,6 +103,7 @@ interface DateRange {
 ```
 
 **Features**:
+
 - ✅ Calendario dual (2 meses lado a lado)
 - ✅ Highlighting visual del rango seleccionado
 - ✅ 5 presets rápidos:
@@ -121,6 +126,7 @@ interface DateRange {
 **Propósito**: Demo interactivo y documentación del DateRangePicker
 
 **Features**:
+
 - ✅ Ejemplo funcional
 - ✅ Display del rango seleccionado
 - ✅ Cálculo de días en rango
@@ -135,6 +141,7 @@ interface DateRange {
 **Propósito**: Formulario 3-step para registro grupal de alimentación
 
 **Props**:
+
 ```typescript
 interface MultiPetFeedingFormProps {
   pets: Pet[];
@@ -145,29 +152,34 @@ interface MultiPetFeedingFormProps {
 **Arquitectura 3-Step**:
 
 **Step 1: Selección de Mascotas**
+
 - Checkboxes por mascota
 - Botones "Select All" / "None"
 - Display de meta diaria y comidas objetivo
 - Badge con contador de seleccionados
 
 **Step 2: Datos Comunes** (mostrado solo si hay selección)
+
 - Food selector
 - Date picker
 - Time picker
 
 **Step 3: Datos Individuales** (una card por mascota seleccionada)
+
 - Cantidades: served_grams, eaten_grams
 - Comportamiento: appetite_rating, eating_speed
 - Resultados: vomited, had_diarrhea, had_stool, stool_quality
 - Notas por mascota
 
 **Lógica de Estado**:
+
 ```typescript
 const [selectedPets, setSelectedPets] = useState<Set<string>>(new Set());
 const [petData, setPetData] = useState<Map<string, PetFeedingData>>(new Map());
 ```
 
 **Smart Defaults**:
+
 - Al seleccionar mascota, calcula cantidad sugerida:
   ```typescript
   const suggestedAmount = Math.round(
@@ -176,6 +188,7 @@ const [petData, setPetData] = useState<Map<string, PetFeedingData>>(new Map());
   ```
 
 **FormData Structure**:
+
 ```typescript
 formData.append("food_id", foodId);
 formData.append("feeding_date", feedingDate);
@@ -198,13 +211,14 @@ petIdsArray.forEach((petId, index) => {
 **Propósito**: Página de entrada para registro multi-mascota
 
 **Data Fetching**:
+
 ```typescript
 const [petsResult, foodsResult] = await Promise.all([
   query(`SELECT id, name, species, breed, 
           daily_food_goal_grams, daily_meals_target 
          FROM pets WHERE household_id = $1 
          ORDER BY name`),
-  query(`SELECT id, name, brand FROM foods...`)
+  query(`SELECT id, name, brand FROM foods...`),
 ]);
 ```
 
@@ -219,6 +233,7 @@ const [petsResult, foodsResult] = await Promise.all([
 #### 1. `app/dashboard/actions.ts`
 
 **Cambios**:
+
 - ✅ Validación Zod para parámetros temporales:
   ```typescript
   const DateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
@@ -234,10 +249,11 @@ const [petsResult, foodsResult] = await Promise.all([
 #### 2. `app/feeding/actions.ts`
 
 **Cambios**:
+
 - ✅ `getFeedings()` acepta startDate/endDate opcionales
 - ✅ Queries con filtros de fecha:
   ```sql
-  WHERE f.household_id = $1 
+  WHERE f.household_id = $1
     AND ($2::date IS NULL OR f.feeding_date >= $2)
     AND ($3::date IS NULL OR f.feeding_date <= $3)
   ```
@@ -253,6 +269,7 @@ const [petsResult, foodsResult] = await Promise.all([
 #### 3. `app/dashboard/page.tsx`
 
 **Cambios**:
+
 - ✅ Integración completa de TemporalNavigator
 - ✅ Sincronización con URL params:
   ```typescript
@@ -263,7 +280,9 @@ const [petsResult, foodsResult] = await Promise.all([
 - ✅ Callbacks para navegación:
   ```typescript
   const handleDateChange = (newDate: Date) => {
-    router.push(`/dashboard?date=${format(newDate, "yyyy-MM-dd")}&period=${periodType}`);
+    router.push(
+      `/dashboard?date=${format(newDate, "yyyy-MM-dd")}&period=${periodType}`
+    );
   };
   ```
 - ✅ Paso de contexto temporal a todos los componentes:
@@ -276,14 +295,19 @@ const [petsResult, foodsResult] = await Promise.all([
 #### 4. `app/dashboard/DashboardHeader.tsx`
 
 **Cambios**:
+
 - ✅ Display de periodo actual:
   ```typescript
   const getPeriodText = (period: string) => {
     switch (period) {
-      case "day": return "Hoy";
-      case "week": return "Esta semana";
-      case "month": return "Este mes";
-      case "year": return "Este año";
+      case "day":
+        return "Hoy";
+      case "week":
+        return "Esta semana";
+      case "month":
+        return "Este mes";
+      case "year":
+        return "Este año";
     }
   };
   ```
@@ -291,20 +315,24 @@ const [petsResult, foodsResult] = await Promise.all([
 #### 5-8. Components del Dashboard
 
 **CriticalAlerts.tsx**:
+
 - Verbo tense changes (present vs past based on period)
 - "no ha comido" → "no comió"
 
 **TodayBalances.tsx**:
+
 - Formato de fecha dinámico según periodo
 - "Hoy 11 nov" vs "Semana 10" vs "Noviembre 2025"
 
 **StatsCards.tsx**:
+
 - Contexto temporal en subtítulos
 - "Últimas 24h" → "Periodo actual"
 
 #### 9. `app/feeding/page.tsx`
 
 **Cambios**:
+
 - ✅ searchParams para startDate/endDate:
   ```typescript
   const startDate = searchParams.startDate || undefined;
@@ -315,6 +343,7 @@ const [petsResult, foodsResult] = await Promise.all([
 #### 10. `app/feeding/FeedingPageClient.tsx`
 
 **Cambios**:
+
 - ✅ Integración de DateRangePicker
 - ✅ URL sync con searchParams:
   ```typescript
@@ -333,11 +362,13 @@ const [petsResult, foodsResult] = await Promise.all([
 #### 11. `components/feeding/FeedingList.tsx`
 
 **Cambios**:
+
 - ✅ **NUEVA**: Función `groupByDate()`:
+
   ```typescript
   function groupByDate(feedings: FeedingData[]): Map<string, FeedingData[]> {
     const grouped = new Map<string, FeedingData[]>();
-    
+
     for (const feeding of feedings) {
       const date = feeding.feeding_date;
       if (!grouped.has(date)) {
@@ -345,7 +376,7 @@ const [petsResult, foodsResult] = await Promise.all([
       }
       grouped.get(date)!.push(feeding);
     }
-    
+
     // Sort by feeding_time DESC within each group
     for (const [_, feedingsInDate] of grouped) {
       feedingsInDate.sort((a, b) => {
@@ -355,29 +386,34 @@ const [petsResult, foodsResult] = await Promise.all([
         return b.feeding_time.localeCompare(a.feeding_time);
       });
     }
-    
+
     return grouped;
   }
   ```
 
 - ✅ Rendering con agrupación visual:
   ```tsx
-  {Array.from(groupByDate(filteredFeedings).entries()).map(
-    ([date, feedingsInDate]) => (
-      <div key={date}>
-        <h3>{format(new Date(date), "EEEE d 'de' MMMM", { locale: es })}</h3>
-        <Badge>{feedingsInDate.length} registros</Badge>
-        <div className="grid">
-          {feedingsInDate.map(feeding => <FeedingCard {...feeding} />)}
+  {
+    Array.from(groupByDate(filteredFeedings).entries()).map(
+      ([date, feedingsInDate]) => (
+        <div key={date}>
+          <h3>{format(new Date(date), "EEEE d 'de' MMMM", { locale: es })}</h3>
+          <Badge>{feedingsInDate.length} registros</Badge>
+          <div className="grid">
+            {feedingsInDate.map((feeding) => (
+              <FeedingCard {...feeding} />
+            ))}
+          </div>
         </div>
-      </div>
-    )
-  )}
+      )
+    );
+  }
   ```
 
 #### 12. `docs/ESTADO_PROYECTO.md`
 
 **Cambios**:
+
 - Actualizado estado de Fase 4.5
 - Versión bumped a 1.2.0
 
@@ -387,23 +423,23 @@ const [petsResult, foodsResult] = await Promise.all([
 
 ### Código
 
-| Métrica | Valor |
-|---------|-------|
-| **Nuevos componentes** | 5 |
-| **Archivos modificados** | 12 |
-| **LOC añadidas** | ~1,200 |
+| Métrica                   | Valor                     |
+| ------------------------- | ------------------------- |
+| **Nuevos componentes**    | 5                         |
+| **Archivos modificados**  | 12                        |
+| **LOC añadidas**          | ~1,200                    |
 | **Server actions nuevas** | 1 (createMultiPetFeeding) |
-| **Commits** | 8 |
-| **Issues cerrados** | 6 |
+| **Commits**               | 8                         |
+| **Issues cerrados**       | 6                         |
 
 ### Features
 
-| Feature | Componentes | Backend | Frontend |
-|---------|------------|---------|----------|
-| Navegación temporal | 1 | 2 actions | 4 pages |
-| Date range filter | 2 | 2 actions | 2 pages |
-| Date grouping | 0 | 0 | 1 component |
-| Multi-pet feeding | 2 | 1 action | 2 files |
+| Feature             | Componentes | Backend   | Frontend    |
+| ------------------- | ----------- | --------- | ----------- |
+| Navegación temporal | 1           | 2 actions | 4 pages     |
+| Date range filter   | 2           | 2 actions | 2 pages     |
+| Date grouping       | 0           | 0         | 1 component |
+| Multi-pet feeding   | 2           | 1 action  | 2 files     |
 
 ---
 
@@ -519,6 +555,7 @@ lunes 11 de noviembre [3 registros]
 ### Manual Testing ✅
 
 #### TemporalNavigator
+
 - ✅ Navegación día: Anterior/Siguiente funciona
 - ✅ Navegación semana: Calcula lunes-domingo correcto
 - ✅ Navegación mes: Primero-último día correcto
@@ -528,6 +565,7 @@ lunes 11 de noviembre [3 registros]
 - ✅ URL params persisten navegación
 
 #### DateRangePicker
+
 - ✅ Presets funcionan correctamente
 - ✅ Selección manual de rango funciona
 - ✅ Clear filter elimina filtro
@@ -536,6 +574,7 @@ lunes 11 de noviembre [3 registros]
 - ✅ Calendario dual responsive
 
 #### Dashboard
+
 - ✅ Datos cambian con navegación temporal
 - ✅ Alertas se actualizan por periodo
 - ✅ Balance muestra datos correctos
@@ -544,6 +583,7 @@ lunes 11 de noviembre [3 registros]
 - ✅ avg_achievement_pct no causa crash
 
 #### Feeding
+
 - ✅ Filtro de rango aplica correctamente
 - ✅ Agrupación por fecha visual correcta
 - ✅ Headers con formato español
@@ -551,6 +591,7 @@ lunes 11 de noviembre [3 registros]
 - ✅ Combinación de filtros funciona (pet + food + date)
 
 #### Multi-Pet Feeding
+
 - ✅ Selección de mascotas funciona
 - ✅ "Select All/None" operativos
 - ✅ Datos comunes se llenan una vez
@@ -645,6 +686,7 @@ npm run lint
 **Solución**: Navegación temporal completa con 4 periodos (día/semana/mes/año) + filtros de rango.
 
 **Beneficios**:
+
 - ✅ Comparación entre periodos
 - ✅ Detección de patrones (días malos recurrentes)
 - ✅ Validación de cambios en dieta
@@ -659,6 +701,7 @@ npm run lint
 **Solución**: Agrupación por fecha con headers visuales y badges con count.
 
 **Beneficios**:
+
 - ✅ Contexto temporal claro ("lunes 11 de noviembre")
 - ✅ Quick scan de actividad por día
 - ✅ Identificación rápida de días sin registros
@@ -673,6 +716,7 @@ npm run lint
 **Solución**: Formulario 3-step con selección múltiple + datos comunes una vez + cantidades individuales.
 
 **Beneficios**:
+
 - ✅ 70% menos tiempo (3-4 min → 1 min)
 - ✅ 67% menos clics (~45 → ~15)
 - ✅ Cero repetición de fecha/hora/alimento
@@ -680,6 +724,7 @@ npm run lint
 - ✅ Mantiene individualidad en tracking
 
 **ROI**: Para household con 3 mascotas, 2 comidas/día:
+
 - Ahorro diario: ~4 minutos
 - Ahorro semanal: ~28 minutos
 - Ahorro mensual: ~2 horas

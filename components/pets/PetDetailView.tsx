@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowLeft, Edit, Trash2, Heart, Activity, Apple } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -125,10 +126,21 @@ export function PetDetailView({ pet, onDeleteSuccess }: PetDetailViewProps) {
 
       {/* Header Section */}
       <div className="flex items-start gap-4">
-        {/* Avatar placeholder */}
-        <div className="flex-shrink-0 w-24 h-24 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-4xl font-bold">
-          {pet.name.charAt(0).toUpperCase()}
-        </div>
+        {/* Avatar */}
+        {pet.photo_url ? (
+          <div className="flex-shrink-0 w-24 h-24 rounded-full overflow-hidden bg-gradient-to-br from-blue-400 to-purple-500 relative">
+            <Image
+              src={pet.photo_url}
+              alt={`Foto de ${pet.name}`}
+              fill
+              className="object-cover"
+            />
+          </div>
+        ) : (
+          <div className="flex-shrink-0 w-24 h-24 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-4xl font-bold">
+            {pet.name.charAt(0).toUpperCase()}
+          </div>
+        )}
 
         {/* Nombre y datos principales */}
         <div className="flex-1">

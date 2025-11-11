@@ -31,14 +31,17 @@ export interface _Migrations {
 export interface DailyFeedingSummary {
   daily_food_goal_grams: number | null;
   feeding_date: Timestamp | null;
-  goal_achievement_percentage: Numeric | null;
+  goal_achievement_pct: Numeric | null;
   goal_status: string | null;
+  met_target: boolean | null;
+  over_target: boolean | null;
   pet_id: string | null;
   pet_name: string | null;
-  total_eaten: Int8 | null;
-  total_leftover: Int8 | null;
+  total_eaten_grams: Int8 | null;
+  total_leftover_grams: Int8 | null;
   total_meals: Int8 | null;
-  total_served: Int8 | null;
+  total_served_grams: Int8 | null;
+  under_target: boolean | null;
 }
 
 export interface Feedings {
@@ -50,6 +53,9 @@ export interface Feedings {
   amount_served_grams: number;
   appetite_rating: string | null;
   created_at: Generated<Timestamp>;
+  /**
+   * Velocidad al comer: very_slow (muy lento), slow (lento), normal, fast (rápido), very_fast (muy rápido)
+   */
   eating_speed: string | null;
   feeding_date: Generated<Timestamp>;
   feeding_time: string | null;
@@ -101,6 +107,7 @@ export interface Foods {
    */
   photo_url: string | null;
   price_per_package: Numeric | null;
+  product_image_url: string | null;
   /**
    * Porcentaje de proteína sobre materia seca
    */
