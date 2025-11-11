@@ -427,11 +427,7 @@ export async function updatePet(
               meal_number: number;
               scheduled_time: string;
               expected_grams?: number;
-            }) => [
-              s.meal_number,
-              s.scheduled_time,
-              s.expected_grams || null,
-            ]
+            }) => [s.meal_number, s.scheduled_time, s.expected_grams || null]
           ),
         ];
 
