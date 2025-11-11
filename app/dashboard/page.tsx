@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import {
   getTodayBalance,
   getAlertsCount,
@@ -13,6 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   TrendingUp,
   UtensilsCrossed,
@@ -22,7 +24,7 @@ import {
   Clock,
 } from "lucide-react";
 import Link from "next/link";
-import { DashboardClient } from "./DashboardClient";
+import { DashboardHeader } from "./DashboardHeader";
 
 // ============================================
 // METADATA
@@ -250,16 +252,62 @@ function QuickActions() {
 }
 
 // ============================================
+// COMPONENTE LOADING
+// ============================================
+
+function DashboardSkeleton() {
+  return (
+    <div className="space-y-8">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {[1, 2, 3, 4].map((i) => (
+          <Card key={i}>
+            <CardHeader className="space-y-2">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-8 w-16" />
+              <Skeleton className="h-3 w-32" />
+            </CardHeader>
+          </Card>
+        ))}
+      </div>
+      <Skeleton className="h-96 w-full" />
+    </div>
+  );
+}
+
+// ============================================
 // PÁGINA PRINCIPAL
 // ============================================
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: { date?: string };
+}) {
+  // Obtener fecha de URL o usar HOY
+  const date = searchParams.date || new Date().toISOString().split("T")[0];
+
   return (
-    <DashboardClient
-      statsCards={async (date: string) => <StatsCards date={date} />}
-      criticalAlerts={async (date: string) => <CriticalAlerts date={date} />}
-      todayBalances={async (date: string) => <TodayBalances date={date} />}
-      quickActions={<QuickActions />}
-    />
+    <div className="container mx-auto p-6 space-y-6">
+      {/* Header con navegación temporal (Client Component) */}
+      <DashboardHeader />
+
+      {/* Stats Cards */}
+      <Suspense fallback={<DashboardSkeleton />}>
+        <StatsCards date={date} />
+      </Suspense>
+
+      {/* Alertas críticas */}
+      <Suspense fallback={null}>
+        <CriticalAlerts date={date} />
+      </Suspense>
+
+      {/* Balance del día */}
+      <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+        <TodayBalances date={date} />
+      </Suspense>
+
+      {/* Acciones rápidas */}
+      <QuickActions />
+    </div>
   );
 }
