@@ -173,10 +173,10 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
   const [photoUrl, setPhotoUrl] = useState<string | undefined>(
     pet?.photo_url || undefined
   );
-  
+
   // Inicializar meal_schedules: desde pet existente o array vacío
   const [mealSchedules, setMealSchedules] = useState<MealScheduleFormData[]>(
-    pet?.meal_schedules?.map(s => ({
+    pet?.meal_schedules?.map((s) => ({
       meal_number: s.meal_number,
       scheduled_time: s.scheduled_time,
       notes: s.notes || undefined,

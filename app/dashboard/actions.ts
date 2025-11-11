@@ -5,6 +5,7 @@ import { query } from "@/lib/db";
 import { requireHousehold } from "@/lib/auth";
 import { ok, fail } from "@/lib/result";
 import type { Result } from "@/lib/result";
+import { calculateMealBalances, type MealBalance } from "@/lib/utils/meal-balance";
 
 // ============================================
 // 🎯 FILOSOFÍA: GESTIÓN DIARIA PRIORITARIA
@@ -56,6 +57,7 @@ interface TodayBalance {
   daily_goal: number;
   achievement_pct: number;
   status: "under" | "met" | "over";
+  meal_balances?: MealBalance[]; // ✨ NUEVO: Balances por toma
 }
 
 // Row raw de la DB (numeric viene como string)
@@ -204,6 +206,7 @@ export async function getTodayBalance(
     // DEFAULT: Hoy (gestión diaria en tiempo real)
     const targetDate = date || new Date().toISOString().split("T")[0];
 
+    // Query principal: balance general por mascota
     const result = await query(
       `
       SELECT 
@@ -213,6 +216,7 @@ export async function getTodayBalance(
         COALESCE(SUM(f.amount_eaten_grams), 0) as total_eaten,
         COALESCE(SUM(f.amount_leftover_grams), 0) as total_leftover,
         p.daily_food_goal_grams as daily_goal,
+        p.daily_meals_target as num_meals,
         CASE 
           WHEN p.daily_food_goal_grams > 0 
           THEN ROUND((COALESCE(SUM(f.amount_eaten_grams), 0)::DECIMAL / p.daily_food_goal_grams) * 100, 2)
@@ -226,22 +230,105 @@ export async function getTodayBalance(
       FROM pets p
       LEFT JOIN feedings f ON f.pet_id = p.id AND f.feeding_date = $2
       WHERE p.household_id = $1 AND p.is_active = true
-      GROUP BY p.id, p.name, p.daily_food_goal_grams
+      GROUP BY p.id, p.name, p.daily_food_goal_grams, p.daily_meals_target
       ORDER BY p.name
       `,
       [householdId, targetDate]
     );
 
-    // Convertir achievement_pct de string a number (PostgreSQL ROUND devuelve numeric como string)
+    // ✨ NUEVO: Obtener meal schedules de todas las mascotas activas
+    const schedulesResult = await query(
+      `
+      SELECT 
+        pms.pet_id,
+        pms.meal_number,
+        pms.scheduled_time,
+        pms.notes
+      FROM pet_meal_schedules pms
+      INNER JOIN pets p ON p.id = pms.pet_id
+      WHERE p.household_id = $1 AND p.is_active = true
+      ORDER BY pms.pet_id, pms.meal_number
+      `,
+      [householdId]
+    );
+
+    // ✨ NUEVO: Obtener feedings del día con hora
+    const feedingsResult = await query(
+      `
+      SELECT 
+        f.pet_id,
+        f.feeding_time,
+        f.amount_eaten_grams
+      FROM feedings f
+      INNER JOIN pets p ON p.id = f.pet_id
+      WHERE p.household_id = $1 
+        AND f.feeding_date = $2
+        AND p.is_active = true
+      ORDER BY f.pet_id, f.feeding_time
+      `,
+      [householdId, targetDate]
+    );
+
+    // Agrupar schedules por pet_id
+    const schedulesByPet = new Map<
+      string,
+      Array<{ meal_number: number; scheduled_time: string; notes?: string }>
+    >();
+    for (const row of schedulesResult.rows) {
+      const petId = row.pet_id as string;
+      if (!schedulesByPet.has(petId)) {
+        schedulesByPet.set(petId, []);
+      }
+      schedulesByPet.get(petId)!.push({
+        meal_number: row.meal_number,
+        scheduled_time: row.scheduled_time,
+        notes: row.notes || undefined,
+      });
+    }
+
+    // Agrupar feedings por pet_id
+    const feedingsByPet = new Map<string, Array<{ feeding_time: string; amount_eaten_grams: number }>>();
+    for (const row of feedingsResult.rows) {
+      const petId = row.pet_id as string;
+      if (!feedingsByPet.has(petId)) {
+        feedingsByPet.set(petId, []);
+      }
+      feedingsByPet.get(petId)!.push({
+        feeding_time: row.feeding_time,
+        amount_eaten_grams: Number(row.amount_eaten_grams),
+      });
+    }
+
+    // Convertir y calcular meal_balances para cada mascota
     const balances: TodayBalance[] = result.rows.map(
-      (row: TodayBalanceRow) => ({
-        ...row,
-        achievement_pct: parseFloat(String(row.achievement_pct || "0")),
-        total_served: Number(row.total_served),
-        total_eaten: Number(row.total_eaten),
-        total_leftover: Number(row.total_leftover),
-        daily_goal: Number(row.daily_goal),
-      })
+      (row: TodayBalanceRow & { num_meals?: number }) => {
+        const petId = row.pet_id;
+        const dailyGoal = Number(row.daily_goal);
+        const schedules = schedulesByPet.get(petId) || [];
+        const feedings = feedingsByPet.get(petId) || [];
+
+        // ✨ Calcular meal_balances si tiene schedules
+        let mealBalances: MealBalance[] | undefined;
+        if (schedules.length > 0) {
+          mealBalances = calculateMealBalances(
+            dailyGoal,
+            schedules,
+            feedings
+          );
+        }
+
+        return {
+          pet_id: petId,
+          pet_name: row.pet_name,
+          achievement_pct: parseFloat(String(row.achievement_pct || "0")),
+          total_served: Number(row.total_served),
+          total_eaten: Number(row.total_eaten),
+          total_leftover: Number(row.total_leftover),
+          daily_goal: dailyGoal,
+          status: row.status,
+          meal_balances: mealBalances,
+        };
+      }
     );
 
     return ok(balances);

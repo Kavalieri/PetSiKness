@@ -3,20 +3,27 @@
  * Pet SiKness - Per-Meal Tracking System
  */
 
-import type { MealSchedule } from "@/types/pets";
-
 // ============================================
 // Types
 // ============================================
 
 /**
+ * Horario de toma simplificado (solo datos necesarios para cálculo)
+ */
+export interface SimpleMealSchedule {
+  meal_number: number;
+  scheduled_time: string;
+  notes?: string;
+}
+
+/**
  * Estado de una toma individual
  */
-export type MealStatus = 
-  | "completed"   // ✅ Completado: comido >= esperado
-  | "pending"     // ⏰ Pendiente: aún no es la hora
-  | "delayed"     // 🔴 Retrasado: pasó la hora + margen y no cumplió
-  | "partial";    // 🟡 Parcial: comió algo pero menos de lo esperado
+export type MealStatus =
+  | "completed" // ✅ Completado: comido >= esperado
+  | "pending" // ⏰ Pendiente: aún no es la hora
+  | "delayed" // 🔴 Retrasado: pasó la hora + margen y no cumplió
+  | "partial"; // 🟡 Parcial: comió algo pero menos de lo esperado
 
 /**
  * Balance de una toma específica
@@ -28,15 +35,15 @@ export interface MealBalance {
   eaten_grams: number;
   status: MealStatus;
   percentage: number;
-  is_due: boolean;          // Si ya pasó la hora programada
-  minutes_late?: number;    // Minutos de retraso (si aplica)
+  is_due: boolean; // Si ya pasó la hora programada
+  minutes_late?: number; // Minutos de retraso (si aplica)
 }
 
 /**
  * Registro de feeding con timestamp
  */
 export interface FeedingRecord {
-  feeding_time: string;     // HH:mm format
+  feeding_time: string; // HH:mm format
   amount_eaten_grams: number;
 }
 
@@ -79,7 +86,10 @@ function timeToMinutes(time: string): number {
  */
 export function getCurrentTime(): string {
   const now = new Date();
-  return `${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}`;
+  return `${now.getHours().toString().padStart(2, "0")}:${now
+    .getMinutes()
+    .toString()
+    .padStart(2, "0")}`;
 }
 
 /**
@@ -92,8 +102,14 @@ function timeDifferenceMinutes(time1: string, time2: string): number {
 /**
  * Verifica si currentTime >= scheduledTime (con margen opcional)
  */
-function isTimeDue(scheduledTime: string, currentTime: string, marginMinutes = 0): boolean {
-  return timeToMinutes(currentTime) >= (timeToMinutes(scheduledTime) + marginMinutes);
+function isTimeDue(
+  scheduledTime: string,
+  currentTime: string,
+  marginMinutes = 0
+): boolean {
+  return (
+    timeToMinutes(currentTime) >= timeToMinutes(scheduledTime) + marginMinutes
+  );
 }
 
 // ============================================
@@ -102,7 +118,7 @@ function isTimeDue(scheduledTime: string, currentTime: string, marginMinutes = 0
 
 /**
  * Calcula el balance de todas las tomas del día para una mascota
- * 
+ *
  * @param dailyGoalGrams - Meta diaria total de comida (en gramos)
  * @param mealSchedules - Horarios programados de las tomas
  * @param feedings - Registros de alimentación del día
@@ -111,7 +127,7 @@ function isTimeDue(scheduledTime: string, currentTime: string, marginMinutes = 0
  */
 export function calculateMealBalances(
   dailyGoalGrams: number,
-  mealSchedules: MealSchedule[],
+  mealSchedules: SimpleMealSchedule[],
   feedings: FeedingRecord[],
   currentTime?: string
 ): MealBalance[] {
@@ -126,13 +142,18 @@ export function calculateMealBalances(
   const expectedPerMeal = Math.round(dailyGoalGrams / numMeals);
 
   // Ordenar schedules por meal_number (debería estar ordenado pero por si acaso)
-  const sortedSchedules = [...mealSchedules].sort((a, b) => a.meal_number - b.meal_number);
+  const sortedSchedules = [...mealSchedules].sort(
+    (a, b) => a.meal_number - b.meal_number
+  );
 
   // Calcular balance para cada toma
   return sortedSchedules.map((schedule) => {
     // Encontrar feedings dentro de la ventana de tiempo de esta toma
     const mealFeedings = feedings.filter((feeding) => {
-      const diff = timeDifferenceMinutes(feeding.feeding_time, schedule.scheduled_time);
+      const diff = timeDifferenceMinutes(
+        feeding.feeding_time,
+        schedule.scheduled_time
+      );
       return diff <= TIME_WINDOW_MINUTES;
     });
 
@@ -143,9 +164,10 @@ export function calculateMealBalances(
     );
 
     // Calcular porcentaje de cumplimiento
-    const percentage = expectedPerMeal > 0 
-      ? Math.round((eatenGrams / expectedPerMeal) * 100)
-      : 0;
+    const percentage =
+      expectedPerMeal > 0
+        ? Math.round((eatenGrams / expectedPerMeal) * 100)
+        : 0;
 
     // Verificar si ya pasó la hora
     const isDue = isTimeDue(schedule.scheduled_time, now);
@@ -165,7 +187,10 @@ export function calculateMealBalances(
     } else if (percentage >= COMPLETION_THRESHOLD) {
       // Ya comió suficiente → COMPLETED
       status = "completed";
-    } else if (eatenGrams === 0 && isTimeDue(schedule.scheduled_time, now, GRACE_PERIOD_MINUTES)) {
+    } else if (
+      eatenGrams === 0 &&
+      isTimeDue(schedule.scheduled_time, now, GRACE_PERIOD_MINUTES)
+    ) {
       // No ha comido nada y ya pasó el período de gracia → DELAYED
       status = "delayed";
     } else if (eatenGrams > 0 && eatenGrams < expectedPerMeal) {
@@ -217,17 +242,18 @@ export interface DailySummary {
  */
 export function calculateDailySummary(balances: MealBalance[]): DailySummary {
   const totalMeals = balances.length;
-  const completedMeals = balances.filter(b => b.status === "completed").length;
-  const pendingMeals = balances.filter(b => b.status === "pending").length;
-  const delayedMeals = balances.filter(b => b.status === "delayed").length;
-  const partialMeals = balances.filter(b => b.status === "partial").length;
+  const completedMeals = balances.filter(
+    (b) => b.status === "completed"
+  ).length;
+  const pendingMeals = balances.filter((b) => b.status === "pending").length;
+  const delayedMeals = balances.filter((b) => b.status === "delayed").length;
+  const partialMeals = balances.filter((b) => b.status === "partial").length;
 
   const totalExpected = balances.reduce((sum, b) => sum + b.expected_grams, 0);
   const totalEaten = balances.reduce((sum, b) => sum + b.eaten_grams, 0);
 
-  const overallPercentage = totalExpected > 0
-    ? Math.round((totalEaten / totalExpected) * 100)
-    : 0;
+  const overallPercentage =
+    totalExpected > 0 ? Math.round((totalEaten / totalExpected) * 100) : 0;
 
   return {
     total_meals: totalMeals,
@@ -278,10 +304,12 @@ export function getStatusLabel(status: MealStatus): string {
  */
 export function getStatusColor(status: MealStatus): string {
   const colors: Record<MealStatus, string> = {
-    completed: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+    completed:
+      "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
     pending: "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200",
     delayed: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
-    partial: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
+    partial:
+      "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
   };
   return colors[status];
 }
@@ -289,7 +317,10 @@ export function getStatusColor(status: MealStatus): string {
 /**
  * Formatea cantidad comida vs esperada
  */
-export function formatMealProgress(eatenGrams: number, expectedGrams: number): string {
+export function formatMealProgress(
+  eatenGrams: number,
+  expectedGrams: number
+): string {
   return `${eatenGrams}g / ${expectedGrams}g`;
 }
 

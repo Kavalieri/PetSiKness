@@ -4,7 +4,12 @@ import { revalidatePath } from "next/cache";
 import { query } from "@/lib/db";
 import { ok, fail, type Result } from "@/lib/result";
 import { requireHousehold } from "@/lib/auth";
-import { PetFormSchema, PetIdSchema, type Pet, type PetWithSchedules } from "@/types/pets";
+import {
+  PetFormSchema,
+  PetIdSchema,
+  type Pet,
+  type PetWithSchedules,
+} from "@/types/pets";
 
 // ============================================
 // GET PETS - Listar mascotas del hogar
@@ -49,7 +54,9 @@ export async function getPets(): Promise<Result<Pet[]>> {
  * @param id - UUID de la mascota
  * @returns Result con la mascota y sus horarios
  */
-export async function getPetById(id: string): Promise<Result<PetWithSchedules>> {
+export async function getPetById(
+  id: string
+): Promise<Result<PetWithSchedules>> {
   try {
     // 1. Validar ID
     const idValidation = PetIdSchema.safeParse(id);
@@ -210,17 +217,23 @@ export async function createPet(formData: FormData): Promise<Result<Pet>> {
     const createdPet = result.rows[0] as Pet;
 
     // 6. Insertar meal_schedules si existen
-    if (mealSchedules && Array.isArray(mealSchedules) && mealSchedules.length > 0) {
-      const scheduleValues = mealSchedules.map((schedule, index) => 
-        `($1, $${index * 2 + 2}, $${index * 2 + 3})`
-      ).join(", ");
+    if (
+      mealSchedules &&
+      Array.isArray(mealSchedules) &&
+      mealSchedules.length > 0
+    ) {
+      const scheduleValues = mealSchedules
+        .map((schedule, index) => `($1, $${index * 2 + 2}, $${index * 2 + 3})`)
+        .join(", ");
 
       const scheduleParams = [
         createdPet.id,
-        ...mealSchedules.flatMap((s: { meal_number: number; scheduled_time: string }) => [
-          s.meal_number,
-          s.scheduled_time,
-        ]),
+        ...mealSchedules.flatMap(
+          (s: { meal_number: number; scheduled_time: string }) => [
+            s.meal_number,
+            s.scheduled_time,
+          ]
+        ),
       ];
 
       await query(
@@ -373,23 +386,24 @@ export async function updatePet(
     // 8. Actualizar meal_schedules si existen
     if (mealSchedules && Array.isArray(mealSchedules)) {
       // Primero eliminar los existentes
-      await query(
-        `DELETE FROM pet_meal_schedules WHERE pet_id = $1`,
-        [id]
-      );
+      await query(`DELETE FROM pet_meal_schedules WHERE pet_id = $1`, [id]);
 
       // Luego insertar los nuevos si hay
       if (mealSchedules.length > 0) {
-        const scheduleValues = mealSchedules.map((schedule, index) => 
-          `($1, $${index * 2 + 2}, $${index * 2 + 3})`
-        ).join(", ");
+        const scheduleValues = mealSchedules
+          .map(
+            (schedule, index) => `($1, $${index * 2 + 2}, $${index * 2 + 3})`
+          )
+          .join(", ");
 
         const scheduleParams = [
           id,
-          ...mealSchedules.flatMap((s: { meal_number: number; scheduled_time: string }) => [
-            s.meal_number,
-            s.scheduled_time,
-          ]),
+          ...mealSchedules.flatMap(
+            (s: { meal_number: number; scheduled_time: string }) => [
+              s.meal_number,
+              s.scheduled_time,
+            ]
+          ),
         ];
 
         await query(
