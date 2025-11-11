@@ -1,20 +1,29 @@
 "use client";
 
-import { format, subDays, addDays, isToday, isSameDay } from "date-fns";
+import { useState } from "react";
+import {
+  format,
+  startOfWeek,
+  endOfWeek,
+  startOfMonth,
+  endOfMonth,
+  startOfYear,
+  endOfYear,
+  addDays,
+  addWeeks,
+  addMonths,
+  addYears,
+  subDays,
+  subWeeks,
+  subMonths,
+  subYears,
+  isToday as isTodayFn,
+} from "date-fns";
 import { es } from "date-fns/locale";
+import { ChevronLeft, ChevronRight, Calendar, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Calendar as CalendarIcon,
-  Home,
-} from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 
 // ============================================
@@ -27,48 +36,186 @@ import { cn } from "@/lib/utils";
 //   1. Botón "HOY" siempre prominente y visible
 //   2. Fecha actual como estado inicial por defecto
 //   3. Navegación temporal como capacidad secundaria
-//   4. Presets para análisis rápido de días recientes
+//   4. Presets para análisis rápido de períodos
 //
 // USO PRINCIPAL: Control diario sin fricción
-// USO SECUNDARIO: Análisis retrospectivo con navegación
+// USO SECUNDARIO: Análisis retrospectivo con navegación multi-período
 //
 // ============================================
 
+// ============================================
+// TIPOS
+// ============================================
+
+export type ViewMode = "day" | "week" | "month" | "year";
+
 export interface TemporalNavigatorProps {
-  /** Fecha seleccionada (default: HOY) */
+  /** Modo de visualización actual */
+  mode: ViewMode;
+  /** Fecha seleccionada */
   selectedDate: Date;
   /** Callback cuando cambia la fecha */
   onDateChange: (date: Date) => void;
-  /** Mostrar botón HOY destacado (default: true) */
-  showTodayButton?: boolean;
-  /** Resaltar visualmente HOY (default: true) */
-  highlightToday?: boolean;
-  /** Deshabilitar navegación futura (default: true) */
-  disableFuture?: boolean;
-  /** Clase CSS adicional */
+  /** Callback cuando cambia el modo */
+  onModeChange?: (mode: ViewMode) => void;
+  /** Mostrar selector de modo (día/semana/mes/año) */
+  showModeSelector?: boolean;
+  /** Mostrar botón de shortcuts "Hoy" */
+  showShortcuts?: boolean;
+  /** Fecha mínima permitida */
+  minDate?: Date;
+  /** Fecha máxima permitida (default: hoy) */
+  maxDate?: Date;
+  /** Clase adicional */
   className?: string;
 }
 
+// ============================================
+// HELPER FUNCTIONS
+// ============================================
+
+/**
+ * Formatea el rango de fecha según el modo de vista
+ */
+function formatDateRange(date: Date, mode: ViewMode): string {
+  switch (mode) {
+    case "day":
+      return format(date, "d MMM yyyy", { locale: es });
+    case "week": {
+      const start = startOfWeek(date, { weekStartsOn: 1 });
+      const end = endOfWeek(date, { weekStartsOn: 1 });
+      return `${format(start, "d MMM", { locale: es })} - ${format(end, "d MMM yyyy", { locale: es })}`;
+    }
+    case "month":
+      return format(date, "MMMM yyyy", { locale: es });
+    case "year":
+      return format(date, "yyyy");
+    default:
+      return format(date, "d MMM yyyy", { locale: es });
+  }
+}
+
+/**
+ * Obtiene el período anterior según el modo
+ */
+function getPreviousPeriod(date: Date, mode: ViewMode): Date {
+  switch (mode) {
+    case "day":
+      return subDays(date, 1);
+    case "week":
+      return subWeeks(date, 1);
+    case "month":
+      return subMonths(date, 1);
+    case "year":
+      return subYears(date, 1);
+    default:
+      return subDays(date, 1);
+  }
+}
+
+/**
+ * Obtiene el siguiente período según el modo
+ */
+function getNextPeriod(date: Date, mode: ViewMode): Date {
+  switch (mode) {
+    case "day":
+      return addDays(date, 1);
+    case "week":
+      return addWeeks(date, 1);
+    case "month":
+      return addMonths(date, 1);
+    case "year":
+      return addYears(date, 1);
+    default:
+      return addDays(date, 1);
+  }
+}
+
+/**
+ * Verifica si la fecha está en el período actual (hoy según el modo)
+ */
+function isCurrentPeriod(date: Date, mode: ViewMode): boolean {
+  const today = new Date();
+  
+  switch (mode) {
+    case "day":
+      return isTodayFn(date);
+    case "week": {
+      const weekStart = startOfWeek(today, { weekStartsOn: 1 });
+      const weekEnd = endOfWeek(today, { weekStartsOn: 1 });
+      return date >= weekStart && date <= weekEnd;
+    }
+    case "month": {
+      const monthStart = startOfMonth(today);
+      const monthEnd = endOfMonth(today);
+      return date >= monthStart && date <= monthEnd;
+    }
+    case "year": {
+      const yearStart = startOfYear(today);
+      const yearEnd = endOfYear(today);
+      return date >= yearStart && date <= yearEnd;
+    }
+    default:
+      return false;
+  }
+}
+
+// ============================================
+// COMPONENTE PRINCIPAL
+// ============================================
+
+/**
+ * 📅 TemporalNavigator
+ * 
+ * Componente de navegación temporal reutilizable para Dashboard y Alimentación.
+ * 
+ * **Características**:
+ * - 4 modos de vista: Día, Semana, Mes, Año
+ * - Navegación anterior/siguiente
+ * - Selector de fecha con calendario
+ * - Shortcut "Hoy"
+ * - Responsive mobile-first
+ * 
+ * @example
+ * ```tsx
+ * const [date, setDate] = useState(new Date());
+ * const [mode, setMode] = useState<ViewMode>("day");
+ * 
+ * <TemporalNavigator
+ *   mode={mode}
+ *   selectedDate={date}
+ *   onDateChange={setDate}
+ *   onModeChange={setMode}
+ *   showModeSelector
+ *   showShortcuts
+ * />
+ * ```
+ */
 export function TemporalNavigator({
+  mode,
   selectedDate,
   onDateChange,
-  showTodayButton = true,
-  highlightToday = true,
-  disableFuture = true,
+  onModeChange,
+  showModeSelector = true,
+  showShortcuts = true,
+  minDate,
+  maxDate = new Date(),
   className,
 }: TemporalNavigatorProps) {
-  const today = new Date();
-  const isCurrentlyToday = isToday(selectedDate);
-  const canGoNext = !disableFuture || selectedDate < today;
+  const [calendarOpen, setCalendarOpen] = useState(false);
 
   // Handlers
-  const handlePrevDay = () => {
-    onDateChange(subDays(selectedDate, 1));
+  const handlePrevious = () => {
+    const newDate = getPreviousPeriod(selectedDate, mode);
+    if (!minDate || newDate >= minDate) {
+      onDateChange(newDate);
+    }
   };
 
-  const handleNextDay = () => {
-    if (canGoNext) {
-      onDateChange(addDays(selectedDate, 1));
+  const handleNext = () => {
+    const newDate = getNextPeriod(selectedDate, mode);
+    if (newDate <= maxDate) {
+      onDateChange(newDate);
     }
   };
 
@@ -76,108 +223,53 @@ export function TemporalNavigator({
     onDateChange(new Date());
   };
 
-  const handleDateSelect = (date: Date | undefined) => {
+  const handleCalendarSelect = (date: Date | undefined) => {
     if (date) {
       onDateChange(date);
+      setCalendarOpen(false);
     }
   };
 
-  // Presets rápidos para análisis
-  const datePresets = [
-    { label: "Ayer", value: () => subDays(today, 1) },
-    { label: "Hace 3 días", value: () => subDays(today, 3) },
-    { label: "Hace 7 días", value: () => subDays(today, 7) },
-    { label: "Hace 30 días", value: () => subDays(today, 30) },
-  ];
+  // Verificaciones
+  const canGoPrevious = !minDate || getPreviousPeriod(selectedDate, mode) >= minDate;
+  const canGoNext = getNextPeriod(selectedDate, mode) <= maxDate;
+  const isInCurrentPeriod = isCurrentPeriod(selectedDate, mode);
 
   return (
-    <div
-      className={cn(
-        "flex flex-col sm:flex-row items-center gap-3 p-4 bg-card rounded-lg border shadow-sm",
-        className
-      )}
-    >
-      {/* 🏠 BOTÓN HOY - PROMINENTE (Gestión Diaria) */}
-      {showTodayButton && (
-        <Button
-          onClick={handleToday}
-          disabled={isCurrentlyToday}
-          variant={isCurrentlyToday ? "default" : "outline"}
-          size="sm"
-          className={cn(
-            "gap-2 font-semibold",
-            isCurrentlyToday && "cursor-default"
-          )}
-        >
-          <Home className="h-4 w-4" />
-          HOY
-        </Button>
-      )}
-
-      {/* Separador visual */}
-      {showTodayButton && (
-        <div className="hidden sm:block h-8 w-px bg-border" />
-      )}
-
-      {/* Navegación temporal (secundaria) */}
-      <div className="flex items-center gap-2">
+    <div className={cn("flex flex-col gap-3", className)}>
+      {/* Navegación Principal */}
+      <div className="flex items-center justify-between gap-2">
         {/* Botón Anterior */}
         <Button
-          onClick={handlePrevDay}
-          variant="ghost"
+          variant="outline"
           size="icon"
-          className="h-9 w-9"
+          onClick={handlePrevious}
+          disabled={!canGoPrevious}
+          className="h-9 w-9 shrink-0"
         >
           <ChevronLeft className="h-4 w-4" />
-          <span className="sr-only">Día anterior</span>
+          <span className="sr-only">Período anterior</span>
         </Button>
 
-        {/* Selector de fecha con calendario */}
-        <Popover>
+        {/* Selector de Fecha */}
+        <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
           <PopoverTrigger asChild>
             <Button
               variant="outline"
-              className={cn(
-                "min-w-[200px] justify-start text-left font-normal gap-2",
-                highlightToday && isCurrentlyToday && "border-primary"
-              )}
+              className="h-9 flex-1 font-semibold justify-center gap-2 min-w-0"
             >
-              <CalendarIcon className="h-4 w-4" />
-              <span className="font-medium">
-                {isCurrentlyToday
-                  ? "Hoy"
-                  : format(selectedDate, "d 'de' MMMM, yyyy", { locale: es })}
-              </span>
+              <Calendar className="h-4 w-4 shrink-0" />
+              <span className="truncate">{formatDateRange(selectedDate, mode)}</span>
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="center">
-            <div className="p-3 border-b">
-              <p className="text-sm font-medium text-muted-foreground mb-2">
-                Accesos rápidos
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {datePresets.map((preset) => {
-                  const presetDate = preset.value();
-                  const isSelected = isSameDay(selectedDate, presetDate);
-                  return (
-                    <Button
-                      key={preset.label}
-                      onClick={() => handleDateSelect(presetDate)}
-                      variant={isSelected ? "secondary" : "ghost"}
-                      size="sm"
-                      className="text-xs"
-                    >
-                      {preset.label}
-                    </Button>
-                  );
-                })}
-              </div>
-            </div>
-            <Calendar
+            <CalendarComponent
               mode="single"
               selected={selectedDate}
-              onSelect={handleDateSelect}
-              disabled={(date: Date) => (disableFuture ? date > today : false)}
+              onSelect={handleCalendarSelect}
+              disabled={(date) => 
+                (minDate && date < minDate) || date > maxDate
+              }
               initialFocus
               locale={es}
             />
@@ -186,22 +278,71 @@ export function TemporalNavigator({
 
         {/* Botón Siguiente */}
         <Button
-          onClick={handleNextDay}
-          disabled={!canGoNext}
-          variant="ghost"
+          variant="outline"
           size="icon"
-          className="h-9 w-9"
+          onClick={handleNext}
+          disabled={!canGoNext}
+          className="h-9 w-9 shrink-0"
         >
           <ChevronRight className="h-4 w-4" />
-          <span className="sr-only">Día siguiente</span>
+          <span className="sr-only">Siguiente período</span>
         </Button>
       </div>
 
-      {/* Indicador visual cuando NO es HOY */}
-      {!isCurrentlyToday && (
-        <div className="hidden sm:flex items-center gap-2 text-sm text-muted-foreground">
-          <div className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
-          <span>Viendo datos históricos</span>
+      {/* Selector de Modo + Shortcuts */}
+      {(showModeSelector || showShortcuts) && (
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          {/* Selector de Modo */}
+          {showModeSelector && onModeChange && (
+            <div className="flex items-center gap-1 bg-muted p-1 rounded-md">
+              <Button
+                variant={mode === "day" ? "secondary" : "ghost"}
+                size="sm"
+                onClick={() => onModeChange("day")}
+                className="h-7 px-3 text-xs"
+              >
+                Día
+              </Button>
+              <Button
+                variant={mode === "week" ? "secondary" : "ghost"}
+                size="sm"
+                onClick={() => onModeChange("week")}
+                className="h-7 px-3 text-xs"
+              >
+                Semana
+              </Button>
+              <Button
+                variant={mode === "month" ? "secondary" : "ghost"}
+                size="sm"
+                onClick={() => onModeChange("month")}
+                className="h-7 px-3 text-xs"
+              >
+                Mes
+              </Button>
+              <Button
+                variant={mode === "year" ? "secondary" : "ghost"}
+                size="sm"
+                onClick={() => onModeChange("year")}
+                className="h-7 px-3 text-xs"
+              >
+                Año
+              </Button>
+            </div>
+          )}
+
+          {/* Botón Hoy */}
+          {showShortcuts && (
+            <Button
+              variant={isInCurrentPeriod ? "secondary" : "outline"}
+              size="sm"
+              onClick={handleToday}
+              disabled={isInCurrentPeriod}
+              className="h-7 px-3 text-xs gap-1.5"
+            >
+              <Home className="h-3.5 w-3.5" />
+              <span>Hoy</span>
+            </Button>
+          )}
         </div>
       )}
     </div>

@@ -1,30 +1,37 @@
 "use client";
 
 import { useState } from "react";
-import { TemporalNavigator } from "./TemporalNavigator";
+import { TemporalNavigator, type ViewMode } from "./TemporalNavigator";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
 /**
  * Componente de demostración del TemporalNavigator
- * 
+ *
  * Muestra cómo integrar el navegador temporal con el enfoque de gestión diaria.
  * Sirve como referencia para la integración en Dashboard y Alimentación.
  */
 export function TemporalNavigatorDemo() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [viewMode, setViewMode] = useState<ViewMode>("day");
 
   return (
     <div className="space-y-6">
       {/* Navegador Temporal */}
       <TemporalNavigator
+        mode={viewMode}
         selectedDate={selectedDate}
         onDateChange={setSelectedDate}
+        onModeChange={setViewMode}
+        showModeSelector
+        showShortcuts
       />
 
       {/* Indicador de fecha seleccionada */}
       <div className="p-6 bg-muted rounded-lg">
-        <h3 className="text-lg font-semibold mb-2">Fecha Seleccionada:</h3>
+        <h3 className="text-lg font-semibold mb-2">
+          Fecha Seleccionada (Modo: {viewMode}):
+        </h3>
         <p className="text-2xl font-bold text-primary">
           {format(selectedDate, "EEEE, d 'de' MMMM 'de' yyyy", { locale: es })}
         </p>
@@ -36,7 +43,7 @@ export function TemporalNavigatorDemo() {
       {/* Información de uso */}
       <div className="p-6 bg-card border rounded-lg space-y-4">
         <h3 className="text-lg font-semibold">🎯 Filosofía de Uso:</h3>
-        
+
         <div className="space-y-3 text-sm">
           <div className="flex gap-3">
             <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
@@ -45,7 +52,8 @@ export function TemporalNavigatorDemo() {
             <div>
               <p className="font-medium">Gestión Diaria (Principal)</p>
               <p className="text-muted-foreground">
-                Al entrar, siempre muestra HOY. El botón &quot;HOY&quot; está destacado y permite volver rápidamente.
+                Al entrar, siempre muestra HOY. El botón &quot;HOY&quot; está
+                destacado y permite volver rápidamente.
               </p>
             </div>
           </div>
@@ -57,7 +65,8 @@ export function TemporalNavigatorDemo() {
             <div>
               <p className="font-medium">Navegación Temporal (Secundaria)</p>
               <p className="text-muted-foreground">
-                Usa flechas o calendario para análisis retrospectivo. Presets rápidos para días comunes.
+                Usa flechas o calendario para análisis retrospectivo. Presets
+                rápidos para días comunes.
               </p>
             </div>
           </div>
@@ -69,7 +78,8 @@ export function TemporalNavigatorDemo() {
             <div>
               <p className="font-medium">Indicador Histórico</p>
               <p className="text-muted-foreground">
-                Cuando NO estás en HOY, aparece un indicador visual para recordarte que ves datos pasados.
+                Cuando NO estás en HOY, aparece un indicador visual para
+                recordarte que ves datos pasados.
               </p>
             </div>
           </div>

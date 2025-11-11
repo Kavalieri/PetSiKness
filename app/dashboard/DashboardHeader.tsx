@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { format, isToday } from "date-fns";
 import { es } from "date-fns/locale";
-import { TemporalNavigator } from "@/components/shared/TemporalNavigator";
+import { TemporalNavigator, type ViewMode } from "@/components/shared/TemporalNavigator";
 import { Home } from "lucide-react";
 
 // ============================================
@@ -29,9 +29,10 @@ export function DashboardHeader() {
 
   // Leer fecha de URL o usar HOY por defecto
   const dateParam = searchParams.get("date");
-  
+
   // Estado inicial siempre es la fecha del servidor para evitar hydration mismatch
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>("day");
 
   // Sincronizar con el param de URL después de montar
   useEffect(() => {
@@ -102,8 +103,12 @@ export function DashboardHeader() {
 
       {/* Navegador Temporal */}
       <TemporalNavigator
+        mode={viewMode}
         selectedDate={selectedDate}
         onDateChange={handleDateChange}
+        onModeChange={setViewMode}
+        showModeSelector
+        showShortcuts
       />
     </>
   );
