@@ -20,7 +20,19 @@
       "group": "build"
     },
     {
-      "label": "📊 Estado PM2",
+      "label": "� DEV: Reiniciar (limpio)",
+      "type": "shell",
+      "command": "./scripts/PM2_build_and_deploy_and_dev/pm2-dev-restart-clean.sh",
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "�📊 Estado PM2",
       "type": "shell",
       "command": "./scripts/PM2_build_and_deploy_and_dev/pm2-status.sh",
       "group": "build"
