@@ -133,6 +133,27 @@ export function FeedingForm({
   const watchedEaten = form.watch("amount_eaten_grams");
   const watchedHadStool = form.watch("had_stool");
 
+  // Resetear formulario cuando cambian los defaultValues (para modo edit)
+  useEffect(() => {
+    if (mode === "edit" && defaultValues) {
+      form.reset({
+        pet_id: defaultValues.pet_id || "",
+        food_id: defaultValues.food_id || "",
+        feeding_date: defaultValues.feeding_date || "",
+        feeding_time: defaultValues.feeding_time || "",
+        amount_served_grams: defaultValues.amount_served_grams || 0,
+        amount_eaten_grams: defaultValues.amount_eaten_grams || 0,
+        appetite_rating: defaultValues.appetite_rating,
+        eating_speed: defaultValues.eating_speed,
+        vomited: defaultValues.vomited || false,
+        had_diarrhea: defaultValues.had_diarrhea || false,
+        had_stool: defaultValues.had_stool || false,
+        stool_quality: defaultValues.stool_quality,
+        notes: defaultValues.notes,
+      });
+    }
+  }, [mode, defaultValues, form]);
+
   // Calcular leftover en tiempo real
   useEffect(() => {
     const served = Number(watchedServed) || 0;
