@@ -19,7 +19,7 @@ import {
   getStatusColor,
   type MealBalance,
 } from "@/lib/utils/portion-balance";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -117,6 +117,13 @@ function MealCard({
     balance.leftover_grams?.toString() || ""
   ); // ✨ CAMBIO: Ahora es input (antes eaten)
   const [isSaving, setIsSaving] = useState(false);
+
+  // ✨ FIX: Sincronizar estados cuando cambian los props del balance
+  // Esto resuelve el problema de que la tercera ración no se actualiza
+  useEffect(() => {
+    setServed(balance.served_grams?.toString() || "");
+    setLeftover(balance.leftover_grams?.toString() || "");
+  }, [balance.served_grams, balance.leftover_grams]);
 
   const statusIcon = getStatusIcon(balance.status);
   const statusLabel = getStatusLabel(balance.status);

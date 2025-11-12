@@ -684,7 +684,7 @@ export async function getHouseholdOverview(
  *
  * Si ya existe un feeding para ese portion_number del día, lo actualiza.
  * Si no existe, crea uno nuevo con datos mínimos.
- * 
+ *
  * ⚠️ CAMBIO DE LÓGICA (Issue #65): Ahora recibe leftoverGrams (sobrante)
  * en vez de eatenGrams. El sistema calcula eaten = served - leftover.
  */
