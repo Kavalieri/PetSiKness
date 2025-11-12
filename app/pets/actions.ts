@@ -241,7 +241,7 @@ export async function createPet(formData: FormData): Promise<Result<Pet>> {
       ];
 
       await query(
-        `INSERT INTO pet_portion_schedules (pet_id, meal_number, scheduled_time, expected_grams)
+        `INSERT INTO pet_portion_schedules (pet_id, portion_number, scheduled_time, expected_grams)
          VALUES ${scheduleValues}`,
         scheduleParams
       );
@@ -432,7 +432,7 @@ export async function updatePet(
         ];
 
         await query(
-          `INSERT INTO pet_portion_schedules (pet_id, meal_number, scheduled_time, expected_grams)
+          `INSERT INTO pet_portion_schedules (pet_id, portion_number, scheduled_time, expected_grams)
            VALUES ${scheduleValues}`,
           scheduleParams
         );
