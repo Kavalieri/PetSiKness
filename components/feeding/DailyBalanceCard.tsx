@@ -148,7 +148,9 @@ function MealCard({
       }
 
       toast.success("Ración actualizada", {
-        description: `${getPortionName(balance.meal_number)} de ${petName} actualizada correctamente`,
+        description: `${getPortionName(
+          balance.meal_number
+        )} de ${petName} actualizada correctamente`,
       });
 
       // Cerrar diálogo

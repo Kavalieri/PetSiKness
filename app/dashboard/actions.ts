@@ -256,6 +256,7 @@ export async function getTodayBalance(
       `
       SELECT 
         f.pet_id,
+        f.meal_number,
         f.feeding_time,
         f.amount_served_grams,
         f.amount_eaten_grams
@@ -297,8 +298,9 @@ export async function getTodayBalance(
     const feedingsByPet = new Map<
       string,
       Array<{
+        meal_number?: number;
         feeding_time: string;
-        amount_served_grams: number; // ✨ NUEVO
+        amount_served_grams: number;
         amount_eaten_grams: number;
       }>
     >();
@@ -308,8 +310,9 @@ export async function getTodayBalance(
         feedingsByPet.set(petId, []);
       }
       feedingsByPet.get(petId)!.push({
+        meal_number: row.meal_number ? Number(row.meal_number) : undefined,
         feeding_time: row.feeding_time,
-        amount_served_grams: Number(row.amount_served_grams), // ✨ NUEVO
+        amount_served_grams: Number(row.amount_served_grams),
         amount_eaten_grams: Number(row.amount_eaten_grams),
       });
     }

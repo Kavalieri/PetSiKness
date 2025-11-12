@@ -48,6 +48,7 @@ export interface MealBalance {
  * Registro de feeding con timestamp
  */
 export interface FeedingRecord {
+  meal_number?: number; // ✨ CRÍTICO: Número de ración para match directo
   feeding_time: string; // HH:mm format
   amount_served_grams: number; // ✨ CAMBIO: Ahora usamos servido para metas
   amount_eaten_grams: number; // Para tracking de consumo real
@@ -156,13 +157,27 @@ export function calculateMealBalances(
       ? schedule.expected_grams
       : Math.round(dailyGoalGrams / numMeals);
 
-    // Encontrar feedings dentro de la ventana de tiempo de esta toma
+    // ✨ CAMBIO CRÍTICO: Buscar feedings por meal_number PRIMERO (match exacto)
+    // Si no tiene meal_number, usar ventana de tiempo como fallback
     const mealFeedings = feedings.filter((feeding) => {
-      const diff = timeDifferenceMinutes(
-        feeding.feeding_time,
-        schedule.scheduled_time
-      );
-      return diff <= TIME_WINDOW_MINUTES;
+      // Prioridad 1: Match por meal_number (más confiable)
+      if (
+        feeding.meal_number !== undefined &&
+        feeding.meal_number === schedule.meal_number
+      ) {
+        return true;
+      }
+
+      // Prioridad 2: Match por ventana de tiempo (solo si no tiene meal_number)
+      if (feeding.meal_number === undefined) {
+        const diff = timeDifferenceMinutes(
+          feeding.feeding_time,
+          schedule.scheduled_time
+        );
+        return diff <= TIME_WINDOW_MINUTES;
+      }
+
+      return false;
     });
 
     // ✨ NUEVO: Sumar cantidad SERVIDA (para cumplimiento de meta)
