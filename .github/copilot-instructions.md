@@ -4,6 +4,93 @@
 
 **Responder siempre en ESPAÑOL**
 
+---
+
+## 🎯 Workflow de Gestión de Issues (OBLIGATORIO)
+
+**ANTES de iniciar cualquier tarea**, seguir este flujo:
+
+### 1. Revisar Issues Existentes
+
+```bash
+# Buscar issue relacionada con la tarea
+# Usar herramienta GitHub: list_issues, search_issues
+```
+
+### 2. Decidir Acción
+
+**SI existe issue relacionada**:
+- ✅ **Activa (Open)**: Agregar comentario con estado actual/progreso
+- ✅ **Completada**: Agregar comentario final con detalles + **CERRAR**
+
+**SI NO existe issue**:
+- ✅ Crear nueva issue con:
+  - Título claro y descriptivo
+  - Descripción detallada del problema/feature
+  - Criterios de aceptación
+  - Estimación de esfuerzo
+  - Labels apropiados
+
+### 3. Durante Implementación
+
+- Actualizar issue con comentarios de progreso si tarea >2 horas
+- Referenciar issue en commits: `fix(#XX): descripción` o `feat(#XX): descripción`
+
+### 4. Al Completar Tarea
+
+**Agregar comentario final con**:
+- ✅ Qué se implementó
+- ✅ Archivos modificados
+- ✅ Commits relevantes
+- ✅ Tests realizados
+- ✅ Próximos pasos (si aplica)
+
+**Cerrar issue** con método GitHub MCP
+
+### Ejemplo de Flujo Completo
+
+```typescript
+// 1. Buscar issue
+const issues = await github.listIssues({ state: "OPEN", query: "dropdown alimento" });
+
+// 2. Si existe y está completada
+await github.addComment({
+  issue_number: 67,
+  body: `## ✅ COMPLETADO
+
+**Implementación**:
+- Agregado dropdown de alimentos en DailyBalanceCard
+- Backend actualizado para recibir food_id
+- Validación de pertenencia a household
+
+**Archivos modificados**:
+- \`app/dashboard/actions.ts\`
+- \`components/feeding/DailyBalanceCard.tsx\`
+
+**Commits**: abc123f, def456g
+
+**Testing**: Manual en DEV, funciona correctamente`
+});
+
+await github.closeIssue({ issue_number: 67 });
+
+// 3. Si no existe, crear
+await github.createIssue({
+  title: "Implementar export CSV de feedings",
+  body: "## Descripción\n...",
+  labels: ["enhancement", "export"]
+});
+```
+
+### ⚠️ Reglas Críticas
+
+- ❌ **NUNCA** iniciar tarea sin revisar issues
+- ❌ **NUNCA** dejar issues completadas sin cerrar
+- ✅ **SIEMPRE** documentar en issue antes de cerrar
+- ✅ **SIEMPRE** usar MCPs de GitHub (no comandos manuales)
+
+---
+
 > 📚 Consulta los archivos `AGENTS.md` (nested) para reglas completas.
 >
 > - `AGENTS.md` · Reglas generales de proyecto

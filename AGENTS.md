@@ -60,6 +60,80 @@ Cuando trabajes en una carpeta específica, **las instrucciones de su AGENTS.md 
 
 ---
 
+## 🎯 REGLA #2: GESTIÓN DE ISSUES EN GITHUB (OBLIGATORIO)
+
+**ANTES de iniciar cualquier tarea**, seguir este flujo:
+
+### Workflow de Issues
+
+1. **Revisar Issues Existentes**
+   ```typescript
+   // Buscar issue relacionada con la tarea
+   const issues = await mcp_github_github_list_issues({
+     owner: "Kavalieri",
+     repo: "PetSiKness",
+     state: "OPEN"
+   });
+   ```
+
+2. **Decidir Acción**
+   - **SI existe issue relacionada**:
+     - ✅ **Activa (Open)**: Agregar comentario con estado/progreso
+     - ✅ **Completada**: Agregar comentario final + **CERRAR**
+   
+   - **SI NO existe issue**:
+     - ✅ Crear nueva con: título, descripción, criterios, estimación, labels
+
+3. **Durante Implementación**
+   - Actualizar issue con progreso si tarea >2 horas
+   - Referenciar en commits: `fix(#XX): descripción`
+
+4. **Al Completar**
+   - Agregar comentario final con:
+     - ✅ Qué se implementó
+     - ✅ Archivos modificados
+     - ✅ Commits relevantes
+     - ✅ Tests realizados
+   - **Cerrar issue** con `mcp_github_github_issue_write`
+
+### Ejemplo Completo
+
+```typescript
+// Si existe y está completada
+await mcp_github_github_add_issue_comment({
+  owner: "Kavalieri",
+  repo: "PetSiKness",
+  issue_number: 67,
+  body: `## ✅ COMPLETADO
+
+**Implementación**:
+- Feature X implementada correctamente
+- Backend actualizado
+
+**Archivos**: \`file1.ts\`, \`file2.tsx\`
+**Commits**: abc123f
+**Testing**: Manual en DEV ✅`
+});
+
+await mcp_github_github_issue_write({
+  method: "update",
+  owner: "Kavalieri",
+  repo: "PetSiKness",
+  issue_number: 67,
+  state: "closed",
+  state_reason: "completed"
+});
+```
+
+### ⚠️ Reglas Críticas
+
+- ❌ **NUNCA** iniciar tarea sin revisar issues
+- ❌ **NUNCA** dejar issues completadas sin cerrar
+- ✅ **SIEMPRE** documentar antes de cerrar
+- ✅ **SIEMPRE** usar MCPs de GitHub
+
+---
+
 ## 🐾 Dominio del Proyecto: Pet Food Tracking
 
 ### Propósito
