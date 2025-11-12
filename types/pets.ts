@@ -92,7 +92,7 @@ export type PortionScheduleCreateInput = Omit<
  * Datos simplificados de horario para formularios
  */
 export type PortionScheduleFormData = {
-  portion_number: number;
+  meal_number: number;
   scheduled_time: string; // HH:mm format
   expected_grams?: number; // Cantidad esperada para esta ración específica
   notes?: string;
@@ -110,7 +110,7 @@ export type PetWithSchedules = Pet & {
  */
 export type PortionScheduleSummary = Pick<
   PortionSchedule,
-  "portion_number" | "scheduled_time"
+  "meal_number" | "scheduled_time"
 >;
 
 // ============================================
@@ -228,7 +228,7 @@ export const PetFormSchema = z.object({
     .int("La meta debe ser un número entero")
     .positive("La meta debe ser mayor a 0")
     .max(5000, "Meta demasiado alta (máx. 5000g)"),
-  daily_portions_target: z
+  daily_meals_target: z
     .number({
       invalid_type_error: "El número de raciones debe ser un número",
     })

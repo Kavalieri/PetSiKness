@@ -16,6 +16,7 @@
 **Causa raíz**: Se añadieron por error `AnalyticsSection` y `RecommendationsSection` al dashboard, duplicando contenido que ya existe en páginas dedicadas.
 
 **Correcciones**:
+
 - ✅ Dashboard restaurado a estructura original (Stats + Alertas + Balance + Acciones)
 - ✅ Removidas secciones duplicadas (Analytics completos, Recommendations)
 - ✅ Limpieza de imports no usados (7 archivos)
@@ -37,6 +38,7 @@
 **LOC añadidas**: ~800
 
 **Componentes nuevos**:
+
 - ✅ `lib/export/csv.ts` (150 líneas) - Export nativo con BOM UTF-8
 - ✅ `lib/export/pdf.ts` (390 líneas) - jsPDF + autoTable
 - ✅ ExportAnalyticsButton - Botón en Analytics page
@@ -44,16 +46,19 @@
 - ✅ FeedingHistoryTable con dropdown export
 
 **Dependencias nuevas**:
+
 - jspdf@^2.5.2
 - jspdf-autotable@^3.8.4
 
 **Exports disponibles**:
+
 1. **CSV**: Historial de alimentación (Excel-compatible)
 2. **PDF - Historial**: Tabla completa con rango de fechas
 3. **PDF - Analytics**: Métricas + tendencias (30 días)
 4. **PDF - Dashboard**: Resumen del día con balance por mascota
 
 **Características**:
+
 - ✅ Formateo automático de fechas/números
 - ✅ Headers brandados con logo Pet SiKness
 - ✅ Footers con fecha generación + paginación

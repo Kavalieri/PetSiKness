@@ -20,7 +20,7 @@ import type { PortionScheduleFormData } from "@/types/pets";
  * - 5+ raciones: distribuidas uniformemente entre 07:00 y 19:00
  *
  * @param numPortions - Número de raciones diarias
- * @returns Array de horarios con portion_number y scheduled_time
+ * @returns Array de horarios con meal_number y scheduled_time
  */
 export function generateDefaultSchedule(
   numPortions: number
@@ -44,7 +44,7 @@ export function generateDefaultSchedule(
   // Si existe horario predefinido, usarlo
   if (predefinedSchedules[numPortions]) {
     return predefinedSchedules[numPortions].map((time, index) => ({
-      portion_number: index + 1,
+      meal_number: index + 1,
       scheduled_time: time,
     }));
   }
@@ -68,7 +68,7 @@ export function generateDefaultSchedule(
       .padStart(2, "0")}`;
 
     schedules.push({
-      portion_number: i + 1,
+      meal_number: i + 1,
       scheduled_time,
     });
   }

@@ -86,10 +86,10 @@ export async function getPetById(
 
     // 5. Query de portion_schedules
     const schedulesResult = await query(
-      `SELECT id, portion_number, scheduled_time, expected_grams, notes, created_at, updated_at
+      `SELECT id, meal_number, scheduled_time, expected_grams, notes, created_at, updated_at
        FROM pet_portion_schedules
        WHERE pet_id = $1
-       ORDER BY portion_number ASC`,
+       ORDER BY meal_number ASC`,
       [id]
     );
 
@@ -134,8 +134,8 @@ export async function createPet(formData: FormData): Promise<Result<Pet>> {
         : null,
       body_condition: formData.get("body_condition") || null,
       daily_food_goal_grams: Number(formData.get("daily_food_goal_grams")),
-      daily_portions_target: formData.get("daily_portions_target")
-        ? Number(formData.get("daily_portions_target"))
+      daily_meals_target: formData.get("daily_meals_target")
+        ? Number(formData.get("daily_meals_target"))
         : 2,
       health_notes: formData.get("health_notes") || null,
       allergies: formData.get("allergies")
@@ -183,7 +183,7 @@ export async function createPet(formData: FormData): Promise<Result<Pet>> {
         weight_kg,
         body_condition,
         daily_food_goal_grams,
-        daily_portions_target,
+        daily_meals_target,
         health_notes,
         allergies,
         medications,
@@ -203,7 +203,7 @@ export async function createPet(formData: FormData): Promise<Result<Pet>> {
         data.weight_kg,
         data.body_condition,
         data.daily_food_goal_grams,
-        data.daily_portions_target,
+        data.daily_meals_target,
         data.health_notes,
         data.allergies,
         data.medications,
@@ -233,15 +233,15 @@ export async function createPet(formData: FormData): Promise<Result<Pet>> {
         createdPet.id,
         ...portionSchedules.flatMap(
           (s: {
-            portion_number: number;
+            meal_number: number;
             scheduled_time: string;
             expected_grams?: number;
-          }) => [s.portion_number, s.scheduled_time, s.expected_grams || null]
+          }) => [s.meal_number, s.scheduled_time, s.expected_grams || null]
         ),
       ];
 
       await query(
-        `INSERT INTO pet_portion_schedules (pet_id, portion_number, scheduled_time, expected_grams)
+        `INSERT INTO pet_portion_schedules (pet_id, meal_number, scheduled_time, expected_grams)
          VALUES ${scheduleValues}`,
         scheduleParams
       );
@@ -325,8 +325,8 @@ export async function updatePet(
         : null,
       body_condition: formData.get("body_condition") || null,
       daily_food_goal_grams: Number(formData.get("daily_food_goal_grams")),
-      daily_portions_target: formData.get("daily_portions_target")
-        ? Number(formData.get("daily_portions_target"))
+      daily_meals_target: formData.get("daily_meals_target")
+        ? Number(formData.get("daily_meals_target"))
         : 2,
       health_notes: formData.get("health_notes") || null,
       allergies: formData.get("allergies")
@@ -373,7 +373,7 @@ export async function updatePet(
         weight_kg = $6,
         body_condition = $7,
         daily_food_goal_grams = $8,
-        daily_portions_target = $9,
+        daily_meals_target = $9,
         health_notes = $10,
         allergies = $11,
         medications = $12,
@@ -392,7 +392,7 @@ export async function updatePet(
         data.weight_kg,
         data.body_condition,
         data.daily_food_goal_grams,
-        data.daily_portions_target,
+        data.daily_meals_target,
         data.health_notes,
         data.allergies,
         data.medications,

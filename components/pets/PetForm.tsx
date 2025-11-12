@@ -95,8 +95,8 @@ function convertPetToFormData(pet: Pet): any {
     weight_kg: pet.weight_kg ? Number(pet.weight_kg) : undefined,
     body_condition: (pet.body_condition as string) || undefined,
     daily_food_goal_grams: Number(pet.daily_food_goal_grams),
-    daily_portions_target: pet.daily_portions_target
-      ? Number(pet.daily_portions_target)
+    daily_meals_target: pet.daily_meals_target
+      ? Number(pet.daily_meals_target)
       : 2,
     health_notes: pet.health_notes || undefined,
     allergies: pet.allergies || [],
@@ -135,8 +135,8 @@ function convertToFormData(
     data.daily_food_goal_grams.toString()
   );
   formData.append(
-    "daily_portions_target",
-    data.daily_portions_target.toString()
+    "daily_meals_target",
+    data.daily_meals_target.toString()
   );
 
   // Horarios de raciones (nuevo)
@@ -183,7 +183,7 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
     PortionScheduleFormData[]
   >(
     pet?.portion_schedules?.map((s) => ({
-      portion_number: s.portion_number,
+      meal_number: s.meal_number,
       scheduled_time: s.scheduled_time,
       expected_grams: s.expected_grams ? Number(s.expected_grams) : undefined,
       notes: s.notes || undefined,
@@ -202,7 +202,7 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
     weight_kg: undefined,
     body_condition: undefined,
     daily_food_goal_grams: 200,
-    daily_portions_target: 2,
+    daily_meals_target: 2,
     health_notes: undefined,
     allergies: [],
     medications: [],
@@ -238,8 +238,8 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
     }
   }, [selectedSpecies, form, pet]);
 
-  // Sincronizar portion schedules con daily_portions_target
-  const dailyPortionsTarget = form.watch("daily_portions_target");
+  // Sincronizar portion schedules con daily_meals_target
+  const dailyPortionsTarget = form.watch("daily_meals_target");
 
   useEffect(() => {
     if (dailyPortionsTarget && dailyPortionsTarget > 0) {
@@ -594,7 +594,7 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
             {/* Raciones objetivo */}
             <FormField
               control={form.control}
-              name="daily_portions_target"
+              name="daily_meals_target"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Raciones por Día</FormLabel>
@@ -629,11 +629,11 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                 {portionSchedules.map((schedule, index) => (
                   <div
-                    key={schedule.portion_number}
+                    key={schedule.meal_number}
                     className="flex flex-col space-y-2 p-3 border rounded-lg"
                   >
                     <label className="text-sm font-medium">
-                      {getPortionName(schedule.portion_number)}
+                      {getPortionName(schedule.meal_number)}
                     </label>
 
                     {/* Hora */}
