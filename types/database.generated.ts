@@ -32,24 +32,25 @@ export interface DailyFeedingSummary {
   daily_food_goal_grams: number | null;
   feeding_date: Timestamp | null;
   goal_achievement_pct: Numeric | null;
-  goal_status: string | null;
   met_target: boolean | null;
   over_target: boolean | null;
   pet_id: string | null;
   pet_name: string | null;
   total_eaten_grams: Int8 | null;
   total_leftover_grams: Int8 | null;
-  total_meals: Int8 | null;
   total_served_grams: Int8 | null;
   under_target: boolean | null;
 }
 
 export interface Feedings {
-  amount_eaten_grams: number;
   /**
-   * Calculado automáticamente: servido - comido
+   * Cantidad de comida consumida (CALCULADA = servido - sobrante). Auto-generada.
    */
-  amount_leftover_grams: Generated<number | null>;
+  amount_eaten_grams: Generated<number | null>;
+  /**
+   * Cantidad de comida que sobró (INPUT del usuario). Fácil de estimar visualmente.
+   */
+  amount_leftover_grams: number;
   amount_served_grams: number;
   /**
    * Calificación del apetito: refused (rechazó), poor (pobre), normal, good (bueno), excellent (excelente)

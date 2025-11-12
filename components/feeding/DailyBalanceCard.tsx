@@ -113,7 +113,9 @@ function MealCard({
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [served, setServed] = useState(balance.served_grams?.toString() || "");
-  const [eaten, setEaten] = useState(balance.eaten_grams?.toString() || "");
+  const [leftover, setLeftover] = useState(
+    balance.leftover_grams?.toString() || ""
+  ); // ✨ CAMBIO: Ahora es input (antes eaten)
   const [isSaving, setIsSaving] = useState(false);
 
   const statusIcon = getStatusIcon(balance.status);
@@ -137,7 +139,7 @@ function MealCard({
         petId,
         portionNumber: balance.portion_number,
         servedGrams: Number(served),
-        eatenGrams: Number(eaten),
+        leftoverGrams: Number(leftover), // ✨ CAMBIO: Enviar leftover (antes eaten)
       });
 
       if (!result.ok) {
@@ -271,20 +273,26 @@ function MealCard({
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="eaten">Cantidad comida (gramos)</Label>
+              <Label htmlFor="leftover">
+                Cantidad que sobró (gramos) ✨ NUEVO
+              </Label>
               <Input
-                id="eaten"
+                id="leftover"
                 type="number"
-                value={eaten}
-                onChange={(e) => setEaten(e.target.value)}
+                value={leftover}
+                onChange={(e) => setLeftover(e.target.value)}
                 min="0"
                 step="1"
                 max={served}
               />
+              <p className="text-xs text-muted-foreground">
+                Registra lo que quedó en el plato al final
+              </p>
             </div>
 
-            <div className="text-sm text-muted-foreground">
-              Sobra calculada: {Math.max(0, Number(served) - Number(eaten))}g
+            <div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded">
+              <strong>Comido (calculado):</strong>{" "}
+              {Math.max(0, Number(served) - Number(leftover))}g
             </div>
           </div>
 

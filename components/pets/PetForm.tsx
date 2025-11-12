@@ -134,10 +134,7 @@ function convertToFormData(
     "daily_food_goal_grams",
     data.daily_food_goal_grams.toString()
   );
-  formData.append(
-    "daily_meals_target",
-    data.daily_meals_target.toString()
-  );
+  formData.append("daily_meals_target", data.daily_meals_target.toString());
 
   // Horarios de raciones (nuevo)
   if (portionSchedules && portionSchedules.length > 0) {

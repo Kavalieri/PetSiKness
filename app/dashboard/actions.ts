@@ -684,12 +684,15 @@ export async function getHouseholdOverview(
  *
  * Si ya existe un feeding para ese portion_number del día, lo actualiza.
  * Si no existe, crea uno nuevo con datos mínimos.
+ * 
+ * ⚠️ CAMBIO DE LÓGICA (Issue #65): Ahora recibe leftoverGrams (sobrante)
+ * en vez de eatenGrams. El sistema calcula eaten = served - leftover.
  */
 export async function updatePortionAmount(data: {
   petId: string;
   portionNumber: number;
   servedGrams: number;
-  eatenGrams: number;
+  leftoverGrams: number; // ✨ CAMBIO: Ahora es input (antes eatenGrams)
   date?: string; // DEFAULT: HOY
 }): Promise<Result> {
   try {
@@ -706,11 +709,11 @@ export async function updatePortionAmount(data: {
       return fail("Mascota no encontrada o no activa");
     }
 
-    // Validar cantidades
+    // Validar cantidades (leftover no puede ser negativo ni exceder served)
     if (
       data.servedGrams < 0 ||
-      data.eatenGrams < 0 ||
-      data.eatenGrams > data.servedGrams
+      data.leftoverGrams < 0 ||
+      data.leftoverGrams > data.servedGrams
     ) {
       return fail("Cantidades inválidas");
     }
@@ -737,11 +740,11 @@ export async function updatePortionAmount(data: {
         UPDATE feedings 
         SET 
           amount_served_grams = $1,
-          amount_eaten_grams = $2,
+          amount_leftover_grams = $2,
           updated_at = CURRENT_TIMESTAMP
         WHERE id = $3
         `,
-        [data.servedGrams, data.eatenGrams, feedingId]
+        [data.servedGrams, data.leftoverGrams, feedingId]
       );
     } else {
       // CREAR nuevo feeding con datos mínimos
@@ -768,7 +771,7 @@ export async function updatePortionAmount(data: {
           feeding_date,
           portion_number,
           amount_served_grams,
-          amount_eaten_grams,
+          amount_leftover_grams,
           recorded_by
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
         `,
@@ -779,7 +782,7 @@ export async function updatePortionAmount(data: {
           targetDate,
           data.portionNumber,
           data.servedGrams,
-          data.eatenGrams,
+          data.leftoverGrams,
           profileId,
         ]
       );

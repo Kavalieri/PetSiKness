@@ -320,7 +320,9 @@ export interface DailySummary {
 /**
  * Genera resumen agregado desde los balances individuales
  */
-export function calculateDailySummary(balances: PortionBalance[]): DailySummary {
+export function calculateDailySummary(
+  balances: PortionBalance[]
+): DailySummary {
   const totalMeals = balances.length;
   const completedMeals = balances.filter(
     (b) => b.status === "completed"
