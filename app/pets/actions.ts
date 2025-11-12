@@ -409,7 +409,7 @@ export async function updatePet(
     // 8. Actualizar meal_schedules si existen
     if (mealSchedules && Array.isArray(mealSchedules)) {
       // Primero eliminar los existentes
-      await query(`DELETE FROM pet_meal_schedules WHERE pet_id = $1`, [id]);
+      await query(`DELETE FROM pet_portion_schedules WHERE pet_id = $1`, [id]);
 
       // Luego insertar los nuevos si hay
       if (mealSchedules.length > 0) {
@@ -432,7 +432,7 @@ export async function updatePet(
         ];
 
         await query(
-          `INSERT INTO pet_meal_schedules (pet_id, meal_number, scheduled_time, expected_grams)
+          `INSERT INTO pet_portion_schedules (pet_id, meal_number, scheduled_time, expected_grams)
            VALUES ${scheduleValues}`,
           scheduleParams
         );

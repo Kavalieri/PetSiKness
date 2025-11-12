@@ -242,7 +242,7 @@ export async function getTodayBalance(
         pms.scheduled_time,
         pms.expected_grams,
         pms.notes
-      FROM pet_meal_schedules pms
+      FROM pet_portion_schedules pms
       INNER JOIN pets p ON p.id = pms.pet_id
       WHERE p.household_id = $1 AND p.is_active = true
       ORDER BY pms.pet_id, pms.meal_number
