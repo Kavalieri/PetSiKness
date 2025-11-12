@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import "./globals.css";
 import { NavBar } from "@/components/shared/NavBar";
 import { Toaster } from "@/components/ui/toaster";
+import { Toaster as SonnerToaster } from "sonner";
 import { authOptions } from "@/lib/auth-options";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 
@@ -39,6 +40,7 @@ export default async function RootLayout({
           />
           <main>{children}</main>
           <Toaster />
+          <SonnerToaster position="top-center" />
         </ThemeProvider>
       </body>
     </html>

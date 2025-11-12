@@ -5,6 +5,7 @@ import { query } from "@/lib/db";
 import { requireHousehold } from "@/lib/auth";
 import { ok, fail } from "@/lib/result";
 import type { Result } from "@/lib/result";
+import { revalidatePath } from "next/cache";
 import {
   calculateMealBalances,
   type MealBalance,
@@ -669,5 +670,124 @@ export async function getHouseholdOverview(
       return fail(error.message);
     }
     return fail("Error al obtener overview del hogar");
+  }
+}
+
+/**
+ * Actualizar o crear feeding para una ración específica (meal_number)
+ * del día actual para una mascota.
+ *
+ * Si ya existe un feeding para ese meal_number del día, lo actualiza.
+ * Si no existe, crea uno nuevo con datos mínimos.
+ */
+export async function updateMealPortion(data: {
+  petId: string;
+  mealNumber: number;
+  servedGrams: number;
+  eatenGrams: number;
+  date?: string; // DEFAULT: HOY
+}): Promise<Result> {
+  try {
+    const { householdId, profileId } = await requireHousehold();
+    const targetDate = data.date || new Date().toISOString().split("T")[0];
+
+    // Validar que la mascota pertenece al household
+    const petCheck = await query(
+      `SELECT id FROM pets WHERE id = $1 AND household_id = $2 AND is_active = true`,
+      [data.petId, householdId]
+    );
+
+    if (petCheck.rows.length === 0) {
+      return fail("Mascota no encontrada o no activa");
+    }
+
+    // Validar cantidades
+    if (
+      data.servedGrams < 0 ||
+      data.eatenGrams < 0 ||
+      data.eatenGrams > data.servedGrams
+    ) {
+      return fail("Cantidades inválidas");
+    }
+
+    // Buscar feeding existente para este meal_number del día
+    const existingFeeding = await query(
+      `
+      SELECT id, food_id 
+      FROM feedings 
+      WHERE pet_id = $1 
+        AND feeding_date = $2 
+        AND meal_number = $3
+      LIMIT 1
+      `,
+      [data.petId, targetDate, data.mealNumber]
+    );
+
+    if (existingFeeding.rows.length > 0) {
+      // ACTUALIZAR feeding existente
+      const feedingId = existingFeeding.rows[0].id;
+
+      await query(
+        `
+        UPDATE feedings 
+        SET 
+          amount_served_grams = $1,
+          amount_eaten_grams = $2,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE id = $3
+        `,
+        [data.servedGrams, data.eatenGrams, feedingId]
+      );
+    } else {
+      // CREAR nuevo feeding con datos mínimos
+      // Necesitamos un food_id: usar el primer alimento del household como placeholder
+      const foodResult = await query(
+        `SELECT id FROM foods WHERE household_id = $1 LIMIT 1`,
+        [householdId]
+      );
+
+      if (foodResult.rows.length === 0) {
+        return fail(
+          "No hay alimentos registrados. Crea al menos un alimento primero."
+        );
+      }
+
+      const foodId = foodResult.rows[0].id;
+
+      await query(
+        `
+        INSERT INTO feedings (
+          household_id,
+          pet_id,
+          food_id,
+          feeding_date,
+          meal_number,
+          amount_served_grams,
+          amount_eaten_grams,
+          recorded_by
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        `,
+        [
+          householdId,
+          data.petId,
+          foodId,
+          targetDate,
+          data.mealNumber,
+          data.servedGrams,
+          data.eatenGrams,
+          profileId,
+        ]
+      );
+    }
+
+    // Revalidar dashboard para actualizar UI
+    revalidatePath("/dashboard");
+    return ok();
+  } catch (error) {
+    console.error("Error updating meal portion:", error);
+    if (error instanceof Error) {
+      return fail(error.message);
+    }
+    return fail("Error al actualizar ración");
   }
 }

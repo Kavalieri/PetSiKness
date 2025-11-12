@@ -30,6 +30,9 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { updateMealPortion } from "@/app/dashboard/actions";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 // ============================================
 // TIPOS
@@ -107,6 +110,7 @@ function MealCard({
   petName: string;
   onUpdate?: () => void;
 }) {
+  const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [served, setServed] = useState(balance.served_grams?.toString() || "");
   const [eaten, setEaten] = useState(balance.eaten_grams?.toString() || "");
@@ -129,23 +133,39 @@ function MealCard({
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      // TODO: Implementar server action para actualizar ración
-      console.log("Actualizar ración", {
+      const result = await updateMealPortion({
         petId,
         mealNumber: balance.meal_number,
-        served: Number(served),
-        eaten: Number(eaten),
+        servedGrams: Number(served),
+        eatenGrams: Number(eaten),
+      });
+
+      if (!result.ok) {
+        toast.error("Error", {
+          description: result.message,
+        });
+        return;
+      }
+
+      toast.success("Ración actualizada", {
+        description: `${getPortionName(balance.meal_number)} de ${petName} actualizada correctamente`,
       });
 
       // Cerrar diálogo
       setIsEditing(false);
 
-      // Callback para recargar
+      // Recargar página para reflejar cambios
+      router.refresh();
+
+      // Callback si existe
       if (onUpdate) {
         onUpdate();
       }
     } catch (error) {
       console.error("Error actualizando ración:", error);
+      toast.error("Error inesperado", {
+        description: "No se pudo actualizar la ración",
+      });
     } finally {
       setIsSaving(false);
     }
