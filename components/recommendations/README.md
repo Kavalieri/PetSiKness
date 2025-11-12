@@ -32,12 +32,14 @@ El Sistema de Recomendaciones Nutricionales analiza el historial de alimentació
 ### Estándares Nutricionales
 
 **Gatos (Carnívoros Obligados):**
+
 - Proteína: 40% óptimo (min 30%, max 50%)
 - Grasa: 45% óptimo (min 25%, max 55%) - Fuente primaria de energía
 - Carbohidratos: 5% óptimo (max 10%) - Prevención diabetes
 - Fibra: 2% óptimo (min 1%, max 5%)
 
 **Perros (Omnívoros):**
+
 - Proteína: 28% óptimo (min 22%, max 40%)
 - Grasa: 18% óptimo (min 10%, max 30%)
 - Carbohidratos: 30% óptimo (max 50%)
@@ -92,6 +94,7 @@ components/
 Analiza el historial de alimentación y calcula totales nutricionales.
 
 **Input:**
+
 ```typescript
 feedingHistory: Array<{
   amount_eaten_grams: number;
@@ -109,27 +112,28 @@ periodDays: number
 ```
 
 **Output:**
+
 ```typescript
 interface NutritionalAnalysis {
   petId: string;
   petName: string;
   species: string;
   periodDays: number;
-  
+
   // Totales en gramos (base seca)
   totalProteinGrams: number;
   totalFatGrams: number;
   totalCarbsGrams: number;
   totalFiberGrams: number;
   totalCalories: number;
-  
+
   // Promedios diarios
   avgDailyProteinGrams: number;
   avgDailyFatGrams: number;
   avgDailyCarbsGrams: number;
   avgDailyFiberGrams: number;
   avgDailyCalories: number;
-  
+
   // % de composición consumida
   consumedProteinPercentage: number;
   consumedFatPercentage: number;
@@ -139,6 +143,7 @@ interface NutritionalAnalysis {
 ```
 
 **Lógica Clave:**
+
 - Convierte a base seca si humedad > 20%
 - Acumula gramos de cada nutriente: `(eatenGrams * nutrientPct) / 100`
 - Calcula promedios: `total / periodDays`
@@ -153,25 +158,28 @@ interface NutritionalAnalysis {
 Compara consumo vs requerimientos y determina severidad.
 
 **Input:**
+
 ```typescript
 analysis: NutritionalAnalysis,
 requirements: NutritionalRequirements
 ```
 
 **Output:**
+
 ```typescript
 interface NutritionalGap {
   nutrient: "protein" | "fat" | "carbs" | "fiber";
   nutrientLabel: string;
-  current: number;        // % actual
-  required: number;       // % óptimo
-  gap: number;            // Diferencia (+ = deficiencia, - = exceso)
+  current: number; // % actual
+  required: number; // % óptimo
+  gap: number; // Diferencia (+ = deficiencia, - = exceso)
   severity: "critical" | "moderate" | "minor" | "ok" | "excess";
   recommendation: string;
 }
 ```
 
 **Cálculo de Severidad:**
+
 ```typescript
 // Deficiencia
 gap > 15%  → "critical"
@@ -195,6 +203,7 @@ exceso > 15% → "critical"  // Riesgo diabetes
 Sugiere alimentos del catálogo que cubran gaps detectados.
 
 **Input:**
+
 ```typescript
 gaps: NutritionalGap[],
 availableFoods: Foods[],
@@ -203,13 +212,14 @@ dailyGoalGrams: number
 ```
 
 **Output:**
+
 ```typescript
 interface FoodRecommendation {
   food: Foods;
-  score: number;                    // 0-100 (idoneidad)
-  matchedGaps: NutritionalGap[];   // Gaps que cubre
+  score: number; // 0-100 (idoneidad)
+  matchedGaps: NutritionalGap[]; // Gaps que cubre
   suggestedPortionGrams: number;
-  reasoning: string[];              // Explicaciones
+  reasoning: string[]; // Explicaciones
 }
 ```
 
@@ -221,10 +231,10 @@ for (gap in significantGaps) {
   // Si alimento tiene alto contenido del nutriente deficiente
   if (foodNutrientPct > gap.required) {
     matchStrength = min((foodNutrient - required) / gap, 1);
-    
-    severityWeight = gap.severity === "critical" ? 30 :
-                     gap.severity === "moderate" ? 20 : 10;
-    
+
+    severityWeight =
+      gap.severity === "critical" ? 30 : gap.severity === "moderate" ? 20 : 10;
+
     score += severityWeight * matchStrength;
   }
 }
@@ -238,6 +248,7 @@ score = min(score, 100);
 ```
 
 **Filtros:**
+
 - Solo incluye alimentos aptos para la especie
 - Score > 0 (cubre al menos un gap)
 - Top 5 ordenados por score
@@ -251,6 +262,7 @@ score = min(score, 100);
 Determina cantidad recomendada para cubrir gaps sin exceder meta.
 
 **Input:**
+
 ```typescript
 food: Foods,
 gaps: NutritionalGap[],
@@ -294,6 +306,7 @@ return round(optimalPortion);
 Tarjeta visual de alimento recomendado.
 
 **Props:**
+
 ```typescript
 interface RecommendationCardProps {
   recommendation: FoodRecommendation;
@@ -303,6 +316,7 @@ interface RecommendationCardProps {
 ```
 
 **Features:**
+
 - Icono del alimento (emoji por tipo)
 - Nombre, marca, tipo (badge)
 - Match score (%) con visual destacado
@@ -319,6 +333,7 @@ interface RecommendationCardProps {
 Panel de análisis nutricional agregado.
 
 **Props:**
+
 ```typescript
 interface NutritionalInsightsProps {
   analysis: NutritionalAnalysis;
@@ -331,18 +346,22 @@ interface NutritionalInsightsProps {
 **Secciones:**
 
 1. **Header**
+
    - Nombre mascota, especie, período
    - Status general (crítico/mejorable/óptimo)
    - Contador de deficiencias
 
 2. **Resumen Diario**
+
    - 4 cards: Proteína, Grasa, Carbs, Fibra
    - Valores: gramos/día + % composición
 
 3. **Alert Species-Specific**
+
    - Info relevante para carnívoros/omnívoros
 
 4. **Balance vs Requerimientos**
+
    - 4 progress bars por nutriente
    - Actual vs Óptimo
    - Severidad visual con badges
@@ -358,6 +377,7 @@ interface NutritionalInsightsProps {
 Contenedor principal con controles.
 
 **Features:**
+
 - Selector de mascota (dropdown)
 - Selector de período (3/7/14/30 días)
 - Botón refresh
@@ -380,14 +400,16 @@ Genera recomendaciones nutricionales completas.
 export async function getRecommendationsForPet(
   petId?: string,
   days: number = 7
-): Promise<Result<RecommendationResult>>
+): Promise<Result<RecommendationResult>>;
 ```
 
 **Parámetros:**
+
 - `petId` (opcional): ID de mascota (si no se provee, usa primera del hogar)
 - `days` (default 7): Período de análisis
 
 **Retorna:**
+
 ```typescript
 interface RecommendationResult {
   analysis: NutritionalAnalysis;
@@ -398,6 +420,7 @@ interface RecommendationResult {
 ```
 
 **Proceso:**
+
 1. Obtener household_id del usuario
 2. Determinar mascota target
 3. Query feedings con JOINs (foods)
@@ -406,6 +429,7 @@ interface RecommendationResult {
 6. Retornar resultado completo
 
 **Errores:**
+
 - `"No se encontró el hogar del usuario"`
 - `"No hay mascotas registradas en este hogar"`
 - `"Mascota no encontrada"`
@@ -421,7 +445,7 @@ Obtiene lista de mascotas para selector.
 ```typescript
 export async function getPetsForRecommendations(): Promise<
   Result<Array<{ id: string; name: string; species: string }>>
->
+>;
 ```
 
 **Retorna:** Array de mascotas con id, name, species.
@@ -481,7 +505,7 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-8">
       {/* Otros componentes del dashboard */}
-      
+
       <section>
         <h2 className="text-2xl font-bold mb-4">
           Recomendaciones Nutricionales
@@ -500,18 +524,20 @@ export default async function DashboardPage() {
 ### Caso 1: Gato con Deficiencia de Grasa
 
 **Análisis:**
+
 ```json
 {
   "petName": "Luna",
   "species": "cat",
-  "consumedProteinPercentage": 42.5,  // ✅ Óptimo
-  "consumedFatPercentage": 28.3,      // ⚠️ Bajo (óptimo 45%)
-  "consumedCarbsPercentage": 4.2,     // ✅ Perfecto
-  "consumedFiberPercentage": 1.8      // ✅ Óptimo
+  "consumedProteinPercentage": 42.5, // ✅ Óptimo
+  "consumedFatPercentage": 28.3, // ⚠️ Bajo (óptimo 45%)
+  "consumedCarbsPercentage": 4.2, // ✅ Perfecto
+  "consumedFiberPercentage": 1.8 // ✅ Óptimo
 }
 ```
 
 **Gap Detectado:**
+
 ```json
 {
   "nutrient": "fat",
@@ -524,11 +550,12 @@ export default async function DashboardPage() {
 ```
 
 **Recomendación:**
+
 ```json
 {
   "food": {
     "name": "BARF Pollo con Vísceras",
-    "fat_percentage": 48.7  // Base seca
+    "fat_percentage": 48.7 // Base seca
   },
   "score": 85,
   "matchedGaps": [{ "nutrient": "fat", "severity": "critical" }],
@@ -546,18 +573,20 @@ export default async function DashboardPage() {
 ### Caso 2: Perro con Exceso de Carbohidratos
 
 **Análisis:**
+
 ```json
 {
   "petName": "Max",
   "species": "dog",
-  "consumedProteinPercentage": 26.0,  // ⚠️ Bajo (óptimo 28%)
-  "consumedFatPercentage": 15.2,      // ✅ OK
-  "consumedCarbsPercentage": 45.8,    // ⚠️ Alto (óptimo 30%)
-  "consumedFiberPercentage": 3.5      // ✅ OK
+  "consumedProteinPercentage": 26.0, // ⚠️ Bajo (óptimo 28%)
+  "consumedFatPercentage": 15.2, // ✅ OK
+  "consumedCarbsPercentage": 45.8, // ⚠️ Alto (óptimo 30%)
+  "consumedFiberPercentage": 3.5 // ✅ OK
 }
 ```
 
 **Gaps Detectados:**
+
 ```json
 [
   {
@@ -568,13 +597,14 @@ export default async function DashboardPage() {
   {
     "nutrient": "carbs",
     "gap": -15.8,
-    "severity": "moderate",  // Exceso
+    "severity": "moderate", // Exceso
     "recommendation": "Reducir carbohidratos en 15.8%"
   }
 ]
 ```
 
 **Recomendación:**
+
 ```json
 {
   "food": {
@@ -583,14 +613,9 @@ export default async function DashboardPage() {
     "carbs_percentage": 0.5
   },
   "score": 72,
-  "matchedGaps": [
-    { "nutrient": "protein", "severity": "minor" }
-  ],
+  "matchedGaps": [{ "nutrient": "protein", "severity": "minor" }],
   "suggestedPortionGrams": 60,
-  "reasoning": [
-    "Alto en Proteína (38.0%)",
-    "Bajo en Carbohidratos (0.5%)"
-  ]
+  "reasoning": ["Alto en Proteína (38.0%)", "Bajo en Carbohidratos (0.5%)"]
 }
 ```
 

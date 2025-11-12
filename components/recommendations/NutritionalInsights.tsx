@@ -165,18 +165,23 @@ export function NutritionalInsights({
                 <>
                   <Badge variant="destructive">Requiere atención</Badge>
                   <span className="text-xs text-muted-foreground">
-                    {criticalGaps.length} deficiencia{criticalGaps.length > 1 ? "s" : ""} crítica
+                    {criticalGaps.length} deficiencia
+                    {criticalGaps.length > 1 ? "s" : ""} crítica
                     {criticalGaps.length > 1 ? "s" : ""}
                   </span>
                 </>
               )}
               {overallStatus === "moderate" && (
                 <>
-                  <Badge variant="secondary" className="bg-orange-500 text-white">
+                  <Badge
+                    variant="secondary"
+                    className="bg-orange-500 text-white"
+                  >
                     Mejorable
                   </Badge>
                   <span className="text-xs text-muted-foreground">
-                    {moderateGaps.length} gap{moderateGaps.length > 1 ? "s" : ""} moderado
+                    {moderateGaps.length} gap
+                    {moderateGaps.length > 1 ? "s" : ""} moderado
                     {moderateGaps.length > 1 ? "s" : ""}
                   </span>
                 </>
@@ -306,13 +311,13 @@ export function NutritionalInsights({
         <CardContent>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-sm text-muted-foreground mb-1">Total período</p>
+              <p className="text-sm text-muted-foreground mb-1">
+                Total período
+              </p>
               <p className="text-2xl font-bold">
                 {Math.round(analysis.totalCalories)} kcal
               </p>
-              <p className="text-xs text-muted-foreground">
-                {periodDays} días
-              </p>
+              <p className="text-xs text-muted-foreground">{periodDays} días</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground mb-1">

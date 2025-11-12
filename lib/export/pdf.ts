@@ -313,7 +313,10 @@ export function generateAnalyticsPDF(
   const totalEaten = trendData.reduce((sum, d) => sum + d.eaten, 0);
   const avgGoalAchievement =
     trendData.length > 0
-      ? ((totalServed / trendData.reduce((sum, d) => sum + d.goal, 0)) * 100).toFixed(1)
+      ? (
+          (totalServed / trendData.reduce((sum, d) => sum + d.goal, 0)) *
+          100
+        ).toFixed(1)
       : "0";
 
   generatePDFReport({

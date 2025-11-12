@@ -194,7 +194,6 @@ export function analyzeNutritionalIntake(
   let totalCarbsGrams = 0;
   let totalFiberGrams = 0;
   let totalCalories = 0;
-  let totalEatenGrams = 0;
 
   // Acumular nutrientes de cada alimentación
   for (const feeding of feedingHistory) {
@@ -243,8 +242,6 @@ export function analyzeNutritionalIntake(
     // Calorías
     const caloriesPer100g = Number(feeding.food.calories_per_100g) || 0;
     totalCalories += (eatenGrams * caloriesPer100g) / 100;
-
-    totalEatenGrams += eatenGrams;
   }
 
   // Calcular promedios diarios
@@ -335,7 +332,8 @@ export function detectNutritionalGaps(
   };
 
   // GAP 1: Proteína
-  const proteinGap = requirements.proteinOptimal - analysis.consumedProteinPercentage;
+  const proteinGap =
+    requirements.proteinOptimal - analysis.consumedProteinPercentage;
   gaps.push({
     nutrient: "protein",
     nutrientLabel: "Proteína",
@@ -381,7 +379,9 @@ export function detectNutritionalGaps(
       carbsGap > 0
         ? "Nivel de carbohidratos bajo (ideal para carnívoros)"
         : carbsGap < -10
-        ? `Reducir carbohidratos en ${Math.abs(carbsGap).toFixed(1)}% (riesgo diabetes)`
+        ? `Reducir carbohidratos en ${Math.abs(carbsGap).toFixed(
+            1
+          )}% (riesgo diabetes)`
         : "Nivel de carbohidratos aceptable",
   });
 
@@ -428,8 +428,7 @@ export function generateFoodRecommendations(
 
   // Filtrar gaps significativos (deficiencias moderadas o críticas)
   const significantGaps = gaps.filter(
-    (g) =>
-      (g.severity === "critical" || g.severity === "moderate") && g.gap > 0
+    (g) => (g.severity === "critical" || g.severity === "moderate") && g.gap > 0
   );
 
   if (significantGaps.length === 0) {
@@ -454,7 +453,10 @@ export function generateFoodRecommendations(
     // Obtener nutrientes en base seca
     const proteinPct =
       moisture > 20
-        ? convertToDryMatterBasis(Number(food.protein_percentage) || 0, moisture)
+        ? convertToDryMatterBasis(
+            Number(food.protein_percentage) || 0,
+            moisture
+          )
         : Number(food.protein_percentage) || 0;
 
     const fatPct =
@@ -505,7 +507,11 @@ export function generateFoodRecommendations(
 
         // Score ponderado por severidad
         const severityWeight =
-          gap.severity === "critical" ? 30 : gap.severity === "moderate" ? 20 : 10;
+          gap.severity === "critical"
+            ? 30
+            : gap.severity === "moderate"
+            ? 20
+            : 10;
 
         score += severityWeight * matchStrength;
 
@@ -605,13 +611,19 @@ export function calculateOptimalPortion(
     case "carbs":
       nutrientPct =
         moisture > 20
-          ? convertToDryMatterBasis(Number(food.carbs_percentage) || 0, moisture)
+          ? convertToDryMatterBasis(
+              Number(food.carbs_percentage) || 0,
+              moisture
+            )
           : Number(food.carbs_percentage) || 0;
       break;
     case "fiber":
       nutrientPct =
         moisture > 20
-          ? convertToDryMatterBasis(Number(food.fiber_percentage) || 0, moisture)
+          ? convertToDryMatterBasis(
+              Number(food.fiber_percentage) || 0,
+              moisture
+            )
           : Number(food.fiber_percentage) || 0;
       break;
   }
@@ -624,7 +636,8 @@ export function calculateOptimalPortion(
   // Calcular gramos necesarios para cubrir 50% del gap
   // (no queremos cubrir 100% de golpe, sino gradual)
   const targetGapCoverage = criticalGap.gap * 0.5;
-  const gramsNeeded = (targetGapCoverage * currentDailyIntakeGrams) / nutrientPct;
+  const gramsNeeded =
+    (targetGapCoverage * currentDailyIntakeGrams) / nutrientPct;
 
   // Limitar entre 10% y 50% del espacio disponible
   const minPortion = availableGrams * 0.1;
@@ -687,9 +700,9 @@ export function generateNutritionalRecommendations(
   // 5. Calcular porciones óptimas para cada recomendación
   const currentDailyIntakeGrams =
     analysis.avgDailyProteinGrams +
-    analysis.avgDailyFatGrams +
-    analysis.avgDailyCarbsGrams +
-    analysis.avgDailyFiberGrams || dailyGoalGrams * 0.7; // Estimar 70% si no hay data
+      analysis.avgDailyFatGrams +
+      analysis.avgDailyCarbsGrams +
+      analysis.avgDailyFiberGrams || dailyGoalGrams * 0.7; // Estimar 70% si no hay data
 
   for (const rec of recommendations) {
     rec.suggestedPortionGrams = calculateOptimalPortion(

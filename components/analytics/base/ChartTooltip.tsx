@@ -1,7 +1,6 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { TooltipProps } from "recharts";
 
 // ============================================
 // TYPES

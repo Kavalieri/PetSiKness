@@ -1,8 +1,6 @@
 import { Suspense } from "react";
 import { format, isToday as isTodayFn } from "date-fns";
 import { es } from "date-fns/locale";
-import { query } from "@/lib/db";
-import { requireHousehold } from "@/lib/auth";
 import {
   getTodayBalance,
   getAlertsCount,
@@ -28,16 +26,9 @@ import {
   PawPrint,
   Target,
   Clock,
-  Info,
 } from "lucide-react";
 import Link from "next/link";
 import { DashboardHeader } from "./DashboardHeader";
-import { RecommendationsPanel } from "@/components/recommendations";
-import {
-  ConsumptionTrendChart,
-  MacronutrientPieChart,
-  FeedingHistoryTable,
-} from "@/components/analytics";
 // ============================================
 // METADATA
 // ============================================
@@ -300,130 +291,6 @@ async function TodayBalances({ date }: { date: string }) {
 }
 
 // ============================================
-// COMPONENTE ANALYTICS CHARTS
-// ============================================
-
-/**
- * Sección de Analytics con gráficos y tablas
- * Muestra:
- * - Tendencia de consumo (todas las mascotas del household)
- * - Distribución macronutrientes (requiere petId - se muestra para primera mascota)
- * - Historial reciente (todas las mascotas)
- */
-async function AnalyticsSection() {
-  // Obtener primera mascota del household para MacronutrientPieChart
-  // (requiere petId específico)
-  try {
-    const { householdId } = await requireHousehold();
-
-    const petsResult = await query(
-      `SELECT id, name FROM pets WHERE household_id = $1 ORDER BY name LIMIT 1`,
-      [householdId]
-    );
-
-    const firstPet = petsResult.rows[0] as
-      | { id: string; name: string }
-      | undefined;
-
-    return (
-      <section className="space-y-4">
-        <div>
-          <h2 className="text-xl sm:text-2xl font-bold">
-            Análisis y Tendencias
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            Visualización de datos nutricionales e historial
-          </p>
-        </div>
-
-        {/* Gráficos en grid 2 columnas */}
-        <div className="grid gap-4 lg:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Tendencia de Consumo</CardTitle>
-              <CardDescription>
-                Evolución diaria de alimentación (últimos 7 días)
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ConsumptionTrendChart days={7} />
-            </CardContent>
-          </Card>
-
-          {firstPet ? (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">
-                  Macronutrientes - {firstPet.name}
-                </CardTitle>
-                <CardDescription>
-                  Composición promedio (últimos 30 días)
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <MacronutrientPieChart petId={firstPet.id} days={30} />
-              </CardContent>
-            </Card>
-          ) : (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">
-                  Distribución de Macronutrientes
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Alert>
-                  <Info className="h-4 w-4" />
-                  <AlertDescription>
-                    Registra al menos una mascota para ver análisis detallado.
-                  </AlertDescription>
-                </Alert>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-
-        {/* Tabla de historial full width */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Historial Reciente</CardTitle>
-            <CardDescription>
-              Últimas alimentaciones registradas
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <FeedingHistoryTable pageSize={10} />
-          </CardContent>
-        </Card>
-      </section>
-    );
-  } catch (error) {
-    // Si falla autenticación, retornar null (no debería suceder en esta ruta)
-    return null;
-  }
-}
-
-// ============================================
-// COMPONENTE RECOMMENDATIONS
-// ============================================
-
-function RecommendationsSection() {
-  return (
-    <section className="space-y-4">
-      <div>
-        <h2 className="text-xl sm:text-2xl font-bold">
-          Recomendaciones Nutricionales
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          Sugerencias personalizadas basadas en análisis del historial
-        </p>
-      </div>
-      <RecommendationsPanel />
-    </section>
-  );
-}
-
-// ============================================
 // COMPONENTE ACCIONES RÁPIDAS
 // ============================================
 
@@ -566,16 +433,6 @@ export default async function DashboardPage({
 
       {/* Acciones rápidas */}
       <QuickActions />
-
-      {/* Analytics y Tendencias */}
-      <Suspense fallback={<Skeleton className="h-96 w-full" />}>
-        <AnalyticsSection />
-      </Suspense>
-
-      {/* Recomendaciones Nutricionales */}
-      <Suspense fallback={<Skeleton className="h-96 w-full" />}>
-        <RecommendationsSection />
-      </Suspense>
     </div>
   );
 }

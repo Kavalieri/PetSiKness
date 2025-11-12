@@ -69,7 +69,7 @@ async function getCroppedImg(
  */
 export function ImageCropper({
   onImageCropped,
-  currentImage,
+  currentImage, // eslint-disable-line @typescript-eslint/no-unused-vars
   aspectRatio = 1, // 1:1 por defecto (cuadrado)
 }: ImageCropperProps) {
   const { toast } = useToast();
@@ -121,7 +121,7 @@ export function ImageCropper({
         setRotation(0);
       };
       reader.readAsDataURL(file);
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "No se pudo cargar la imagen",

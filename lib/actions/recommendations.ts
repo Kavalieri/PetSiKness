@@ -169,7 +169,9 @@ export async function getPetsForRecommendations(): Promise<
       [householdId]
     );
 
-    return ok(petsResult.rows as Array<{ id: string; name: string; species: string }>);
+    return ok(
+      petsResult.rows as Array<{ id: string; name: string; species: string }>
+    );
   } catch (error) {
     console.error("Error al obtener mascotas:", error);
     return fail("Error al obtener lista de mascotas");

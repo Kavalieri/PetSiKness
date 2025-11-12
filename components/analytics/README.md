@@ -80,6 +80,7 @@ Wrapper estándar para gráficos con Card, título y acciones.
 ```
 
 **Props:**
+
 - `title` (string) - Título del gráfico
 - `description?` (string) - Descripción opcional
 - `children` (ReactNode) - Componente de gráfico Recharts
@@ -105,6 +106,7 @@ Tarjeta para mostrar métricas clave con indicador de cambio.
 ```
 
 **Props:**
+
 - `title` (string) - Título de la métrica
 - `value` (string | number) - Valor principal
 - `change?` (number) - Cambio % vs período anterior
@@ -135,6 +137,7 @@ Combina métrica con sparkline (mini gráfico de área).
 ```
 
 **Props:**
+
 - `title` (string) - Título de la métrica
 - `value` (string | number) - Valor principal actual
 - `data` (DataPoint[]) - Datos de tendencia
@@ -162,6 +165,7 @@ Tooltip personalizado para Recharts.
 ```
 
 **Props:**
+
 - `valueFormatter?` ((value, name?) => string) - Formatea valores
 - `labelFormatter?` ((label) => string) - Formatea labels
 - `showIndicator?` (boolean) - Mostrar indicador de color (default: true)
@@ -174,16 +178,12 @@ Leyenda personalizada para Recharts.
 
 ```tsx
 <Legend
-  content={
-    <ChartLegend
-      labelFormatter={(v) => capitalize(v)}
-      align="right"
-    />
-  }
+  content={<ChartLegend labelFormatter={(v) => capitalize(v)} align="right" />}
 />
 ```
 
 **Props:**
+
 - `labelFormatter?` ((value) => string) - Formatea labels
 - `align?` ("left" | "center" | "right") - Alineación (default: "center")
 
@@ -203,7 +203,7 @@ Barra de filtros para tablas.
       id: "pet",
       label: "Mascota",
       value: petId,
-      options: pets.map(p => ({ label: p.name, value: p.id })),
+      options: pets.map((p) => ({ label: p.name, value: p.id })),
       onChange: setPetId,
     },
   ]}
@@ -215,6 +215,7 @@ Barra de filtros para tablas.
 ```
 
 **Props:**
+
 - `searchValue?` (string) - Valor de búsqueda
 - `onSearchChange?` ((value) => void) - Callback de búsqueda
 - `searchPlaceholder?` (string) - Placeholder del input
@@ -240,6 +241,7 @@ Gráfico de líneas con tendencia de consumo diario.
 ```
 
 **Props:**
+
 - `petId?` (string) - ID de mascota (opcional, muestra todas si se omite)
 - `days?` (number) - Número de días (default: 7)
 - `height?` (string | number) - Height (default: "350px")
@@ -247,6 +249,7 @@ Gráfico de líneas con tendencia de consumo diario.
 - `description?` (string) - Descripción personalizada
 
 **Muestra:**
+
 - Línea "Servido" (cantidad servida - base para meta) - Azul
 - Línea "Comido" (consumo real) - Verde
 - Línea "Meta" (objetivo diario) - Gris punteado
@@ -272,6 +275,7 @@ Gráfico circular con distribución de macronutrientes.
 ```
 
 **Props:**
+
 - `petId` (string) - ID de mascota (requerido)
 - `days?` (number) - Período de análisis (default: 30)
 - `height?` (string | number) - Height (default: "350px")
@@ -279,6 +283,7 @@ Gráfico circular con distribución de macronutrientes.
 - `description?` (string) - Descripción personalizada
 
 **Muestra:**
+
 - Proteína (rojo)
 - Grasa (naranja)
 - Carbohidratos (amarillo)
@@ -304,11 +309,13 @@ Tabla completa de historial de alimentación con TanStack Table v8.
 ```
 
 **Props:**
+
 - `petId?` (string) - ID de mascota (opcional)
 - `pageSize?` (number) - Registros por página (default: 10)
 - `title?` (string) - Título personalizado
 
 **Features:**
+
 - Sorting por columnas
 - Paginación automática
 - Loading states
@@ -316,6 +323,7 @@ Tabla completa de historial de alimentación con TanStack Table v8.
 - Responsive
 
 **Columnas:**
+
 1. Fecha (DD MMM YYYY)
 2. Hora (HH:MM)
 3. Mascota (nombre)
@@ -357,21 +365,27 @@ stroke={getComplianceColor(percentage)}
 **Colores disponibles:**
 
 **System:**
+
 - `primary`, `secondary`, `success`, `warning`, `danger`, `neutral`
 
 **Food types:**
+
 - `dry`, `wet`, `raw`, `homemade`, `treats`
 
 **Macronutrients:**
+
 - `protein`, `fat`, `carbs`, `fiber`, `moisture`
 
 **Compliance:**
+
 - `underTarget`, `metTarget`, `overTarget`, `pending`
 
 **Species:**
+
 - `cat`, `dog`, `bird`, `rabbit`, `other`
 
 **Utilidades:**
+
 - `getComplianceColor(percentage)` - Color según % de cumplimiento
 - `getFoodTypeColor(foodType)` - Color por tipo de alimento
 - `getSpeciesColor(species)` - Color por especie
@@ -487,7 +501,10 @@ export function MyCustomTable({ data }) {
           <TableRow key={headerGroup.id}>
             {headerGroup.headers.map((header) => (
               <TableHead key={header.id}>
-                {flexRender(header.column.columnDef.header, header.getContext())}
+                {flexRender(
+                  header.column.columnDef.header,
+                  header.getContext()
+                )}
               </TableHead>
             ))}
           </TableRow>
@@ -522,6 +539,7 @@ export function MyCustomTable({ data }) {
 - `leftover` = Indicador de ajuste necesario
 
 Esto permite:
+
 - Control de porciones por parte del alimentador
 - Documentación de desperdicio
 - Ajuste basado en sobrantes históricos

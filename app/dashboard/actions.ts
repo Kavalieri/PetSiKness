@@ -117,14 +117,6 @@ const DateSchema = z
   )
   .optional();
 
-/**
- * Valida UUID v4
- */
-const UuidSchema = z
-  .string()
-  .uuid("ID de mascota debe ser UUID válido")
-  .optional();
-
 // ============================================
 // ACCIONES - ANALYTICS
 // ============================================

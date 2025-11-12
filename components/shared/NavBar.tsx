@@ -6,7 +6,14 @@ import { User } from "next-auth";
 import { cn } from "@/lib/utils";
 import { UserMenu } from "./UserMenu";
 import { ThemeToggle } from "./ThemeToggle";
-import { Home, PawPrint, UtensilsCrossed, Apple, BarChart3, Sparkles } from "lucide-react";
+import {
+  Home,
+  PawPrint,
+  UtensilsCrossed,
+  Apple,
+  BarChart3,
+  Sparkles,
+} from "lucide-react";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: Home },

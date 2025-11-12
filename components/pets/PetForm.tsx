@@ -173,6 +173,7 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [breeds, setBreeds] = useState<string[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [photoUrl, setPhotoUrl] = useState<string | undefined>(
     pet?.photo_url || undefined
   );

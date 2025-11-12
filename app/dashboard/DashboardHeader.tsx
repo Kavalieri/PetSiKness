@@ -127,7 +127,7 @@ export function DashboardHeader({ exportData }: DashboardHeaderProps) {
             )}
           </p>
         </div>
-        
+
         {/* Botón de export (solo si hay datos) */}
         {exportData && (
           <ExportDashboardButton

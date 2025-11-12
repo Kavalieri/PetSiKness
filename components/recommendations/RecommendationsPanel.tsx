@@ -84,7 +84,9 @@ export function RecommendationsPanel() {
       setRecommendations(result.data);
       setError(null);
     } else {
-      setError(!result.ok ? result.message : "Error al generar recomendaciones");
+      setError(
+        !result.ok ? result.message : "Error al generar recomendaciones"
+      );
       setRecommendations(null);
     }
 
@@ -191,7 +193,9 @@ export function RecommendationsPanel() {
               <Info className="h-4 w-4" />
               <AlertDescription className="text-sm">
                 Analizando <strong>{recommendations.analysis.petName}</strong> (
-                {recommendations.analysis.species === "cat" ? "🐱 Gato" : "🐶 Perro"}
+                {recommendations.analysis.species === "cat"
+                  ? "🐱 Gato"
+                  : "🐶 Perro"}
                 ) basado en {periodDays} días de historial.
               </AlertDescription>
             </Alert>

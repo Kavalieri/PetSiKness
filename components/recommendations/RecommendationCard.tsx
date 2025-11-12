@@ -145,7 +145,13 @@ export function RecommendationCard({
                     {getNutrientIcon(gap.nutrient)}
                     <span>{gap.nutrientLabel}</span>
                     <Badge
-                      variant={getSeverityColor(gap.severity) as any}
+                      variant={
+                        getSeverityColor(gap.severity) as
+                          | "default"
+                          | "secondary"
+                          | "destructive"
+                          | "outline"
+                      }
                       className="text-xs"
                     >
                       {gap.severity === "critical"
@@ -167,10 +173,15 @@ export function RecommendationCard({
         {/* Reasoning */}
         {showDetails && reasoning.length > 0 && (
           <div>
-            <h4 className="text-sm font-medium mb-2">¿Por qué este alimento?</h4>
+            <h4 className="text-sm font-medium mb-2">
+              ¿Por qué este alimento?
+            </h4>
             <ul className="space-y-1">
               {reasoning.map((reason, idx) => (
-                <li key={idx} className="text-sm text-muted-foreground flex items-start gap-2">
+                <li
+                  key={idx}
+                  className="text-sm text-muted-foreground flex items-start gap-2"
+                >
                   <span className="text-primary">•</span>
                   <span>{reason}</span>
                 </li>

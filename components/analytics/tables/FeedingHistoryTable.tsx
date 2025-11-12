@@ -27,7 +27,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChevronLeft, ChevronRight, Loader2, Download, FileText, FileSpreadsheet } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+  Download,
+  FileText,
+  FileSpreadsheet,
+} from "lucide-react";
 import {
   getFeedingHistory,
   type FeedingHistoryData,
@@ -136,7 +143,9 @@ export function FeedingHistoryTable({
 
   const handleExportCSV = () => {
     exportToCSV({
-      filename: `historial-alimentacion-${new Date().toISOString().split("T")[0]}`,
+      filename: `historial-alimentacion-${
+        new Date().toISOString().split("T")[0]
+      }`,
       columns: [
         { key: "date", header: "Fecha", formatter: formatDateForCSV },
         { key: "time", header: "Hora" },
@@ -153,9 +162,13 @@ export function FeedingHistoryTable({
 
   const handleExportPDF = () => {
     // Determinar rango de fechas
-    const dates = data.map((d) => new Date(d.date).getTime()).filter((d) => !isNaN(d));
-    const minDate = dates.length > 0 ? new Date(Math.min(...dates)) : new Date();
-    const maxDate = dates.length > 0 ? new Date(Math.max(...dates)) : new Date();
+    const dates = data
+      .map((d) => new Date(d.date).getTime())
+      .filter((d) => !isNaN(d));
+    const minDate =
+      dates.length > 0 ? new Date(Math.min(...dates)) : new Date();
+    const maxDate =
+      dates.length > 0 ? new Date(Math.max(...dates)) : new Date();
 
     generateFeedingHistoryPDF(
       data.map((d) => ({
