@@ -21,12 +21,24 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ChevronLeft, ChevronRight, Loader2, Download, FileText, FileSpreadsheet } from "lucide-react";
 import {
   getFeedingHistory,
   type FeedingHistoryData,
 } from "@/lib/actions/analytics-data";
 import { feedingHistoryColumns } from "./columns/feedingColumns";
+import {
+  exportToCSV,
+  formatDateForCSV,
+  formatGramsForCSV,
+  generateFeedingHistoryPDF,
+} from "@/lib/export";
 
 // ============================================
 // TYPES
@@ -118,10 +130,73 @@ export function FeedingHistoryTable({
     },
   });
 
+  // ============================================
+  // EXPORT HANDLERS
+  // ============================================
+
+  const handleExportCSV = () => {
+    exportToCSV({
+      filename: `historial-alimentacion-${new Date().toISOString().split("T")[0]}`,
+      columns: [
+        { key: "date", header: "Fecha", formatter: formatDateForCSV },
+        { key: "time", header: "Hora" },
+        { key: "petName", header: "Mascota" },
+        { key: "foodName", header: "Alimento" },
+        { key: "served", header: "Servido (g)", formatter: formatGramsForCSV },
+        { key: "eaten", header: "Comido (g)", formatter: formatGramsForCSV },
+        { key: "leftover", header: "Sobra (g)", formatter: formatGramsForCSV },
+        { key: "appetiteRating", header: "Apetito" },
+      ],
+      data: data as unknown as Record<string, unknown>[],
+    });
+  };
+
+  const handleExportPDF = () => {
+    // Determinar rango de fechas
+    const dates = data.map((d) => new Date(d.date).getTime()).filter((d) => !isNaN(d));
+    const minDate = dates.length > 0 ? new Date(Math.min(...dates)) : new Date();
+    const maxDate = dates.length > 0 ? new Date(Math.max(...dates)) : new Date();
+
+    generateFeedingHistoryPDF(
+      data.map((d) => ({
+        date: formatDateForCSV(d.date),
+        time: d.time || "-",
+        petName: d.petName,
+        foodName: d.foodName,
+        served: d.served,
+        eaten: d.eaten,
+        leftover: d.leftover,
+        appetite: d.appetiteRating || "-",
+      })),
+      {
+        start: minDate.toLocaleDateString("es-ES"),
+        end: maxDate.toLocaleDateString("es-ES"),
+      }
+    );
+  };
+
   return (
     <Card className="w-full">
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
         <CardTitle>{title}</CardTitle>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" disabled={data.length === 0}>
+              <Download className="h-4 w-4 mr-2" />
+              Exportar
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={handleExportCSV}>
+              <FileSpreadsheet className="h-4 w-4 mr-2" />
+              Exportar a CSV
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleExportPDF}>
+              <FileText className="h-4 w-4 mr-2" />
+              Exportar a PDF
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </CardHeader>
       <CardContent>
         {/* Loading state */}

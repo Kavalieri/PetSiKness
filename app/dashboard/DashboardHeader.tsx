@@ -9,6 +9,31 @@ import {
   type ViewMode,
 } from "@/components/shared/TemporalNavigator";
 import { Home } from "lucide-react";
+import { ExportDashboardButton } from "@/components/dashboard";
+
+// ============================================
+// TYPES
+// ============================================
+
+interface DashboardHeaderProps {
+  exportData?: {
+    date: string;
+    overview: {
+      totalPets: number;
+      petsOnTrack: number;
+      alerts: number;
+      avgWeeklyAchievement: number;
+    };
+    balances: {
+      petName: string;
+      served: number;
+      eaten: number;
+      goal: number;
+      percentage: number;
+      status: string;
+    }[];
+  };
+}
 
 // ============================================
 // 🎯 FILOSOFÍA: GESTIÓN DIARIA PRIORITARIA
@@ -26,7 +51,7 @@ import { Home } from "lucide-react";
 //
 // ============================================
 
-export function DashboardHeader() {
+export function DashboardHeader({ exportData }: DashboardHeaderProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -102,6 +127,15 @@ export function DashboardHeader() {
             )}
           </p>
         </div>
+        
+        {/* Botón de export (solo si hay datos) */}
+        {exportData && (
+          <ExportDashboardButton
+            date={exportData.date}
+            overview={exportData.overview}
+            balances={exportData.balances}
+          />
+        )}
       </div>
 
       {/* Navegador Temporal */}

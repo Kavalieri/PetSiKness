@@ -15,6 +15,7 @@ import {
   MacronutrientPieChart,
   FeedingHistoryTable,
   MetricCard,
+  ExportAnalyticsButton,
 } from "@/components/analytics";
 import { BarChart3, Info } from "lucide-react";
 
@@ -53,21 +54,55 @@ async function AnalyticsHeader() {
     const pets = petsResult.rows as Pet[];
     const totalPets = pets.length;
 
+    // Query para métricas del household (para botón export)
+    const metricsResult = await query(
+      `
+      SELECT 
+        COUNT(DISTINCT f.pet_id) as active_pets,
+        COUNT(f.id) as total_feedings,
+        COALESCE(AVG(f.amount_eaten_grams), 0) as avg_consumption,
+        COUNT(DISTINCT f.feeding_date) as days_with_data
+      FROM feedings f
+      JOIN pets p ON f.pet_id = p.id
+      WHERE p.household_id = $1
+        AND f.feeding_date >= CURRENT_DATE - INTERVAL '30 days'
+      `,
+      [householdId]
+    );
+
+    const metrics = metricsResult.rows[0] as {
+      active_pets: string;
+      total_feedings: string;
+      avg_consumption: string;
+      days_with_data: string;
+    };
+
     return (
-      <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <BarChart3 className="h-8 w-8 text-primary" />
-          <h1 className="text-3xl font-bold tracking-tight">
-            Analytics y Estadísticas
-          </h1>
+      <div className="flex items-center justify-between">
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <BarChart3 className="h-8 w-8 text-primary" />
+            <h1 className="text-3xl font-bold tracking-tight">
+              Analytics y Estadísticas
+            </h1>
+          </div>
+          <p className="text-muted-foreground">
+            Visualización completa de datos nutricionales para {totalPets}{" "}
+            mascota
+            {totalPets !== 1 ? "s" : ""}
+          </p>
         </div>
-        <p className="text-muted-foreground">
-          Visualización completa de datos nutricionales para {totalPets}{" "}
-          mascota{totalPets !== 1 ? "s" : ""}
-        </p>
+        <ExportAnalyticsButton
+          metrics={{
+            totalPets: Number(metrics.active_pets || 0),
+            totalFeedings: Number(metrics.total_feedings || 0),
+            avgConsumption: Number(metrics.avg_consumption || 0),
+            daysWithData: Number(metrics.days_with_data || 0),
+          }}
+        />
       </div>
     );
-  } catch (error) {
+  } catch {
     return (
       <div className="space-y-2">
         <h1 className="text-3xl font-bold tracking-tight">

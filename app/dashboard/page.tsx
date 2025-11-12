@@ -325,76 +325,78 @@ async function AnalyticsSection() {
       | { id: string; name: string }
       | undefined;
 
-  return (
-    <section className="space-y-4">
-      <div>
-        <h2 className="text-xl sm:text-2xl font-bold">Análisis y Tendencias</h2>
-        <p className="text-sm text-muted-foreground">
-          Visualización de datos nutricionales e historial
-        </p>
-      </div>
+    return (
+      <section className="space-y-4">
+        <div>
+          <h2 className="text-xl sm:text-2xl font-bold">
+            Análisis y Tendencias
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Visualización de datos nutricionales e historial
+          </p>
+        </div>
 
-      {/* Gráficos en grid 2 columnas */}
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Tendencia de Consumo</CardTitle>
-            <CardDescription>
-              Evolución diaria de alimentación (últimos 7 días)
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ConsumptionTrendChart days={7} />
-          </CardContent>
-        </Card>
-
-        {firstPet ? (
+        {/* Gráficos en grid 2 columnas */}
+        <div className="grid gap-4 lg:grid-cols-2">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">
-                Macronutrientes - {firstPet.name}
-              </CardTitle>
+              <CardTitle className="text-lg">Tendencia de Consumo</CardTitle>
               <CardDescription>
-                Composición promedio (últimos 30 días)
+                Evolución diaria de alimentación (últimos 7 días)
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <MacronutrientPieChart petId={firstPet.id} days={30} />
+              <ConsumptionTrendChart days={7} />
             </CardContent>
           </Card>
-        ) : (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">
-                Distribución de Macronutrientes
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Alert>
-                <Info className="h-4 w-4" />
-                <AlertDescription>
-                  Registra al menos una mascota para ver análisis detallado.
-                </AlertDescription>
-              </Alert>
-            </CardContent>
-          </Card>
-        )}
-      </div>
 
-      {/* Tabla de historial full width */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Historial Reciente</CardTitle>
-          <CardDescription>
-            Últimas alimentaciones registradas
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <FeedingHistoryTable pageSize={10} />
-        </CardContent>
-      </Card>
-    </section>
-  );
+          {firstPet ? (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">
+                  Macronutrientes - {firstPet.name}
+                </CardTitle>
+                <CardDescription>
+                  Composición promedio (últimos 30 días)
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <MacronutrientPieChart petId={firstPet.id} days={30} />
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">
+                  Distribución de Macronutrientes
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Alert>
+                  <Info className="h-4 w-4" />
+                  <AlertDescription>
+                    Registra al menos una mascota para ver análisis detallado.
+                  </AlertDescription>
+                </Alert>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+
+        {/* Tabla de historial full width */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Historial Reciente</CardTitle>
+            <CardDescription>
+              Últimas alimentaciones registradas
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <FeedingHistoryTable pageSize={10} />
+          </CardContent>
+        </Card>
+      </section>
+    );
   } catch (error) {
     // Si falla autenticación, retornar null (no debería suceder en esta ruta)
     return null;
@@ -509,10 +511,43 @@ export default async function DashboardPage({
   // Obtener fecha de URL o usar HOY
   const date = searchParams.date || new Date().toISOString().split("T")[0];
 
+  // Obtener datos para export
+  const overviewResult = await getHouseholdOverview(date);
+  const alertsCountResult = await getAlertsCount(date);
+  const balancesResult = await getTodayBalance(date);
+
+  const exportData =
+    overviewResult.ok && alertsCountResult.ok && balancesResult.ok
+      ? {
+          date,
+          overview: {
+            totalPets: overviewResult.data!.total_pets,
+            petsOnTrack: overviewResult.data!.pets_on_track_today,
+            alerts: alertsCountResult.data!,
+            avgWeeklyAchievement: Math.round(
+              overviewResult.data!.yesterday_achievement_pct
+            ),
+          },
+          balances: balancesResult.data!.map((b) => ({
+            petName: b.pet_name,
+            served: b.total_served,
+            eaten: b.total_eaten,
+            goal: b.daily_goal,
+            percentage: Math.round(b.achievement_pct),
+            status:
+              b.status === "met"
+                ? "Cumplido"
+                : b.status === "over"
+                ? "Excedido"
+                : "Bajo",
+          })),
+        }
+      : undefined;
+
   return (
     <div className="container mx-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
       {/* Header con navegación temporal (Client Component) */}
-      <DashboardHeader />
+      <DashboardHeader exportData={exportData} />
 
       {/* Stats Cards */}
       <Suspense fallback={<DashboardSkeleton />}>
