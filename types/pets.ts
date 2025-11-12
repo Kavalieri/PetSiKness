@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { Pets, PetPortionSchedules } from "./database.generated";
+import type { Pets, Portions } from "./database.generated";
 
 // ============================================
 // ENUMS Y TIPOS AUXILIARES
@@ -78,7 +78,10 @@ export type ActivityLevel =
 /**
  * Horario de una ración individual
  */
-export type PortionSchedule = PetPortionSchedules;
+// Tipo de plantilla de ración (date = NULL en tabla portions)
+export type PortionSchedule = Omit<Portions, 'date' | 'food_id' | 'actual_time' | 'served_grams' | 'leftover_grams' | 'eaten_grams' | 'appetite_rating' | 'eating_speed' | 'vomited' | 'had_diarrhea' | 'had_stool' | 'stool_quality' | 'recorded_by'> & {
+  date: null;
+};
 
 /**
  * Datos para crear un horario de ración (sin ID, timestamps)

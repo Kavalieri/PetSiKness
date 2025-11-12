@@ -15,34 +15,7 @@ export type Numeric = ColumnType<string, number | string>;
 
 export type Timestamp = ColumnType<Date, Date | string>;
 
-export interface _Migrations {
-  applied_at: Generated<Timestamp>;
-  applied_by: Generated<string>;
-  checksum: string | null;
-  description: string | null;
-  error_log: string | null;
-  execution_time_ms: number | null;
-  id: Generated<number>;
-  migration_name: string;
-  output_log: string | null;
-  status: string | null;
-}
-
-export interface DailyFeedingSummary {
-  daily_food_goal_grams: number | null;
-  feeding_date: Timestamp | null;
-  goal_achievement_pct: Numeric | null;
-  met_target: boolean | null;
-  over_target: boolean | null;
-  pet_id: string | null;
-  pet_name: string | null;
-  total_eaten_grams: Int8 | null;
-  total_leftover_grams: Int8 | null;
-  total_served_grams: Int8 | null;
-  under_target: boolean | null;
-}
-
-export interface Feedings {
+export interface _DeprecatedFeedings {
   /**
    * Cantidad de comida consumida (CALCULADA = servido - sobrante). Auto-generada.
    */
@@ -82,6 +55,52 @@ export interface Feedings {
   stool_quality: string | null;
   updated_at: Generated<Timestamp>;
   vomited: Generated<boolean>;
+}
+
+export interface _DeprecatedPetPortionSchedules {
+  created_at: Generated<Timestamp>;
+  /**
+   * Cantidad esperada de gramos para esta toma específica. Opcional: si NULL, se calcula como daily_food_goal_grams / daily_meals_target.
+   */
+  expected_grams: number | null;
+  id: Generated<string>;
+  notes: string | null;
+  pet_id: string;
+  /**
+   * Número de ración del día (1, 2, 3...)
+   */
+  portion_number: number;
+  /**
+   * Hora programada para esta toma (ej: 08:00, 14:00, 20:00). Usado para calcular puntualidad y alertas.
+   */
+  scheduled_time: string;
+  updated_at: Generated<Timestamp>;
+}
+
+export interface _Migrations {
+  applied_at: Generated<Timestamp>;
+  applied_by: Generated<string>;
+  checksum: string | null;
+  description: string | null;
+  error_log: string | null;
+  execution_time_ms: number | null;
+  id: Generated<number>;
+  migration_name: string;
+  output_log: string | null;
+  status: string | null;
+}
+
+export interface DailyFeedingSummary {
+  daily_food_goal_grams: number | null;
+  feeding_date: Timestamp | null;
+  goal_achievement_percentage: Numeric | null;
+  goal_status: string | null;
+  pet_id: string | null;
+  pet_name: string | null;
+  total_eaten: Int8 | null;
+  total_leftover: Int8 | null;
+  total_portions: Int8 | null;
+  total_served: Int8 | null;
 }
 
 export interface Foods {
@@ -150,26 +169,6 @@ export interface Households {
   updated_at: Generated<Timestamp>;
 }
 
-export interface PetPortionSchedules {
-  created_at: Generated<Timestamp>;
-  /**
-   * Cantidad esperada de gramos para esta toma específica. Opcional: si NULL, se calcula como daily_food_goal_grams / daily_meals_target.
-   */
-  expected_grams: number | null;
-  id: Generated<string>;
-  notes: string | null;
-  pet_id: string;
-  /**
-   * Número de ración del día (1, 2, 3...)
-   */
-  portion_number: number;
-  /**
-   * Hora programada para esta toma (ej: 08:00, 14:00, 20:00). Usado para calcular puntualidad y alertas.
-   */
-  scheduled_time: string;
-  updated_at: Generated<Timestamp>;
-}
-
 export interface Pets {
   activity_level: string | null;
   allergies: string[] | null;
@@ -206,6 +205,43 @@ export interface Pets {
   weight_kg: Numeric | null;
 }
 
+export interface Portions {
+  actual_time: string | null;
+  appetite_rating: string | null;
+  created_at: Generated<Timestamp>;
+  /**
+   * NULL = plantilla de configuración, NOT NULL = ración de día específico
+   */
+  date: Timestamp | null;
+  /**
+   * Calculado: served_grams - leftover_grams
+   */
+  eaten_grams: Generated<number | null>;
+  eating_speed: string | null;
+  expected_grams: number | null;
+  food_id: string | null;
+  had_diarrhea: Generated<boolean | null>;
+  had_stool: boolean | null;
+  household_id: string;
+  id: Generated<string>;
+  /**
+   * Cantidad sobrante (NULL si aún no registrada)
+   */
+  leftover_grams: number | null;
+  notes: string | null;
+  pet_id: string;
+  portion_number: number;
+  recorded_by: string | null;
+  scheduled_time: string;
+  /**
+   * Cantidad servida (NULL si aún no registrada)
+   */
+  served_grams: number | null;
+  stool_quality: string | null;
+  updated_at: Generated<Timestamp>;
+  vomited: Generated<boolean | null>;
+}
+
 export interface Profiles {
   /**
    * ID de proveedor OAuth (Google)
@@ -220,13 +256,14 @@ export interface Profiles {
 }
 
 export interface DB {
+  _deprecated_feedings: _DeprecatedFeedings;
+  _deprecated_pet_portion_schedules: _DeprecatedPetPortionSchedules;
   _migrations: _Migrations;
   daily_feeding_summary: DailyFeedingSummary;
-  feedings: Feedings;
   foods: Foods;
   household_members: HouseholdMembers;
   households: Households;
-  pet_portion_schedules: PetPortionSchedules;
   pets: Pets;
+  portions: Portions;
   profiles: Profiles;
 }
