@@ -35,7 +35,7 @@ interface FeedingHistoryRow {
   amount_served_grams: number;
   amount_eaten_grams: number;
   amount_leftover_grams: number;
-  meal_number: number | null;
+  portion_number: number | null;
   appetite_rating: string | null;
 }
 
@@ -264,7 +264,7 @@ export async function getFeedingHistory(
         f.amount_served_grams,
         f.amount_eaten_grams,
         f.amount_leftover_grams,
-        f.meal_number,
+        f.portion_number,
         f.appetite_rating
       FROM feedings f
       INNER JOIN pets p ON p.id = f.pet_id
@@ -287,7 +287,7 @@ export async function getFeedingHistory(
         served: row.amount_served_grams,
         eaten: row.amount_eaten_grams,
         leftover: row.amount_leftover_grams,
-        portionNumber: row.meal_number || 0,
+        portionNumber: row.portion_number || 0,
         appetiteRating: row.appetite_rating,
       })
     );

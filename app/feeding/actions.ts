@@ -17,7 +17,7 @@ const FeedingSchema = z
     food_id: z.string().uuid("ID de alimento inválido"),
     feeding_date: z.string().min(1, "Fecha requerida"),
     feeding_time: z.string().optional(),
-    // meal_number se calcula automáticamente en el backend
+    // portion_number se calcula automáticamente en el backend
     amount_served_grams: z.coerce
       .number()
       .int()
@@ -57,7 +57,7 @@ interface FeedingWithRelations {
   food_brand: string | null;
   feeding_date: string;
   feeding_time: string | null;
-  meal_number: number | null;
+  portion_number: number | null;
   amount_served_grams: number;
   amount_eaten_grams: number;
   amount_leftover_grams: number | null;
@@ -104,7 +104,7 @@ export async function getFeedings(
         fo.brand as food_brand,
         f.feeding_date,
         f.feeding_time,
-        f.meal_number,
+        f.portion_number,
         f.amount_served_grams,
         f.amount_eaten_grams,
         f.amount_leftover_grams,
@@ -185,7 +185,7 @@ export async function getFeedingById(
         fo.brand as food_brand,
         f.feeding_date,
         f.feeding_time,
-        f.meal_number,
+        f.portion_number,
         f.amount_served_grams,
         f.amount_eaten_grams,
         f.amount_leftover_grams,
@@ -240,7 +240,7 @@ export async function getTodayFeedings(
         fo.brand as food_brand,
         f.feeding_date,
         f.feeding_time,
-        f.meal_number,
+        f.portion_number,
         f.amount_served_grams,
         f.amount_eaten_grams,
         f.amount_leftover_grams,
@@ -337,20 +337,20 @@ export async function createFeeding(formData: FormData): Promise<Result> {
       return fail("Alimento no encontrado o no pertenece a tu hogar");
     }
 
-    // Calcular meal_number automáticamente
-    // Obtener el máximo meal_number para esta mascota en esta fecha
+    // Calcular portion_number automáticamente
+    // Obtener el máximo portion_number para esta mascota en esta fecha
     const mealNumberResult = await query(
-      "SELECT COALESCE(MAX(meal_number), 0) + 1 as next_meal_number FROM feedings WHERE pet_id = $1 AND feeding_date = $2",
+      "SELECT COALESCE(MAX(portion_number), 0) + 1 as next_portion_number FROM feedings WHERE pet_id = $1 AND feeding_date = $2",
       [validated.pet_id, validated.feeding_date]
     );
 
-    const mealNumber = mealNumberResult.rows[0]?.next_meal_number || 1;
+    const mealNumber = mealNumberResult.rows[0]?.next_portion_number || 1;
 
     // Insertar feeding
     await query(
       `
       INSERT INTO feedings (
-        household_id, pet_id, food_id, feeding_date, feeding_time, meal_number,
+        household_id, pet_id, food_id, feeding_date, feeding_time, portion_number,
         amount_served_grams, amount_eaten_grams,
         appetite_rating, eating_speed, vomited, had_diarrhea, had_stool, stool_quality, notes,
         recorded_by
@@ -503,19 +503,19 @@ export async function createMultiPetFeeding(
     let insertedCount = 0;
 
     for (const petFeeding of petFeedings) {
-      // Calcular meal_number automáticamente
+      // Calcular portion_number automáticamente
       const mealNumberResult = await query(
-        "SELECT COALESCE(MAX(meal_number), 0) + 1 as next_meal_number FROM feedings WHERE pet_id = $1 AND feeding_date = $2",
+        "SELECT COALESCE(MAX(portion_number), 0) + 1 as next_portion_number FROM feedings WHERE pet_id = $1 AND feeding_date = $2",
         [petFeeding.pet_id, common.feeding_date]
       );
 
-      const mealNumber = mealNumberResult.rows[0]?.next_meal_number || 1;
+      const mealNumber = mealNumberResult.rows[0]?.next_portion_number || 1;
 
       // Insertar feeding
       await query(
         `
         INSERT INTO feedings (
-          household_id, pet_id, food_id, feeding_date, feeding_time, meal_number,
+          household_id, pet_id, food_id, feeding_date, feeding_time, portion_number,
           amount_served_grams, amount_eaten_grams,
           appetite_rating, eating_speed, vomited, had_diarrhea, had_stool, stool_quality, notes,
           recorded_by
@@ -625,21 +625,21 @@ export async function updateFeeding(formData: FormData): Promise<Result> {
     const currentPetId = existingFeeding.rows[0].pet_id;
     const currentDate = existingFeeding.rows[0].feeding_date;
 
-    // Recalcular meal_number si cambió la fecha
+    // Recalcular portion_number si cambió la fecha
     let mealNumber: number;
     if (validated.feeding_date !== currentDate) {
       const mealNumberResult = await query(
-        "SELECT COALESCE(MAX(meal_number), 0) + 1 as next_meal_number FROM feedings WHERE pet_id = $1 AND feeding_date = $2 AND id != $3",
+        "SELECT COALESCE(MAX(portion_number), 0) + 1 as next_portion_number FROM feedings WHERE pet_id = $1 AND feeding_date = $2 AND id != $3",
         [currentPetId, validated.feeding_date, id]
       );
-      mealNumber = mealNumberResult.rows[0]?.next_meal_number || 1;
+      mealNumber = mealNumberResult.rows[0]?.next_portion_number || 1;
     } else {
-      // Mantener el meal_number actual si no cambió la fecha
+      // Mantener el portion_number actual si no cambió la fecha
       const currentMealResult = await query(
-        "SELECT meal_number FROM feedings WHERE id = $1",
+        "SELECT portion_number FROM feedings WHERE id = $1",
         [id]
       );
-      mealNumber = currentMealResult.rows[0]?.meal_number || 1;
+      mealNumber = currentMealResult.rows[0]?.portion_number || 1;
     }
 
     // Actualizar (sin cambiar pet_id ni food_id)
@@ -648,7 +648,7 @@ export async function updateFeeding(formData: FormData): Promise<Result> {
       UPDATE feedings SET
         feeding_date = $1,
         feeding_time = $2,
-        meal_number = $3,
+        portion_number = $3,
         amount_served_grams = $4,
         amount_eaten_grams = $5,
         appetite_rating = $6,

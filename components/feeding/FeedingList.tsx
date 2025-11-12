@@ -60,7 +60,7 @@ interface FeedingData {
   food_brand: string | null;
   feeding_date: string;
   feeding_time: string | null;
-  meal_number: number | null;
+  portion_number: number | null;
   amount_served_grams: number;
   amount_eaten_grams: number;
   amount_leftover_grams: number | null;
@@ -99,7 +99,7 @@ interface DayGroup {
 }
 
 /**
- * Agrupa feedings por fecha y luego por meal_number
+ * Agrupa feedings por fecha y luego por portion_number
  */
 function groupByDayAndMeal(feedings: FeedingData[]): DayGroup[] {
   // 1. Agrupar por fecha
@@ -125,7 +125,7 @@ function groupByDayAndMeal(feedings: FeedingData[]): DayGroup[] {
     byDate.get(dateStr)!.push(feeding);
   });
 
-  // 2. Para cada fecha, agrupar por meal_number
+  // 2. Para cada fecha, agrupar por portion_number
   const result: DayGroup[] = [];
   const sortedDates = Array.from(byDate.keys()).sort((a, b) =>
     b.localeCompare(a)
@@ -134,10 +134,10 @@ function groupByDayAndMeal(feedings: FeedingData[]): DayGroup[] {
   sortedDates.forEach((date) => {
     const feedingsInDate = byDate.get(date)!;
 
-    // Agrupar por meal_number
+    // Agrupar por portion_number
     const byMeal = new Map<number, FeedingData[]>();
     feedingsInDate.forEach((feeding) => {
-      const mealNum = feeding.meal_number || 0;
+      const mealNum = feeding.portion_number || 0;
       if (!byMeal.has(mealNum)) {
         byMeal.set(mealNum, []);
       }

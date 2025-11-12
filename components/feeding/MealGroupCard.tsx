@@ -32,7 +32,7 @@ interface FeedingData {
   food_brand: string | null;
   feeding_date: string;
   feeding_time: string | null;
-  meal_number: number | null;
+  portion_number: number | null;
   amount_served_grams: number;
   amount_eaten_grams: number;
   amount_leftover_grams: number | null;

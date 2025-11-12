@@ -86,10 +86,10 @@ export async function getPetById(
 
     // 5. Query de portion_schedules
     const schedulesResult = await query(
-      `SELECT id, meal_number, scheduled_time, expected_grams, notes, created_at, updated_at
+      `SELECT id, portion_number, scheduled_time, expected_grams, notes, created_at, updated_at
        FROM pet_portion_schedules
        WHERE pet_id = $1
-       ORDER BY meal_number ASC`,
+       ORDER BY portion_number ASC`,
       [id]
     );
 
@@ -233,10 +233,10 @@ export async function createPet(formData: FormData): Promise<Result<Pet>> {
         createdPet.id,
         ...portionSchedules.flatMap(
           (s: {
-            meal_number: number;
+            portion_number: number;
             scheduled_time: string;
             expected_grams?: number;
-          }) => [s.meal_number, s.scheduled_time, s.expected_grams || null]
+          }) => [s.portion_number, s.scheduled_time, s.expected_grams || null]
         ),
       ];
 
@@ -424,10 +424,10 @@ export async function updatePet(
           id,
           ...mealSchedules.flatMap(
             (s: {
-              meal_number: number;
+              portion_number: number;
               scheduled_time: string;
               expected_grams?: number;
-            }) => [s.meal_number, s.scheduled_time, s.expected_grams || null]
+            }) => [s.portion_number, s.scheduled_time, s.expected_grams || null]
           ),
         ];
 

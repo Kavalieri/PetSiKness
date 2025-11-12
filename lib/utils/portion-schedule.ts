@@ -20,7 +20,7 @@ import type { PortionScheduleFormData } from "@/types/pets";
  * - 5+ raciones: distribuidas uniformemente entre 07:00 y 19:00
  *
  * @param numPortions - Número de raciones diarias
- * @returns Array de horarios con meal_number y scheduled_time
+ * @returns Array de horarios con portion_number y scheduled_time
  */
 export function generateDefaultSchedule(
   numPortions: number

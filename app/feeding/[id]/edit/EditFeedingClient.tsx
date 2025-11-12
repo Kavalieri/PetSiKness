@@ -36,7 +36,7 @@ interface FeedingData {
   food_name: string;
   feeding_date: string;
   feeding_time: string | null;
-  meal_number: number | null;
+  portion_number: number | null;
   amount_served_grams: number;
   amount_eaten_grams: number;
   appetite_rating: string | null;
@@ -131,7 +131,7 @@ export function EditFeedingClient({
               food_id: feeding.food_id,
               feeding_date: formattedDate,
               feeding_time: feeding.feeding_time || undefined,
-              // meal_number se calcula automáticamente en el backend
+              // portion_number se calcula automáticamente en el backend
               amount_served_grams: feeding.amount_served_grams,
               amount_eaten_grams: feeding.amount_eaten_grams,
               appetite_rating:

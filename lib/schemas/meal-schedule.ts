@@ -15,10 +15,10 @@ import { z } from "zod";
 const TIME_FORMAT_REGEX = /^([01]\d|2[0-3]):([0-5]\d)$/;
 
 /**
- * Límites de meal_number
+ * Límites de portion_number
  */
 export const MEAL_SCHEDULE_CONSTRAINTS = {
-  meal_number: {
+  portion_number: {
     min: 1,
     max: 10, // Máximo realista de tomas por día
   },
@@ -32,19 +32,19 @@ export const MEAL_SCHEDULE_CONSTRAINTS = {
  * Schema para una toma individual
  */
 export const MealScheduleSchema = z.object({
-  meal_number: z
+  portion_number: z
     .number({
       required_error: "El número de toma es obligatorio",
       invalid_type_error: "El número de toma debe ser un número",
     })
     .int("El número de toma debe ser un número entero")
     .min(
-      MEAL_SCHEDULE_CONSTRAINTS.meal_number.min,
-      `El número de toma debe ser al menos ${MEAL_SCHEDULE_CONSTRAINTS.meal_number.min}`
+      MEAL_SCHEDULE_CONSTRAINTS.portion_number.min,
+      `El número de toma debe ser al menos ${MEAL_SCHEDULE_CONSTRAINTS.portion_number.min}`
     )
     .max(
-      MEAL_SCHEDULE_CONSTRAINTS.meal_number.max,
-      `El número de toma no puede ser mayor a ${MEAL_SCHEDULE_CONSTRAINTS.meal_number.max}`
+      MEAL_SCHEDULE_CONSTRAINTS.portion_number.max,
+      `El número de toma no puede ser mayor a ${MEAL_SCHEDULE_CONSTRAINTS.portion_number.max}`
     ),
 
   scheduled_time: z
@@ -71,23 +71,23 @@ export const MealScheduleSchema = z.object({
  * Validaciones adicionales:
  * 1. Las horas deben estar en orden cronológico
  * 2. No puede haber horas duplicadas
- * 3. meal_number debe ser secuencial (1, 2, 3...)
+ * 3. portion_number debe ser secuencial (1, 2, 3...)
  */
 export const MealSchedulesArraySchema = z
   .array(MealScheduleSchema)
   .min(1, "Debe haber al menos una toma programada")
   .max(
-    MEAL_SCHEDULE_CONSTRAINTS.meal_number.max,
-    `No puede haber más de ${MEAL_SCHEDULE_CONSTRAINTS.meal_number.max} tomas`
+    MEAL_SCHEDULE_CONSTRAINTS.portion_number.max,
+    `No puede haber más de ${MEAL_SCHEDULE_CONSTRAINTS.portion_number.max} tomas`
   )
   .refine(
     (schedules) => {
-      // Validar que meal_number sea secuencial (1, 2, 3...)
+      // Validar que portion_number sea secuencial (1, 2, 3...)
       const sortedByMealNumber = [...schedules].sort(
-        (a, b) => a.meal_number - b.meal_number
+        (a, b) => a.portion_number - b.portion_number
       );
       return sortedByMealNumber.every(
-        (schedule, index) => schedule.meal_number === index + 1
+        (schedule, index) => schedule.portion_number === index + 1
       );
     },
     {
