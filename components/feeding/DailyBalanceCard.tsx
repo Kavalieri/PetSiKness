@@ -4,7 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { TrendingDown, TrendingUp, Check, AlertTriangle } from "lucide-react";
+import {
+  TrendingDown,
+  TrendingUp,
+  Check,
+  AlertTriangle,
+  Pencil,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { getPortionName } from "@/lib/utils/portion-schedule";
 import {
   getStatusIcon,
@@ -12,6 +19,17 @@ import {
   getStatusColor,
   type MealBalance,
 } from "@/lib/utils/meal-balance";
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 // ============================================
 // TIPOS
@@ -78,7 +96,22 @@ const statusConfig = {
 /**
  * Card individual de una toma
  */
-function MealCard({ balance }: { balance: MealBalance }) {
+function MealCard({
+  balance,
+  petId,
+  petName,
+  onUpdate,
+}: {
+  balance: MealBalance;
+  petId: string;
+  petName: string;
+  onUpdate?: () => void;
+}) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [served, setServed] = useState(balance.served_grams?.toString() || "");
+  const [eaten, setEaten] = useState(balance.eaten_grams?.toString() || "");
+  const [isSaving, setIsSaving] = useState(false);
+
   const statusIcon = getStatusIcon(balance.status);
   const statusLabel = getStatusLabel(balance.status);
   const statusColorClass = getStatusColor(balance.status);
@@ -93,66 +126,161 @@ function MealCard({ balance }: { balance: MealBalance }) {
   const consumptionRate =
     servedGrams > 0 ? Math.round((eatenGrams / servedGrams) * 100) : 0;
 
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      // TODO: Implementar server action para actualizar ración
+      console.log("Actualizar ración", {
+        petId,
+        mealNumber: balance.meal_number,
+        served: Number(served),
+        eaten: Number(eaten),
+      });
+
+      // Cerrar diálogo
+      setIsEditing(false);
+
+      // Callback para recargar
+      if (onUpdate) {
+        onUpdate();
+      }
+    } catch (error) {
+      console.error("Error actualizando ración:", error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
-    <div className="p-4 border rounded-lg bg-card hover:shadow-md transition-shadow">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <span className="text-lg font-semibold">
-            {getPortionName(balance.meal_number)}
-          </span>
-          <span className="text-sm text-muted-foreground">
-            {balance.actual_time || balance.scheduled_time}
-          </span>
+    <>
+      <div className="p-4 border rounded-lg bg-card hover:shadow-md transition-shadow">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <span className="text-lg font-semibold">
+              {getPortionName(balance.meal_number)}
+            </span>
+            <span className="text-sm text-muted-foreground">
+              {balance.actual_time || balance.scheduled_time}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge className={statusColorClass} variant="outline">
+              {statusIcon} {statusLabel}
+            </Badge>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsEditing(true)}
+              title="Editar ración"
+            >
+              <Pencil className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
-        <Badge className={statusColorClass} variant="outline">
-          {statusIcon} {statusLabel}
-        </Badge>
+
+        {/* Datos - Grid fijo 4 columnas */}
+        <div className="grid grid-cols-4 gap-2 mb-4">
+          <div className="text-center p-2 bg-purple-50 dark:bg-purple-950/30 rounded">
+            <div className="text-xs text-muted-foreground mb-1">Esperado</div>
+            <div className="text-lg font-bold text-purple-600 dark:text-purple-400">
+              {expectedGrams}g
+            </div>
+          </div>
+
+          <div className="text-center p-2 bg-blue-50 dark:bg-blue-950/30 rounded">
+            <div className="text-xs text-muted-foreground mb-1">Servido</div>
+            <div className="text-lg font-bold text-blue-600 dark:text-blue-400">
+              {servedGrams}g
+            </div>
+          </div>
+
+          <div className="text-center p-2 bg-green-50 dark:bg-green-950/30 rounded">
+            <div className="text-xs text-muted-foreground mb-1">Comido</div>
+            <div className="text-lg font-bold text-green-600 dark:text-green-400">
+              {eatenGrams}g
+            </div>
+          </div>
+
+          <div className="text-center p-2 bg-yellow-50 dark:bg-yellow-950/30 rounded">
+            <div className="text-xs text-muted-foreground mb-1">Sobra</div>
+            <div className="text-lg font-bold text-yellow-600 dark:text-yellow-400">
+              {leftoverGrams}g
+            </div>
+          </div>
+        </div>
+
+        {/* Métrica: Comido/Servido */}
+        <div className="space-y-1">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">Comido / Servido</span>
+            <span className="font-semibold">{consumptionRate}%</span>
+          </div>
+          <Progress value={Math.min(consumptionRate, 100)} className="h-2" />
+          <div className="text-xs text-muted-foreground text-center">
+            {eatenGrams}g / {servedGrams}g
+          </div>
+        </div>
       </div>
 
-      {/* Datos - Grid fijo 4 columnas */}
-      <div className="grid grid-cols-4 gap-2 mb-4">
-        <div className="text-center p-2 bg-purple-50 dark:bg-purple-950/30 rounded">
-          <div className="text-xs text-muted-foreground mb-1">Esperado</div>
-          <div className="text-lg font-bold text-purple-600 dark:text-purple-400">
-            {expectedGrams}g
-          </div>
-        </div>
+      {/* Diálogo de edición */}
+      <Dialog open={isEditing} onOpenChange={setIsEditing}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              Editar {getPortionName(balance.meal_number)} - {petName}
+            </DialogTitle>
+            <DialogDescription>
+              Modifica las cantidades servida y comida para esta ración
+            </DialogDescription>
+          </DialogHeader>
 
-        <div className="text-center p-2 bg-blue-50 dark:bg-blue-950/30 rounded">
-          <div className="text-xs text-muted-foreground mb-1">Servido</div>
-          <div className="text-lg font-bold text-blue-600 dark:text-blue-400">
-            {servedGrams}g
-          </div>
-        </div>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="served">Cantidad servida (gramos)</Label>
+              <Input
+                id="served"
+                type="number"
+                value={served}
+                onChange={(e) => setServed(e.target.value)}
+                min="0"
+                step="1"
+              />
+            </div>
 
-        <div className="text-center p-2 bg-green-50 dark:bg-green-950/30 rounded">
-          <div className="text-xs text-muted-foreground mb-1">Comido</div>
-          <div className="text-lg font-bold text-green-600 dark:text-green-400">
-            {eatenGrams}g
-          </div>
-        </div>
+            <div className="grid gap-2">
+              <Label htmlFor="eaten">Cantidad comida (gramos)</Label>
+              <Input
+                id="eaten"
+                type="number"
+                value={eaten}
+                onChange={(e) => setEaten(e.target.value)}
+                min="0"
+                step="1"
+                max={served}
+              />
+            </div>
 
-        <div className="text-center p-2 bg-yellow-50 dark:bg-yellow-950/30 rounded">
-          <div className="text-xs text-muted-foreground mb-1">Sobra</div>
-          <div className="text-lg font-bold text-yellow-600 dark:text-yellow-400">
-            {leftoverGrams}g
+            <div className="text-sm text-muted-foreground">
+              Sobra calculada: {Math.max(0, Number(served) - Number(eaten))}g
+            </div>
           </div>
-        </div>
-      </div>
 
-      {/* Métrica: Comido/Servido */}
-      <div className="space-y-1">
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">Comido / Servido</span>
-          <span className="font-semibold">{consumptionRate}%</span>
-        </div>
-        <Progress value={Math.min(consumptionRate, 100)} className="h-2" />
-        <div className="text-xs text-muted-foreground text-center">
-          {eatenGrams}g / {servedGrams}g
-        </div>
-      </div>
-    </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsEditing(false)}
+              disabled={isSaving}
+            >
+              Cancelar
+            </Button>
+            <Button onClick={handleSave} disabled={isSaving}>
+              {isSaving ? "Guardando..." : "Guardar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
@@ -265,7 +393,12 @@ function MealBasedBalanceFull({ data }: { data: DailyBalanceData }) {
         {/* Meal cards horizontales full-width */}
         <div className="flex flex-col gap-3">
           {data.meal_balances.map((balance) => (
-            <MealCard key={balance.meal_number} balance={balance} />
+            <MealCard
+              key={balance.meal_number}
+              balance={balance}
+              petId={data.pet_id}
+              petName={data.pet_name}
+            />
           ))}
         </div>
 
