@@ -284,7 +284,7 @@ export async function getTodayBalance(
         schedulesByPet.set(petId, []);
       }
       schedulesByPet.get(petId)!.push({
-        meal_number: row.meal_number,
+        meal_number: row.portion_number, // ⚠️ La columna en BD es portion_number
         scheduled_time: row.scheduled_time,
         expected_grams:
           row.expected_grams != null ? Number(row.expected_grams) : undefined,
