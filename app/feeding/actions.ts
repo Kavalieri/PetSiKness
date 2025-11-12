@@ -96,13 +96,12 @@ export async function getFeedings(
     let sql = `
       SELECT 
         f.id,
-        f.household_id,
         f.pet_id,
         p.name as pet_name,
         f.food_id,
         fo.name as food_name,
         fo.brand as food_brand,
-        f.feeding_date,
+        f.date as feeding_date,
         f.feeding_time,
         f.portion_number,
         f.amount_served_grams,
@@ -116,11 +115,41 @@ export async function getFeedings(
         f.stool_quality,
         f.notes,
         f.created_at
-      FROM feedings f
+      FROM portions f
       JOIN pets p ON p.id = f.pet_id
       JOIN foods fo ON fo.id = f.food_id
-      WHERE f.household_id = $1
+      WHERE f.household_id = $1 AND f.date IS NOT NULL
     `;
+
+    const params: (string | number)[] = [householdId];
+    let paramIndex = 2;
+
+    if (petId) {
+      sql += ` AND f.pet_id = $${paramIndex}`;
+      params.push(petId);
+      paramIndex++;
+    }
+
+    if (foodId) {
+      sql += ` AND f.food_id = $${paramIndex}`;
+      params.push(foodId);
+      paramIndex++;
+    }
+
+    if (startDate) {
+      sql += ` AND f.date >= $${paramIndex}`;
+      params.push(startDate);
+      paramIndex++;
+    }
+
+    if (endDate) {
+      sql += ` AND f.date <= $${paramIndex}`;
+      params.push(endDate);
+      paramIndex++;
+    }
+
+    sql += ` ORDER BY f.date DESC, f.feeding_time DESC NULLS LAST LIMIT $${paramIndex}`;
+    params.push(limit);`;
 
     const params: (string | number)[] = [householdId];
     let paramIndex = 2;
@@ -183,7 +212,7 @@ export async function getFeedingById(
         f.food_id,
         fo.name as food_name,
         fo.brand as food_brand,
-        f.feeding_date,
+        f.date as feeding_date,
         f.feeding_time,
         f.portion_number,
         f.amount_served_grams,
@@ -197,10 +226,10 @@ export async function getFeedingById(
         f.stool_quality,
         f.notes,
         f.created_at
-      FROM feedings f
+      FROM portions f
       JOIN pets p ON p.id = f.pet_id
       JOIN foods fo ON fo.id = f.food_id
-      WHERE f.id = $1 AND f.household_id = $2
+      WHERE f.id = $1 AND f.household_id = $2 AND f.date IS NOT NULL
       `,
       [id, householdId]
     );
@@ -238,7 +267,7 @@ export async function getTodayFeedings(
         f.food_id,
         fo.name as food_name,
         fo.brand as food_brand,
-        f.feeding_date,
+        f.date as feeding_date,
         f.feeding_time,
         f.portion_number,
         f.amount_served_grams,
@@ -252,10 +281,10 @@ export async function getTodayFeedings(
         f.stool_quality,
         f.notes,
         f.created_at
-      FROM feedings f
+      FROM portions f
       JOIN pets p ON p.id = f.pet_id
       JOIN foods fo ON fo.id = f.food_id
-      WHERE f.household_id = $1 AND f.feeding_date = $2
+      WHERE f.household_id = $1 AND f.date = $2
     `;
 
     const params: (string | number)[] = [householdId, today];
@@ -340,17 +369,17 @@ export async function createFeeding(formData: FormData): Promise<Result> {
     // Calcular portion_number automáticamente
     // Obtener el máximo portion_number para esta mascota en esta fecha
     const mealNumberResult = await query(
-      "SELECT COALESCE(MAX(portion_number), 0) + 1 as next_portion_number FROM feedings WHERE pet_id = $1 AND feeding_date = $2",
+      "SELECT COALESCE(MAX(portion_number), 0) + 1 as next_portion_number FROM portions WHERE pet_id = $1 AND date = $2",
       [validated.pet_id, validated.feeding_date]
     );
 
     const mealNumber = mealNumberResult.rows[0]?.next_portion_number || 1;
 
-    // Insertar feeding
+    // Insertar registro
     await query(
       `
-      INSERT INTO feedings (
-        household_id, pet_id, food_id, feeding_date, feeding_time, portion_number,
+      INSERT INTO portions (
+        household_id, pet_id, food_id, date, feeding_time, portion_number,
         amount_served_grams, amount_eaten_grams,
         appetite_rating, eating_speed, vomited, had_diarrhea, had_stool, stool_quality, notes,
         recorded_by
@@ -505,17 +534,17 @@ export async function createMultiPetFeeding(
     for (const petFeeding of petFeedings) {
       // Calcular portion_number automáticamente
       const mealNumberResult = await query(
-        "SELECT COALESCE(MAX(portion_number), 0) + 1 as next_portion_number FROM feedings WHERE pet_id = $1 AND feeding_date = $2",
+        "SELECT COALESCE(MAX(portion_number), 0) + 1 as next_portion_number FROM portions WHERE pet_id = $1 AND date = $2",
         [petFeeding.pet_id, common.feeding_date]
       );
 
       const mealNumber = mealNumberResult.rows[0]?.next_portion_number || 1;
 
-      // Insertar feeding
+      // Insertar registro
       await query(
         `
-        INSERT INTO feedings (
-          household_id, pet_id, food_id, feeding_date, feeding_time, portion_number,
+        INSERT INTO portions (
+          household_id, pet_id, food_id, date, feeding_time, portion_number,
           amount_served_grams, amount_eaten_grams,
           appetite_rating, eating_speed, vomited, had_diarrhea, had_stool, stool_quality, notes,
           recorded_by
@@ -575,12 +604,12 @@ export async function updateFeeding(formData: FormData): Promise<Result> {
     }
 
     // Verificar ownership
-    const feedingCheck = await query(
-      "SELECT id FROM feedings WHERE id = $1 AND household_id = $2",
+    const portionCheck = await query(
+      "SELECT id FROM portions WHERE id = $1 AND household_id = $2 AND date IS NOT NULL",
       [id, householdId]
     );
 
-    if (feedingCheck.rows.length === 0) {
+    if (portionCheck.rows.length === 0) {
       return fail("Registro no encontrado o no tienes permiso para editarlo");
     }
 
@@ -613,30 +642,30 @@ export async function updateFeeding(formData: FormData): Promise<Result> {
     const validated = parsed.data;
 
     // Obtener pet_id del registro existente
-    const existingFeeding = await query(
-      "SELECT pet_id, feeding_date FROM feedings WHERE id = $1 AND household_id = $2",
+    const existingPortion = await query(
+      "SELECT pet_id, date FROM portions WHERE id = $1 AND household_id = $2",
       [id, householdId]
     );
 
-    if (existingFeeding.rows.length === 0) {
+    if (existingPortion.rows.length === 0) {
       return fail("Registro de alimentación no encontrado");
     }
 
-    const currentPetId = existingFeeding.rows[0].pet_id;
-    const currentDate = existingFeeding.rows[0].feeding_date;
+    const currentPetId = existingPortion.rows[0].pet_id;
+    const currentDate = existingPortion.rows[0].date;
 
     // Recalcular portion_number si cambió la fecha
     let mealNumber: number;
     if (validated.feeding_date !== currentDate) {
       const mealNumberResult = await query(
-        "SELECT COALESCE(MAX(portion_number), 0) + 1 as next_portion_number FROM feedings WHERE pet_id = $1 AND feeding_date = $2 AND id != $3",
+        "SELECT COALESCE(MAX(portion_number), 0) + 1 as next_portion_number FROM portions WHERE pet_id = $1 AND date = $2 AND id != $3",
         [currentPetId, validated.feeding_date, id]
       );
       mealNumber = mealNumberResult.rows[0]?.next_portion_number || 1;
     } else {
       // Mantener el portion_number actual si no cambió la fecha
       const currentMealResult = await query(
-        "SELECT portion_number FROM feedings WHERE id = $1",
+        "SELECT portion_number FROM portions WHERE id = $1",
         [id]
       );
       mealNumber = currentMealResult.rows[0]?.portion_number || 1;
@@ -645,8 +674,8 @@ export async function updateFeeding(formData: FormData): Promise<Result> {
     // Actualizar (sin cambiar pet_id ni food_id)
     await query(
       `
-      UPDATE feedings SET
-        feeding_date = $1,
+      UPDATE portions SET
+        date = $1,
         feeding_time = $2,
         portion_number = $3,
         amount_served_grams = $4,
@@ -705,20 +734,20 @@ export async function deleteFeeding(id: string): Promise<Result> {
     const { householdId } = await requireHousehold();
 
     // Verificar ownership
-    const feedingCheck = await query(
-      "SELECT id FROM feedings WHERE id = $1 AND household_id = $2",
+    const portionCheck = await query(
+      "SELECT id FROM portions WHERE id = $1 AND household_id = $2 AND date IS NOT NULL",
       [id, householdId]
     );
 
-    if (feedingCheck.rows.length === 0) {
+    if (portionCheck.rows.length === 0) {
       return fail("Registro no encontrado o no tienes permiso para eliminarlo");
     }
 
-    // Eliminar
-    await query("DELETE FROM feedings WHERE id = $1 AND household_id = $2", [
-      id,
-      householdId,
-    ]);
+    // Eliminar (solo registros con fecha, no templates)
+    await query(
+      "DELETE FROM portions WHERE id = $1 AND household_id = $2 AND date IS NOT NULL",
+      [id, householdId]
+    );
 
     revalidatePath("/dashboard");
     revalidatePath("/feeding");

@@ -210,23 +210,23 @@ export async function getTodayBalance(
       SELECT 
         p.id as pet_id,
         p.name as pet_name,
-        COALESCE(SUM(f.amount_served_grams), 0) as total_served,
-        COALESCE(SUM(f.amount_eaten_grams), 0) as total_eaten,
-        COALESCE(SUM(f.amount_leftover_grams), 0) as total_leftover,
+        COALESCE(SUM(po.amount_served_grams), 0) as total_served,
+        COALESCE(SUM(po.amount_eaten_grams), 0) as total_eaten,
+        COALESCE(SUM(po.amount_leftover_grams), 0) as total_leftover,
         p.daily_food_goal_grams as daily_goal,
         p.daily_portions_target as num_portions,
         CASE 
           WHEN p.daily_food_goal_grams > 0 
-          THEN ROUND((COALESCE(SUM(f.amount_eaten_grams), 0)::DECIMAL / p.daily_food_goal_grams) * 100, 2)
+          THEN ROUND((COALESCE(SUM(po.amount_eaten_grams), 0)::DECIMAL / p.daily_food_goal_grams) * 100, 2)
           ELSE 0
         END as achievement_pct,
         CASE
-          WHEN COALESCE(SUM(f.amount_eaten_grams), 0) < p.daily_food_goal_grams * 0.9 THEN 'under'
-          WHEN COALESCE(SUM(f.amount_eaten_grams), 0) BETWEEN p.daily_food_goal_grams * 0.9 AND p.daily_food_goal_grams * 1.1 THEN 'met'
+          WHEN COALESCE(SUM(po.amount_eaten_grams), 0) < p.daily_food_goal_grams * 0.9 THEN 'under'
+          WHEN COALESCE(SUM(po.amount_eaten_grams), 0) BETWEEN p.daily_food_goal_grams * 0.9 AND p.daily_food_goal_grams * 1.1 THEN 'met'
           ELSE 'over'
         END as status
       FROM pets p
-      LEFT JOIN feedings f ON f.pet_id = p.id AND f.feeding_date = $2
+      LEFT JOIN portions po ON po.pet_id = p.id AND po.date = $2
       WHERE p.household_id = $1 AND p.is_active = true
       GROUP BY p.id, p.name, p.daily_food_goal_grams, p.daily_portions_target
       ORDER BY p.name
@@ -234,43 +234,45 @@ export async function getTodayBalance(
       [householdId, targetDate]
     );
 
-    // ✨ NUEVO: Obtener meal schedules de todas las mascotas activas
-    const schedulesResult = await query(
+    // ✨ NUEVO: Obtener templates (schedules) de todas las mascotas activas
+    const templatesResult = await query(
       `
       SELECT 
-        pms.pet_id,
-        pms.portion_number,
-        pms.scheduled_time,
-        pms.expected_grams,
-        pms.notes
-      FROM pet_portion_schedules pms
-      INNER JOIN pets p ON p.id = pms.pet_id
-      WHERE p.household_id = $1 AND p.is_active = true
-      ORDER BY pms.pet_id, pms.portion_number
+        po.pet_id,
+        po.portion_number,
+        po.scheduled_time,
+        po.expected_grams,
+        po.notes
+      FROM portions po
+      INNER JOIN pets p ON p.id = po.pet_id
+      WHERE p.household_id = $1 
+        AND p.is_active = true 
+        AND po.date IS NULL
+      ORDER BY po.pet_id, po.portion_number
       `,
       [householdId]
     );
 
-    // ✨ NUEVO: Obtener feedings del día con hora
-    const feedingsResult = await query(
+    // ✨ NUEVO: Obtener registros del día con hora
+    const portionsResult = await query(
       `
       SELECT 
-        f.pet_id,
-        f.portion_number,
-        f.feeding_time,
-        f.amount_served_grams,
-        f.amount_eaten_grams
-      FROM feedings f
-      INNER JOIN pets p ON p.id = f.pet_id
+        po.pet_id,
+        po.portion_number,
+        po.feeding_time,
+        po.amount_served_grams,
+        po.amount_eaten_grams
+      FROM portions po
+      INNER JOIN pets p ON p.id = po.pet_id
       WHERE p.household_id = $1 
-        AND f.feeding_date = $2
+        AND po.date = $2
         AND p.is_active = true
-      ORDER BY f.pet_id, f.feeding_time
+      ORDER BY po.pet_id, po.feeding_time
       `,
       [householdId, targetDate]
     );
 
-    // Agrupar schedules por pet_id
+    // Agrupar templates por pet_id
     const schedulesByPet = new Map<
       string,
       Array<{
@@ -280,7 +282,7 @@ export async function getTodayBalance(
         notes?: string;
       }>
     >();
-    for (const row of schedulesResult.rows) {
+    for (const row of templatesResult.rows) {
       const petId = row.pet_id as string;
       if (!schedulesByPet.has(petId)) {
         schedulesByPet.set(petId, []);
@@ -294,7 +296,7 @@ export async function getTodayBalance(
       });
     }
 
-    // Agrupar feedings por pet_id
+    // Agrupar registros del día por pet_id
     const feedingsByPet = new Map<
       string,
       Array<{
@@ -304,7 +306,7 @@ export async function getTodayBalance(
         amount_eaten_grams: number;
       }>
     >();
-    for (const row of feedingsResult.rows) {
+    for (const row of portionsResult.rows) {
       const petId = row.pet_id as string;
       if (!feedingsByPet.has(petId)) {
         feedingsByPet.set(petId, []);
@@ -629,18 +631,19 @@ export async function getHouseholdOverview(
     );
     const petsOnTrackToday = onTrackResult.rows[0]?.count || 0;
 
-    // Total feedings últimos 7 días desde la fecha especificada
-    const feedingsResult = await query(
+    // Total registros de raciones últimos 7 días desde la fecha especificada
+    const portionsResult = await query(
       `
       SELECT COUNT(*)::integer as count
-      FROM feedings
+      FROM portions
       WHERE household_id = $1
-        AND feeding_date <= $2::date
-        AND feeding_date >= ($2::date - INTERVAL '6 days')
+        AND date IS NOT NULL
+        AND date <= $2::date
+        AND date >= ($2::date - INTERVAL '6 days')
       `,
       [householdId, targetDate]
     );
-    const totalFeedingsLast7Days = feedingsResult.rows[0]?.count || 0;
+    const totalFeedingsLast7Days = portionsResult.rows[0]?.count || 0;
 
     // Promedio de cumplimiento del DÍA ANTERIOR (día completo, más útil que promedio semanal)
     // Solo si targetDate es HOY, calculamos ayer. Si es histórico, calculamos el día anterior a esa fecha.
@@ -718,74 +721,121 @@ export async function updatePortionAmount(data: {
       return fail("Cantidades inválidas");
     }
 
-    // Buscar feeding existente para este portion_number del día
-    const existingFeeding = await query(
+    // Buscar registro existente para este portion_number del día
+    const existingPortion = await query(
       `
       SELECT id, food_id 
-      FROM feedings 
+      FROM portions 
       WHERE pet_id = $1 
-        AND feeding_date = $2 
+        AND date = $2 
         AND portion_number = $3
       LIMIT 1
       `,
       [data.petId, targetDate, data.portionNumber]
     );
 
-    if (existingFeeding.rows.length > 0) {
-      // ACTUALIZAR feeding existente
-      const feedingId = existingFeeding.rows[0].id;
+    if (existingPortion.rows.length > 0) {
+      // ACTUALIZAR registro existente
+      const portionId = existingPortion.rows[0].id;
 
       await query(
         `
-        UPDATE feedings 
+        UPDATE portions 
         SET 
           amount_served_grams = $1,
           amount_leftover_grams = $2,
           updated_at = CURRENT_TIMESTAMP
         WHERE id = $3
         `,
-        [data.servedGrams, data.leftoverGrams, feedingId]
+        [data.servedGrams, data.leftoverGrams, portionId]
       );
     } else {
-      // CREAR nuevo feeding con datos mínimos
-      // Necesitamos un food_id: usar el primer alimento del household como placeholder
-      const foodResult = await query(
-        `SELECT id FROM foods WHERE household_id = $1 LIMIT 1`,
-        [householdId]
-      );
-
-      if (foodResult.rows.length === 0) {
-        return fail(
-          "No hay alimentos registrados. Crea al menos un alimento primero."
-        );
-      }
-
-      const foodId = foodResult.rows[0].id;
-
-      await query(
+      // CLONAR template si existe, sino crear nuevo registro mínimo
+      // Intentar clonar desde template
+      const cloneResult = await query(
         `
-        INSERT INTO feedings (
+        INSERT INTO portions (
           household_id,
           pet_id,
-          food_id,
-          feeding_date,
           portion_number,
+          date,
+          scheduled_time,
+          expected_grams,
+          food_id,
           amount_served_grams,
           amount_leftover_grams,
-          recorded_by
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+          recorded_by,
+          notes
+        )
+        SELECT 
+          $1,
+          pet_id,
+          portion_number,
+          $2::date,
+          scheduled_time,
+          expected_grams,
+          COALESCE(food_id, (SELECT id FROM foods WHERE household_id = $1 LIMIT 1)),
+          $3,
+          $4,
+          $5,
+          notes
+        FROM portions
+        WHERE pet_id = $6 
+          AND portion_number = $7 
+          AND date IS NULL
+        RETURNING id
         `,
         [
           householdId,
-          data.petId,
-          foodId,
           targetDate,
-          data.portionNumber,
           data.servedGrams,
           data.leftoverGrams,
           profileId,
+          data.petId,
+          data.portionNumber,
         ]
       );
+
+      // Si no había template, crear registro mínimo
+      if (cloneResult.rows.length === 0) {
+        const foodResult = await query(
+          `SELECT id FROM foods WHERE household_id = $1 LIMIT 1`,
+          [householdId]
+        );
+
+        if (foodResult.rows.length === 0) {
+          return fail(
+            "No hay alimentos registrados. Crea al menos un alimento primero."
+          );
+        }
+
+        const foodId = foodResult.rows[0].id;
+
+        await query(
+          `
+          INSERT INTO portions (
+            household_id,
+            pet_id,
+            portion_number,
+            date,
+            food_id,
+            amount_served_grams,
+            amount_leftover_grams,
+            recorded_by
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+          `,
+          [
+            householdId,
+            data.petId,
+            data.portionNumber,
+            targetDate,
+            foodId,
+            data.servedGrams,
+            data.leftoverGrams,
+            profileId,
+          ]
+        );
+      }
     }
 
     // Revalidar dashboard para actualizar UI

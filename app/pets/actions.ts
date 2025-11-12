@@ -84,11 +84,11 @@ export async function getPetById(
 
     const pet = petResult.rows[0] as Pet;
 
-    // 5. Query de portion_schedules
+    // 5. Query de portion templates (date IS NULL)
     const schedulesResult = await query(
       `SELECT id, portion_number, scheduled_time, expected_grams, notes, created_at, updated_at
-       FROM pet_portion_schedules
-       WHERE pet_id = $1
+       FROM portions
+       WHERE pet_id = $1 AND date IS NULL
        ORDER BY portion_number ASC`,
       [id]
     );
@@ -225,11 +225,12 @@ export async function createPet(formData: FormData): Promise<Result<Pet>> {
       const scheduleValues = portionSchedules
         .map(
           (schedule, index) =>
-            `($1, $${index * 3 + 2}, $${index * 3 + 3}, $${index * 3 + 4})`
+            `($1, $2, $${index * 3 + 3}, $${index * 3 + 4}, $${index * 3 + 5}, NULL)`
         )
         .join(", ");
 
       const scheduleParams = [
+        householdId,
         createdPet.id,
         ...portionSchedules.flatMap(
           (s: {
@@ -241,7 +242,7 @@ export async function createPet(formData: FormData): Promise<Result<Pet>> {
       ];
 
       await query(
-        `INSERT INTO pet_portion_schedules (pet_id, portion_number, scheduled_time, expected_grams)
+        `INSERT INTO portions (household_id, pet_id, portion_number, scheduled_time, expected_grams, date)
          VALUES ${scheduleValues}`,
         scheduleParams
       );
@@ -406,21 +407,24 @@ export async function updatePet(
 
     const updatedPet = result.rows[0] as Pet;
 
-    // 8. Actualizar meal_schedules si existen
+    // 8. Actualizar portion templates si existen
     if (mealSchedules && Array.isArray(mealSchedules)) {
-      // Primero eliminar los existentes
-      await query(`DELETE FROM pet_portion_schedules WHERE pet_id = $1`, [id]);
+      // Primero eliminar los templates existentes (date IS NULL)
+      await query(`DELETE FROM portions WHERE pet_id = $1 AND date IS NULL`, [
+        id,
+      ]);
 
       // Luego insertar los nuevos si hay
       if (mealSchedules.length > 0) {
         const scheduleValues = mealSchedules
           .map(
             (schedule, index) =>
-              `($1, $${index * 3 + 2}, $${index * 3 + 3}, $${index * 3 + 4})`
+              `($1, $2, $${index * 3 + 3}, $${index * 3 + 4}, $${index * 3 + 5}, NULL)`
           )
           .join(", ");
 
         const scheduleParams = [
+          householdId,
           id,
           ...mealSchedules.flatMap(
             (s: {
@@ -432,7 +436,7 @@ export async function updatePet(
         ];
 
         await query(
-          `INSERT INTO pet_portion_schedules (pet_id, portion_number, scheduled_time, expected_grams)
+          `INSERT INTO portions (household_id, pet_id, portion_number, scheduled_time, expected_grams, date)
            VALUES ${scheduleValues}`,
           scheduleParams
         );
