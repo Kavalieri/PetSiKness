@@ -1,9 +1,64 @@
 # 🎯 Estado del Proyecto - Pet SiKness
 
-**Fecha**: 11 Noviembre 2025
-**Versión**: 1.2.0
+**Fecha**: 12 Noviembre 2025
+**Versión**: 1.2.1
 **Branch**: `main`
 **Repositorio**: https://github.com/Kavalieri/PetSiKness
+
+---
+
+## ⚠️ ISSUE #64 COMPLETADA (12 Nov 2025)
+
+### 🐛 Corrección de Regresión Post-Export
+
+**Problema**: Tras implementar exports (Issue #61), el dashboard quedó roto con contenido duplicado de analytics.
+
+**Causa raíz**: Se añadieron por error `AnalyticsSection` y `RecommendationsSection` al dashboard, duplicando contenido que ya existe en páginas dedicadas.
+
+**Correcciones**:
+- ✅ Dashboard restaurado a estructura original (Stats + Alertas + Balance + Acciones)
+- ✅ Removidas secciones duplicadas (Analytics completos, Recommendations)
+- ✅ Limpieza de imports no usados (7 archivos)
+- ✅ TypeScript: 0 errores
+- ✅ ESLint: Solo 4 warnings aceptables de `<img>`
+
+**Lección aprendida**: Al implementar nuevas features, NO duplicar contenido entre páginas. Cada página debe tener responsabilidades claras y diferenciadas.
+
+**Commit**: e858c53
+
+---
+
+## ✅ ISSUE #61 COMPLETADA (12 Nov 2025)
+
+### 📊 Reportes Exportables (CSV + PDF)
+
+**Issues completados**: #61  
+**Commits**: a3eaf43  
+**LOC añadidas**: ~800
+
+**Componentes nuevos**:
+- ✅ `lib/export/csv.ts` (150 líneas) - Export nativo con BOM UTF-8
+- ✅ `lib/export/pdf.ts` (390 líneas) - jsPDF + autoTable
+- ✅ ExportAnalyticsButton - Botón en Analytics page
+- ✅ ExportDashboardButton - Botón en Dashboard
+- ✅ FeedingHistoryTable con dropdown export
+
+**Dependencias nuevas**:
+- jspdf@^2.5.2
+- jspdf-autotable@^3.8.4
+
+**Exports disponibles**:
+1. **CSV**: Historial de alimentación (Excel-compatible)
+2. **PDF - Historial**: Tabla completa con rango de fechas
+3. **PDF - Analytics**: Métricas + tendencias (30 días)
+4. **PDF - Dashboard**: Resumen del día con balance por mascota
+
+**Características**:
+- ✅ Formateo automático de fechas/números
+- ✅ Headers brandados con logo Pet SiKness
+- ✅ Footers con fecha generación + paginación
+- ✅ Nombres de archivo con timestamps
+- ✅ Botones disabled cuando no hay datos
 
 ---
 
@@ -414,11 +469,14 @@ Fase 1: Setup Base          █████████████████�
 Fase 2: CRUD Mascotas        ████████████████████ 100% ✅
 Fase 3: CRUD Alimentos       ████████████████████ 100% ✅
 Fase 4: Calendario           ████████████████████ 100% ✅
-Fase 5: Dashboard            ████████████████████ 100% ✅ (integrado en Fase 4)
+Fase 4.5: Navegación Temporal ███████████████████ 100% ✅
+Fase 5: Dashboard Analytics  ████████████████████ 100% ✅
+Issue #61: Reportes Export   ████████████████████ 100% ✅
+Issue #64: Fix Regresión     ████████████████████ 100% ✅
 Fase 6: Deployment           ░░░░░░░░░░░░░░░░░░░░   0% ⏳
 ```
 
-**Progreso Total**: 83.33% (5 de 6 fases)
+**Progreso Total**: 88.89% (8 de 9 hitos)
 
 ---
 
@@ -432,10 +490,14 @@ Fase 6: Deployment           ░░░░░░░░░░░░░░░░░
 - ✅ **10 Nov 2025**: Fase 3 CRUD Alimentos completada (13 issues cerrados)
 - ✅ **10 Nov 2025**: Fase 4 Calendario de Alimentación completada (12 issues cerrados)
 - ✅ **10 Nov 2025**: Fase 5 Dashboard y Analytics completada (integrado en Fase 4)
-- 🎯 **Próximo hito**: Fase 6 - Production Deployment
+- ✅ **11 Nov 2025**: Fase 4.5 Navegación Temporal completada (6 issues cerrados)
+- ✅ **12 Nov 2025**: Issue #61 Reportes Exportables completada (CSV + PDF)
+- ✅ **12 Nov 2025**: Issue #64 Corrección de regresión post-export
+- 🎯 **Próximo hito**: Issue #62 - Alertas Inteligentes
+- 🎯 **Hito final**: Fase 6 - Production Deployment
 
 ---
 
-**Documento actualizado**: 10 Noviembre 2025
-**Estado actual**: Fase 4 completada
-**Estado del proyecto**: 🟢 LISTO PARA DEPLOYMENT (Fase 6)
+**Documento actualizado**: 12 Noviembre 2025
+**Estado actual**: Issue #64 completada, listo para continuar roadmap
+**Estado del proyecto**: 🟢 FUNCIONAL (Dashboard restaurado, exports funcionando)
