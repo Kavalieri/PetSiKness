@@ -193,26 +193,31 @@ database/
 
 ### Workflow
 
+**⚠️ CRÍTICO: SIEMPRE usa el script `./scripts/apply-migration.sh`**
+
 1. **Crear migración**: Archivo SQL con timestamp
 2. **Aplicar a DEV**:
    ```bash
-   sudo -u postgres psql -d pet_sikness_dev -f database/migrations/YYYYMMDD_HHMMSS_descripcion.sql
+   ./scripts/apply-migration.sh database/migrations/YYYYMMDD_HHMMSS_descripcion.sql
    ```
-3. **Regenerar types**: `npm run types:generate:dev`
-4. **Verificar**: `npm run typecheck`
-5. **Probar en aplicación**
-6. **Aplicar a PROD** (con backup previo):
+   El script automáticamente:
+   - Verifica estado previo
+   - Aplica como `postgres` con `SET ROLE pet_owner`
+   - Regenera types TypeScript si hay cambios de schema
+   - Registra en `_migrations`
+3. **Verificar**: `npm run typecheck`
+4. **Probar en aplicación**
+5. **Aplicar a PROD** (requiere confirmación):
    ```bash
-   sudo -u postgres pg_dump -d pet_sikness_prod > ~/backups/pet_prod_$(date +%Y%m%d_%H%M%S).sql
-   sudo -u postgres psql -d pet_sikness_prod -f database/migrations/YYYYMMDD_HHMMSS_descripcion.sql
-   npm run types:generate:prod
+   ./scripts/apply-migration.sh database/migrations/YYYYMMDD_HHMMSS_descripcion.sql prod
    ```
 
 ### Reglas Críticas
 
-- ✅ **SIEMPRE** aplicar como `postgres` con `SET ROLE pet_owner;` para DDL
-- ✅ **SIEMPRE** regenerar types tras migración
-- ✅ **SIEMPRE** backup antes de aplicar a PROD
+- ✅ **SIEMPRE** usar `./scripts/apply-migration.sh` para migraciones
+- ✅ **SIEMPRE** regenerar types tras migración (automático con el script)
+- ✅ **SIEMPRE** backup antes de PROD (automático con el script)
+- ❌ **NUNCA** ejecutar `sudo -u postgres psql ... -f migration.sql` manualmente
 - ❌ **NUNCA** aplicar migraciones desde la aplicación
 - ❌ **NUNCA** modificar datos en migraciones (solo estructura)
 

@@ -95,8 +95,8 @@ function convertPetToFormData(pet: Pet): any {
     weight_kg: pet.weight_kg ? Number(pet.weight_kg) : undefined,
     body_condition: (pet.body_condition as string) || undefined,
     daily_food_goal_grams: Number(pet.daily_food_goal_grams),
-    daily_meals_target: pet.daily_meals_target
-      ? Number(pet.daily_meals_target)
+    daily_portions_target: pet.daily_portions_target
+      ? Number(pet.daily_portions_target)
       : 2,
     health_notes: pet.health_notes || undefined,
     allergies: pet.allergies || [],
@@ -183,7 +183,7 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
     PortionScheduleFormData[]
   >(
     pet?.portion_schedules?.map((s) => ({
-      meal_number: s.meal_number,
+      portion_number: s.portion_number,
       scheduled_time: s.scheduled_time,
       expected_grams: s.expected_grams ? Number(s.expected_grams) : undefined,
       notes: s.notes || undefined,
@@ -629,11 +629,11 @@ export function PetForm({ pet, onSuccess, onCancel }: PetFormProps) {
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                 {portionSchedules.map((schedule, index) => (
                   <div
-                    key={schedule.meal_number}
+                    key={schedule.portion_number}
                     className="flex flex-col space-y-2 p-3 border rounded-lg"
                   >
                     <label className="text-sm font-medium">
-                      {getPortionName(schedule.meal_number)}
+                      {getPortionName(schedule.portion_number)}
                     </label>
 
                     {/* Hora */}

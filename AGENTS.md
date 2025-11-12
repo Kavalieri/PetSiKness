@@ -248,21 +248,26 @@ touch database/migrations/${TIMESTAMP}_descripcion.sql
 
 ### Aplicar Migración
 
-```bash
-# Conectarse como postgres y aplicar
-sudo -u postgres psql -d pet_sikness_dev -f database/migrations/ARCHIVO.sql
-
-# Para PROD (con backup previo OBLIGATORIO)
-sudo -u postgres pg_dump pet_sikness_prod > ~/backups/prod_$(date +%Y%m%d_%H%M%S).sql
-sudo -u postgres psql -d pet_sikness_prod -f database/migrations/ARCHIVO.sql
-```
-
-### Regenerar Types Después de Migración
+**⚠️ CRÍTICO: SIEMPRE usa `./scripts/apply-migration.sh`**
 
 ```bash
-# Siempre regenerar types tras cambios de schema
-npm run types:generate:dev
+# DEV (auto-regenera types TypeScript)
+./scripts/apply-migration.sh database/migrations/ARCHIVO.sql
+
+# PROD (requiere confirmación + auto-backup)
+./scripts/apply-migration.sh database/migrations/ARCHIVO.sql prod
 ```
+
+**Beneficios del script**:
+
+- ✅ Verifica estado previo de la migración
+- ✅ Aplica de forma segura como usuario `postgres`
+- ✅ Auto-regenera types TypeScript si detecta cambios de schema
+- ✅ Requiere confirmación explícita para PROD
+- ✅ Registra correctamente en `_migrations`
+- ✅ Muestra próximos pasos sugeridos
+
+**❌ NO ejecutar comandos psql manuales para migraciones**
 
 ---
 

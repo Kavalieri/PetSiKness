@@ -18,7 +18,7 @@ import {
   getStatusLabel,
   getStatusColor,
   type MealBalance,
-} from "@/lib/utils/meal-balance";
+} from "@/lib/utils/portion-balance";
 import { useState } from "react";
 import {
   Dialog,
@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { updateMealPortion } from "@/app/dashboard/actions";
+import { updatePortionAmount } from "@/app/dashboard/actions";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
@@ -133,9 +133,9 @@ function MealCard({
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const result = await updateMealPortion({
+      const result = await updatePortionAmount({
         petId,
-        mealNumber: balance.meal_number,
+        portionNumber: balance.portion_number,
         servedGrams: Number(served),
         eatenGrams: Number(eaten),
       });
@@ -149,7 +149,7 @@ function MealCard({
 
       toast.success("Ración actualizada", {
         description: `${getPortionName(
-          balance.meal_number
+          balance.portion_number
         )} de ${petName} actualizada correctamente`,
       });
 
@@ -180,7 +180,7 @@ function MealCard({
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <span className="text-lg font-semibold">
-              {getPortionName(balance.meal_number)}
+              {getPortionName(balance.portion_number)}
             </span>
             <span className="text-sm text-muted-foreground">
               {balance.actual_time || balance.scheduled_time}
@@ -250,7 +250,7 @@ function MealCard({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              Editar {getPortionName(balance.meal_number)} - {petName}
+              Editar {getPortionName(balance.portion_number)} - {petName}
             </DialogTitle>
             <DialogDescription>
               Modifica las cantidades servida y comida para esta ración
@@ -333,14 +333,14 @@ function MealBasedBalanceCompact({ data }: { data: DailyBalanceData }) {
           <div className="space-y-2">
             {data.meal_balances.map((balance) => (
               <div
-                key={balance.meal_number}
+                key={balance.portion_number}
                 className="flex flex-col p-2 bg-muted/50 rounded text-xs gap-1"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span>{getStatusIcon(balance.status)}</span>
                     <span className="font-medium">
-                      {getPortionName(balance.meal_number)}
+                      {getPortionName(balance.portion_number)}
                     </span>
                     <span className="text-muted-foreground">
                       {/* ✨ Mostrar hora real si existe */}
@@ -416,7 +416,7 @@ function MealBasedBalanceFull({ data }: { data: DailyBalanceData }) {
         <div className="flex flex-col gap-3">
           {data.meal_balances.map((balance) => (
             <MealCard
-              key={balance.meal_number}
+              key={balance.portion_number}
               balance={balance}
               petId={data.pet_id}
               petName={data.pet_name}

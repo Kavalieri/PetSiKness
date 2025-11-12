@@ -70,12 +70,13 @@ export interface Feedings {
   had_stool: Generated<boolean>;
   household_id: string;
   id: Generated<string>;
-  /**
-   * Número de ración del día en que se registró esta alimentación
-   */
-  meal_number: number | null;
   notes: string | null;
   pet_id: string;
+  /**
+   * Número de ración del día (1=desayuno, 2=almuerzo, 3=cena). 
+   *    Relacionado con pet_portion_schedules.portion_number
+   */
+  portion_number: number | null;
   recorded_by: string;
   stool_quality: string | null;
   updated_at: Generated<Timestamp>;
@@ -160,7 +161,7 @@ export interface PetPortionSchedules {
   /**
    * Número de ración del día (1, 2, 3...)
    */
-  meal_number: number;
+  portion_number: number;
   /**
    * Hora programada para esta toma (ej: 08:00, 14:00, 20:00). Usado para calcular puntualidad y alertas.
    */
@@ -185,9 +186,9 @@ export interface Pets {
    */
   daily_food_goal_grams: Generated<number>;
   /**
-   * Número objetivo de raciones diarias
+   * Número objetivo de raciones diarias para la mascota
    */
-  daily_meals_target: Generated<number | null>;
+  daily_portions_target: Generated<number | null>;
   gender: string | null;
   health_notes: string | null;
   household_id: string;

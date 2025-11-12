@@ -1,6 +1,6 @@
 /**
- * Meal Balance Calculation Utilities
- * Pet SiKness - Per-Meal Tracking System
+ * Portion Balance Calculation Utilities
+ * Pet SiKness - Per-Portion Tracking System
  */
 
 // ============================================
@@ -8,36 +8,36 @@
 // ============================================
 
 /**
- * Horario de toma simplificado (solo datos necesarios para cálculo)
+ * Horario de ración simplificado (solo datos necesarios para cálculo)
  */
-export interface SimpleMealSchedule {
-  meal_number: number;
+export interface SimplePortionSchedule {
+  portion_number: number;
   scheduled_time: string;
-  expected_grams?: number; // ✨ Cantidad esperada específica de esta toma
+  expected_grams?: number; // ✨ Cantidad esperada específica de esta ración
   notes?: string;
 }
 
 /**
- * Estado de una toma individual
+ * Estado de una ración individual
  */
-export type MealStatus =
+export type PortionStatus =
   | "completed" // ✅ Completado: comido >= esperado
   | "pending" // ⏰ Pendiente: aún no es la hora
   | "delayed" // 🔴 Retrasado: pasó la hora + margen y no cumplió
   | "partial"; // 🟡 Parcial: comió algo pero menos de lo esperado
 
 /**
- * Balance de una toma específica
+ * Balance de una ración específica
  */
-export interface MealBalance {
-  meal_number: number;
+export interface PortionBalance {
+  portion_number: number;
   scheduled_time: string; // Hora orientativa programada
   actual_time?: string; // ✨ Hora real del feeding (si completada)
   expected_grams: number;
   served_grams: number; // ✨ NUEVO: Cantidad servida (para meta)
   eaten_grams: number; // Cantidad comida (para tracking)
   leftover_grams: number; // ✨ NUEVO: Calculado (served - eaten)
-  status: MealStatus;
+  status: PortionStatus;
   percentage: number; // ✨ CAMBIO: Basado en served, no eaten
   is_due: boolean; // Si ya pasó la hora programada
   minutes_late?: number; // Minutos de retraso (si aplica)
@@ -45,10 +45,29 @@ export interface MealBalance {
 }
 
 /**
+ * @deprecated LEGACY: Usa "Portion" en lugar de "Meal"
+ * Este tipo será eliminado en la próxima versión
+ * @see PortionBalance
+ */
+export type MealBalance = PortionBalance;
+
+/**
+ * @deprecated LEGACY: Usa "SimplePortionSchedule" en lugar de "SimpleMealSchedule"
+ * @see SimplePortionSchedule
+ */
+export type SimpleMealSchedule = SimplePortionSchedule;
+
+/**
+ * @deprecated LEGACY: Usa "PortionStatus" en lugar de "MealStatus"
+ * @see PortionStatus
+ */
+export type MealStatus = PortionStatus;
+
+/**
  * Registro de feeding con timestamp
  */
 export interface FeedingRecord {
-  meal_number?: number; // ✨ CRÍTICO: Número de ración para match directo
+  portion_number?: number; // ✨ CRÍTICO: Número de ración para match directo
   feeding_time: string; // HH:mm format
   amount_served_grams: number; // ✨ CAMBIO: Ahora usamos servido para metas
   amount_eaten_grams: number; // Para tracking de consumo real
@@ -124,52 +143,52 @@ function isTimeDue(
 // ============================================
 
 /**
- * Calcula el balance de todas las tomas del día para una mascota
+ * Calcula el balance de todas las raciones del día para una mascota
  *
  * @param dailyGoalGrams - Meta diaria total de comida (en gramos)
- * @param mealSchedules - Horarios programados de las tomas
+ * @param portionSchedules - Horarios programados de las raciones
  * @param feedings - Registros de alimentación del día
  * @param currentTime - Hora actual (formato HH:mm), opcional (usa hora del sistema)
- * @returns Array con el balance de cada toma
+ * @returns Array con el balance de cada ración
  */
-export function calculateMealBalances(
+export function calculatePortionBalances(
   dailyGoalGrams: number,
-  mealSchedules: SimpleMealSchedule[],
+  portionSchedules: SimplePortionSchedule[],
   feedings: FeedingRecord[],
   currentTime?: string
-): MealBalance[] {
+): PortionBalance[] {
   const now = currentTime || getCurrentTime();
-  const numMeals = mealSchedules.length;
+  const numPortions = portionSchedules.length;
 
-  if (numMeals === 0) {
+  if (numPortions === 0) {
     return [];
   }
 
-  // Ordenar schedules por meal_number (debería estar ordenado pero por si acaso)
-  const sortedSchedules = [...mealSchedules].sort(
-    (a, b) => a.meal_number - b.meal_number
+  // Ordenar schedules por portion_number (debería estar ordenado pero por si acaso)
+  const sortedSchedules = [...portionSchedules].sort(
+    (a, b) => a.portion_number - b.portion_number
   );
 
-  // Calcular balance para cada toma
+  // Calcular balance para cada ración
   return sortedSchedules.map((schedule) => {
     // ✨ CAMBIO: Usar expected_grams específico si está disponible, sino dividir meta diaria
     const expectedGrams = schedule.expected_grams
       ? schedule.expected_grams
-      : Math.round(dailyGoalGrams / numMeals);
+      : Math.round(dailyGoalGrams / numPortions);
 
-    // ✨ CAMBIO CRÍTICO: Buscar feedings por meal_number PRIMERO (match exacto)
-    // Si no tiene meal_number, usar ventana de tiempo como fallback
-    const mealFeedings = feedings.filter((feeding) => {
-      // Prioridad 1: Match por meal_number (más confiable)
+    // ✨ CAMBIO CRÍTICO: Buscar feedings por portion_number PRIMERO (match exacto)
+    // Si no tiene portion_number, usar ventana de tiempo como fallback
+    const portionFeedings = feedings.filter((feeding) => {
+      // Prioridad 1: Match por portion_number (más confiable)
       if (
-        feeding.meal_number !== undefined &&
-        feeding.meal_number === schedule.meal_number
+        feeding.portion_number !== undefined &&
+        feeding.portion_number === schedule.portion_number
       ) {
         return true;
       }
 
-      // Prioridad 2: Match por ventana de tiempo (solo si no tiene meal_number)
-      if (feeding.meal_number === undefined) {
+      // Prioridad 2: Match por ventana de tiempo (solo si no tiene portion_number)
+      if (feeding.portion_number === undefined) {
         const diff = timeDifferenceMinutes(
           feeding.feeding_time,
           schedule.scheduled_time
@@ -181,13 +200,13 @@ export function calculateMealBalances(
     });
 
     // ✨ NUEVO: Sumar cantidad SERVIDA (para cumplimiento de meta)
-    const servedGrams = mealFeedings.reduce(
+    const servedGrams = portionFeedings.reduce(
       (sum, f) => sum + f.amount_served_grams,
       0
     );
 
     // Sumar cantidad comida (para tracking de consumo real)
-    const eatenGrams = mealFeedings.reduce(
+    const eatenGrams = portionFeedings.reduce(
       (sum, f) => sum + f.amount_eaten_grams,
       0
     );
@@ -195,13 +214,13 @@ export function calculateMealBalances(
     // ✨ NUEVO: Calcular sobrante
     const leftoverGrams = servedGrams - eatenGrams;
 
-    // ✨ Hora real de la toma (si hubo feedings)
+    // ✨ Hora real de la ración (si hubo feedings)
     let actualTime: string | undefined;
-    if (mealFeedings.length > 0) {
-      actualTime = mealFeedings[0].feeding_time;
+    if (portionFeedings.length > 0) {
+      actualTime = portionFeedings[0].feeding_time;
     }
 
-    // ✨ CAMBIO CRÍTICO: Porcentaje basado en SERVIDO vs esperado de ESTA toma
+    // ✨ CAMBIO CRÍTICO: Porcentaje basado en SERVIDO vs esperado de ESTA ración
     const percentage =
       expectedGrams > 0 ? Math.round((servedGrams / expectedGrams) * 100) : 0;
 
@@ -228,7 +247,7 @@ export function calculateMealBalances(
     }
 
     // Determinar status
-    let status: MealStatus;
+    let status: PortionStatus;
 
     if (!isDue) {
       // Aún no es la hora → PENDING
@@ -254,7 +273,7 @@ export function calculateMealBalances(
     }
 
     return {
-      meal_number: schedule.meal_number,
+      portion_number: schedule.portion_number,
       scheduled_time: schedule.scheduled_time,
       actual_time: actualTime,
       expected_grams: expectedGrams,
@@ -269,6 +288,12 @@ export function calculateMealBalances(
     };
   });
 }
+
+/**
+ * @deprecated LEGACY: Usa calculatePortionBalances() en lugar de calculateMealBalances()
+ * @see calculatePortionBalances
+ */
+export const calculateMealBalances = calculatePortionBalances;
 
 // ============================================
 // Summary Functions
@@ -295,7 +320,7 @@ export interface DailySummary {
 /**
  * Genera resumen agregado desde los balances individuales
  */
-export function calculateDailySummary(balances: MealBalance[]): DailySummary {
+export function calculateDailySummary(balances: PortionBalance[]): DailySummary {
   const totalMeals = balances.length;
   const completedMeals = balances.filter(
     (b) => b.status === "completed"
@@ -337,8 +362,8 @@ export function calculateDailySummary(balances: MealBalance[]): DailySummary {
 /**
  * Obtiene emoji/icono para el status
  */
-export function getStatusIcon(status: MealStatus): string {
-  const icons: Record<MealStatus, string> = {
+export function getStatusIcon(status: PortionStatus): string {
+  const icons: Record<PortionStatus, string> = {
     completed: "✅",
     pending: "⏰",
     delayed: "🔴",
@@ -350,8 +375,8 @@ export function getStatusIcon(status: MealStatus): string {
 /**
  * Obtiene texto legible para el status
  */
-export function getStatusLabel(status: MealStatus): string {
-  const labels: Record<MealStatus, string> = {
+export function getStatusLabel(status: PortionStatus): string {
+  const labels: Record<PortionStatus, string> = {
     completed: "Completado",
     pending: "Pendiente",
     delayed: "Retrasado",
@@ -363,8 +388,8 @@ export function getStatusLabel(status: MealStatus): string {
 /**
  * Obtiene color de badge para el status
  */
-export function getStatusColor(status: MealStatus): string {
-  const colors: Record<MealStatus, string> = {
+export function getStatusColor(status: PortionStatus): string {
+  const colors: Record<PortionStatus, string> = {
     completed:
       "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
     pending: "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200",
@@ -378,12 +403,18 @@ export function getStatusColor(status: MealStatus): string {
 /**
  * Formatea cantidad comida vs esperada
  */
-export function formatMealProgress(
+export function formatPortionProgress(
   eatenGrams: number,
   expectedGrams: number
 ): string {
   return `${eatenGrams}g / ${expectedGrams}g`;
 }
+
+/**
+ * @deprecated LEGACY: Usa formatPortionProgress() en lugar de formatMealProgress()
+ * @see formatPortionProgress
+ */
+export const formatMealProgress = formatPortionProgress;
 
 /**
  * Formatea minutos de retraso en texto legible

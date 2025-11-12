@@ -44,7 +44,7 @@ export function generateDefaultSchedule(
   // Si existe horario predefinido, usarlo
   if (predefinedSchedules[numPortions]) {
     return predefinedSchedules[numPortions].map((time, index) => ({
-      meal_number: index + 1,
+      portion_number: index + 1,
       scheduled_time: time,
     }));
   }
@@ -68,7 +68,7 @@ export function generateDefaultSchedule(
       .padStart(2, "0")}`;
 
     schedules.push({
-      meal_number: i + 1,
+      portion_number: i + 1,
       scheduled_time,
     });
   }

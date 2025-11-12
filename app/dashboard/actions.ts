@@ -9,7 +9,7 @@ import { revalidatePath } from "next/cache";
 import {
   calculateMealBalances,
   type MealBalance,
-} from "@/lib/utils/meal-balance";
+} from "@/lib/utils/portion-balance";
 
 // ============================================
 // 🎯 FILOSOFÍA: GESTIÓN DIARIA PRIORITARIA
@@ -214,7 +214,7 @@ export async function getTodayBalance(
         COALESCE(SUM(f.amount_eaten_grams), 0) as total_eaten,
         COALESCE(SUM(f.amount_leftover_grams), 0) as total_leftover,
         p.daily_food_goal_grams as daily_goal,
-        p.daily_meals_target as num_meals,
+        p.daily_portions_target as num_portions,
         CASE 
           WHEN p.daily_food_goal_grams > 0 
           THEN ROUND((COALESCE(SUM(f.amount_eaten_grams), 0)::DECIMAL / p.daily_food_goal_grams) * 100, 2)
@@ -228,7 +228,7 @@ export async function getTodayBalance(
       FROM pets p
       LEFT JOIN feedings f ON f.pet_id = p.id AND f.feeding_date = $2
       WHERE p.household_id = $1 AND p.is_active = true
-      GROUP BY p.id, p.name, p.daily_food_goal_grams, p.daily_meals_target
+      GROUP BY p.id, p.name, p.daily_food_goal_grams, p.daily_portions_target
       ORDER BY p.name
       `,
       [householdId, targetDate]
@@ -256,7 +256,7 @@ export async function getTodayBalance(
       `
       SELECT 
         f.pet_id,
-        f.meal_number,
+        f.portion_number,
         f.feeding_time,
         f.amount_served_grams,
         f.amount_eaten_grams
@@ -274,7 +274,7 @@ export async function getTodayBalance(
     const schedulesByPet = new Map<
       string,
       Array<{
-        meal_number: number;
+        portion_number: number;
         scheduled_time: string;
         expected_grams?: number;
         notes?: string;
@@ -286,7 +286,7 @@ export async function getTodayBalance(
         schedulesByPet.set(petId, []);
       }
       schedulesByPet.get(petId)!.push({
-        meal_number: row.portion_number, // ⚠️ La columna en BD es portion_number
+        portion_number: row.portion_number,
         scheduled_time: row.scheduled_time,
         expected_grams:
           row.expected_grams != null ? Number(row.expected_grams) : undefined,
@@ -298,7 +298,7 @@ export async function getTodayBalance(
     const feedingsByPet = new Map<
       string,
       Array<{
-        meal_number?: number;
+        portion_number?: number;
         feeding_time: string;
         amount_served_grams: number;
         amount_eaten_grams: number;
@@ -310,7 +310,9 @@ export async function getTodayBalance(
         feedingsByPet.set(petId, []);
       }
       feedingsByPet.get(petId)!.push({
-        meal_number: row.meal_number ? Number(row.meal_number) : undefined,
+        portion_number: row.portion_number
+          ? Number(row.portion_number)
+          : undefined,
         feeding_time: row.feeding_time,
         amount_served_grams: Number(row.amount_served_grams),
         amount_eaten_grams: Number(row.amount_eaten_grams),
@@ -319,7 +321,7 @@ export async function getTodayBalance(
 
     // Convertir y calcular meal_balances para cada mascota
     const balances: TodayBalance[] = result.rows.map(
-      (row: TodayBalanceRow & { num_meals?: number }) => {
+      (row: TodayBalanceRow & { num_portions?: number }) => {
         const petId = row.pet_id;
         const dailyGoal = Number(row.daily_goal);
         const schedules = schedulesByPet.get(petId) || [];
@@ -677,15 +679,15 @@ export async function getHouseholdOverview(
 }
 
 /**
- * Actualizar o crear feeding para una ración específica (meal_number)
+ * Actualizar o crear feeding para una ración específica (portion_number)
  * del día actual para una mascota.
  *
- * Si ya existe un feeding para ese meal_number del día, lo actualiza.
+ * Si ya existe un feeding para ese portion_number del día, lo actualiza.
  * Si no existe, crea uno nuevo con datos mínimos.
  */
-export async function updateMealPortion(data: {
+export async function updatePortionAmount(data: {
   petId: string;
-  mealNumber: number;
+  portionNumber: number;
   servedGrams: number;
   eatenGrams: number;
   date?: string; // DEFAULT: HOY
@@ -713,17 +715,17 @@ export async function updateMealPortion(data: {
       return fail("Cantidades inválidas");
     }
 
-    // Buscar feeding existente para este meal_number del día
+    // Buscar feeding existente para este portion_number del día
     const existingFeeding = await query(
       `
       SELECT id, food_id 
       FROM feedings 
       WHERE pet_id = $1 
         AND feeding_date = $2 
-        AND meal_number = $3
+        AND portion_number = $3
       LIMIT 1
       `,
-      [data.petId, targetDate, data.mealNumber]
+      [data.petId, targetDate, data.portionNumber]
     );
 
     if (existingFeeding.rows.length > 0) {
@@ -764,7 +766,7 @@ export async function updateMealPortion(data: {
           pet_id,
           food_id,
           feeding_date,
-          meal_number,
+          portion_number,
           amount_served_grams,
           amount_eaten_grams,
           recorded_by
@@ -775,7 +777,7 @@ export async function updateMealPortion(data: {
           data.petId,
           foodId,
           targetDate,
-          data.mealNumber,
+          data.portionNumber,
           data.servedGrams,
           data.eatenGrams,
           profileId,
@@ -787,10 +789,16 @@ export async function updateMealPortion(data: {
     revalidatePath("/dashboard");
     return ok();
   } catch (error) {
-    console.error("Error updating meal portion:", error);
+    console.error("Error updating portion amount:", error);
     if (error instanceof Error) {
       return fail(error.message);
     }
     return fail("Error al actualizar ración");
   }
 }
+
+/**
+ * @deprecated LEGACY: Usa updatePortionAmount() en lugar de updateMealPortion()
+ * @see updatePortionAmount
+ */
+export const updateMealPortion = updatePortionAmount;

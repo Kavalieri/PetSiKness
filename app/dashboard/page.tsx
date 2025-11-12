@@ -7,7 +7,7 @@ import {
   getHouseholdOverview,
   type TodayBalance,
 } from "./actions";
-import type { MealBalance } from "@/lib/utils/meal-balance";
+import type { MealBalance } from "@/lib/utils/portion-balance";
 import { DailyBalanceList } from "@/components/feeding/DailyBalanceCard";
 import {
   Card,

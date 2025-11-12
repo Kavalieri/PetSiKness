@@ -92,7 +92,7 @@ export type PortionScheduleCreateInput = Omit<
  * Datos simplificados de horario para formularios
  */
 export type PortionScheduleFormData = {
-  meal_number: number;
+  portion_number: number;
   scheduled_time: string; // HH:mm format
   expected_grams?: number; // Cantidad esperada para esta ración específica
   notes?: string;
@@ -110,7 +110,7 @@ export type PetWithSchedules = Pet & {
  */
 export type PortionScheduleSummary = Pick<
   PortionSchedule,
-  "meal_number" | "scheduled_time"
+  "portion_number" | "scheduled_time"
 >;
 
 // ============================================

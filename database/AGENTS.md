@@ -74,14 +74,14 @@
   ```bash
   # Conectarse como postgres
   sudo -u postgres psql -d pet_sikness_dev
-  
+
   # Dentro de psql, cambiar a pet_owner
   SET ROLE pet_owner;
-  
+
   # Ejecutar DDL
   CREATE TABLE nueva_tabla (...);
   ALTER TABLE pets ADD COLUMN ...;
-  
+
   # Volver a postgres
   RESET ROLE;
   ```
@@ -93,12 +93,14 @@
 ### Entornos
 
 **`pet_sikness_dev`** (Development)
+
 - **Puerto**: 5432
 - **Owner**: `pet_owner`
 - **Aplicación**: Next.js desarrollo (puerto 3002)
 - **Acceso**: `postgresql://pet_user:SiKPets2025Segur0@localhost:5432/pet_sikness_dev`
 
 **`pet_sikness_prod`** (Production)
+
 - **Puerto**: 5432
 - **Owner**: `pet_owner`
 - **Aplicación**: Next.js producción (puerto 3003)
@@ -111,7 +113,9 @@
 ### Tablas (7)
 
 #### **1. profiles**
+
 Usuarios del sistema (OAuth)
+
 ```sql
 CREATE TABLE profiles (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -125,7 +129,9 @@ CREATE TABLE profiles (
 ```
 
 #### **2. households**
+
 Familias de mascotas
+
 ```sql
 CREATE TABLE households (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -137,7 +143,9 @@ CREATE TABLE households (
 ```
 
 #### **3. household_members**
+
 Membresía en hogares
+
 ```sql
 CREATE TABLE household_members (
   household_id UUID NOT NULL REFERENCES households(id) ON DELETE CASCADE,
@@ -149,7 +157,9 @@ CREATE TABLE household_members (
 ```
 
 #### **4. pets**
+
 Perfiles de mascotas
+
 ```sql
 CREATE TABLE pets (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -159,31 +169,33 @@ CREATE TABLE pets (
   breed TEXT,
   birth_date DATE,
   gender TEXT CHECK (gender IN ('male', 'female', 'unknown')),
-  
+
   -- Información física
   weight_kg DECIMAL(5,2),
   body_condition TEXT CHECK (body_condition IN ('underweight', 'ideal', 'overweight', 'obese')),
-  
+
   -- Objetivos nutricionales
   daily_food_goal_grams INTEGER NOT NULL,
   daily_meals_target INTEGER DEFAULT 2,
-  
+
   -- Salud
   health_notes TEXT,
   allergies TEXT[],
   medications TEXT[],
-  
+
   -- Comportamiento
   appetite TEXT CHECK (appetite IN ('poor', 'normal', 'good', 'excellent')),
   activity_level TEXT CHECK (activity_level IN ('sedentary', 'low', 'moderate', 'high', 'very_high')),
-  
+
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
   updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 ```
 
 #### **5. foods**
+
 Catálogo de alimentos
+
 ```sql
 CREATE TABLE foods (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -191,7 +203,7 @@ CREATE TABLE foods (
   name TEXT NOT NULL,
   brand TEXT,
   food_type TEXT NOT NULL CHECK (food_type IN ('dry', 'wet', 'raw', 'homemade', 'treats')),
-  
+
   -- Información nutricional (por 100g)
   calories_per_100g INTEGER,
   protein_percentage DECIMAL(5,2),
@@ -199,62 +211,66 @@ CREATE TABLE foods (
   carbs_percentage DECIMAL(5,2),
   fiber_percentage DECIMAL(5,2),
   moisture_percentage DECIMAL(5,2),
-  
+
   -- Información del producto
   ingredients TEXT,
   serving_size_grams INTEGER,
   package_size_grams INTEGER,
   price_per_package DECIMAL(10,2),
-  
+
   -- Calidad
   palatability TEXT CHECK (palatability IN ('poor', 'fair', 'good', 'excellent')),
   digestibility TEXT CHECK (digestibility IN ('poor', 'fair', 'good', 'excellent')),
-  
+
   -- Restricciones
   suitable_for_species TEXT[],
   age_range TEXT,
-  
+
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
   updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 ```
 
 #### **6. feedings**
+
 Registros de alimentación
+
 ```sql
 CREATE TABLE feedings (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   household_id UUID NOT NULL REFERENCES households(id) ON DELETE CASCADE,
   pet_id UUID NOT NULL REFERENCES pets(id) ON DELETE CASCADE,
   food_id UUID NOT NULL REFERENCES foods(id) ON DELETE RESTRICT,
-  
+
   -- Cuándo
   feeding_date DATE NOT NULL,
   feeding_time TIME,
   meal_number INTEGER,
-  
+
   -- Cantidades
   amount_served_grams INTEGER NOT NULL,
   amount_eaten_grams INTEGER NOT NULL,
   amount_leftover_grams INTEGER GENERATED ALWAYS AS (amount_served_grams - amount_eaten_grams) STORED,
-  
+
   -- Comportamiento
   appetite_rating TEXT CHECK (appetite_rating IN ('refused', 'poor', 'normal', 'good', 'excellent')),
   eating_speed TEXT CHECK (eating_speed IN ('very_slow', 'slow', 'normal', 'fast', 'very_fast')),
-  
+
   -- Resultados digestivos
   vomited BOOLEAN DEFAULT FALSE,
   had_diarrhea BOOLEAN DEFAULT FALSE,
   had_stool BOOLEAN,
   stool_quality TEXT CHECK (stool_quality IN ('liquid', 'soft', 'normal', 'hard')),
-  
+
   notes TEXT,
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 ```
 
-#### **7. _migrations**
+#### **7. \_migrations**
+
 Control de migraciones
+
 ```sql
 CREATE TABLE _migrations (
   id SERIAL PRIMARY KEY,
@@ -266,10 +282,12 @@ CREATE TABLE _migrations (
 ### Vistas (1)
 
 #### **daily_feeding_summary**
+
 Resumen agregado de alimentación diaria
+
 ```sql
 CREATE VIEW daily_feeding_summary AS
-SELECT 
+SELECT
   f.pet_id,
   f.feeding_date,
   SUM(f.amount_served_grams) as total_served,
@@ -349,27 +367,41 @@ COMMIT;
 
 ### Aplicar Migración
 
+**⚠️ IMPORTANTE: SIEMPRE usa el script `scripts/apply-migration.sh`**
+
+Este script:
+
+- ✅ Aplica la migración de forma segura
+- ✅ Verifica estado previo
+- ✅ Auto-regenera types TypeScript si hay cambios de schema
+- ✅ Requiere confirmación para PROD
+- ✅ Registra en tabla `_migrations`
+
 **Desarrollo (DEV)**:
 
 ```bash
-# Conectarse como postgres y aplicar
-sudo -u postgres psql -d pet_sikness_dev -f database/migrations/20251109_120000_descripcion.sql
+# Aplicar migración a DEV (auto-regenera types)
+./scripts/apply-migration.sh database/migrations/20251109_120000_descripcion.sql
 
-# Verificar
-sudo -u postgres psql -d pet_sikness_dev -c "SELECT * FROM _migrations ORDER BY applied_at DESC LIMIT 5;"
+# O explícitamente especificar DEV
+./scripts/apply-migration.sh database/migrations/20251109_120000_descripcion.sql dev
 ```
 
 **Producción (PROD)**:
 
 ```bash
-# ⚠️ BACKUP OBLIGATORIO PRIMERO
-sudo -u postgres pg_dump pet_sikness_prod > ~/backups/prod_$(date +%Y%m%d_%H%M%S).sql
+# ⚠️ Requiere confirmación explícita + backup automático
+./scripts/apply-migration.sh database/migrations/20251109_120000_descripcion.sql prod
+```
 
-# Aplicar migración
-sudo -u postgres psql -d pet_sikness_prod -f database/migrations/20251109_120000_descripcion.sql
+**❌ NO ejecutar manualmente**:
 
-# Verificar
-sudo -u postgres psql -d pet_sikness_prod -c "SELECT * FROM _migrations ORDER BY applied_at DESC LIMIT 5;"
+```bash
+# ❌ NUNCA HACER ESTO:
+sudo -u postgres psql -d pet_sikness_dev -f migration.sql
+
+# ✅ SIEMPRE USAR:
+./scripts/apply-migration.sh migration.sql
 ```
 
 ### Regenerar Types Después de Migración
@@ -439,7 +471,7 @@ GRANT USAGE, SELECT ON SEQUENCE nueva_tabla_id_seq TO pet_user;
 
 ```sql
 -- Contar registros por tabla
-SELECT 
+SELECT
   schemaname,
   tablename,
   pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) AS size,
@@ -526,6 +558,7 @@ sudo -u postgres psql -d pet_sikness_dev < ~/backups/dev_backup.sql
 ## ⚠️ **REGLAS CRÍTICAS**
 
 ### ✅ HACER:
+
 - Siempre backup antes de aplicar migraciones en PROD
 - Probar migraciones en DEV primero
 - Usar nombres descriptivos: `20251109_120000_add_microchip_column.sql`
@@ -536,6 +569,7 @@ sudo -u postgres psql -d pet_sikness_dev < ~/backups/dev_backup.sql
 - Registrar en `_migrations`
 
 ### ❌ NO HACER:
+
 - NUNCA aplicar migraciones sin backup en PROD
 - NUNCA modificar datos de usuarios en migraciones (usar scripts aparte)
 - NUNCA aplicar migraciones sin probar en DEV
