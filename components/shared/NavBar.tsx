@@ -6,13 +6,15 @@ import { User } from "next-auth";
 import { cn } from "@/lib/utils";
 import { UserMenu } from "./UserMenu";
 import { ThemeToggle } from "./ThemeToggle";
-import { Home, PawPrint, UtensilsCrossed, Apple } from "lucide-react";
+import { Home, PawPrint, UtensilsCrossed, Apple, BarChart3, Sparkles } from "lucide-react";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: Home },
   { name: "Mascotas", href: "/pets", icon: PawPrint },
   { name: "Alimentos", href: "/foods", icon: Apple },
   { name: "Alimentación", href: "/feeding", icon: UtensilsCrossed },
+  { name: "Analytics", href: "/analytics", icon: BarChart3 },
+  { name: "Recomendaciones", href: "/recommendations", icon: Sparkles },
 ];
 
 interface NavBarProps {
